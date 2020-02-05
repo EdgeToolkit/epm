@@ -1,0 +1,42 @@
+build:{{ title }}:
+  stage: build
+  tags:  
+    - Linux
+    - builder
+    - {{family}}
+  artifacts:
+    paths:
+    - .epm
+    - .conan
+  script:
+{%- for c in configurations %}
+  - epm -c {{ c }} --runner shell create --cache --clear
+{%- endfor %}
+test:{{ title }}:
+  stage: test
+  tags:
+  - Linux
+  - runner
+  - {{ family }}
+  dependencies:
+  - build:{{ title }}
+  script:
+{%- for s in install %}
+  - {{ s | replace('${configuration}', c) | replace('${sandbox}/', './.epm/%s/sandbox/' % c) }}
+{%- endfor %}
+{%- for s in script %}
+{%- for c in configurations %}
+  - {{ s | replace('${configuration}', c) | replace('${sandbox}/', './.epm/%s/sandbox/' % c) }}
+{%- endfor%}
+{%- endfor %} 
+deploy:{{ title }}:
+  stage: deploy
+  tags:
+  - Linux
+  - epm
+  - deployer
+  dependencies:
+  - build:{{ title }}  
+  script:
+  - epm -c {{ configuration }} upload
+

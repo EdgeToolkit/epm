@@ -1,0 +1,9 @@
+conan>=1.19.0
+distro>=1.0.2, <1.2.0
+paramiko>=2.5
+scp >=0.13.2
+
+mkdocs>=1.0.0
+pymdown-extensions
+mkdocs-material
+docker>= 4.1.0

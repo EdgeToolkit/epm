@@ -1,0 +1,54 @@
+site_name: EPM
+site_url: https://EPMall.github.io/epm
+repo_url: https://github.com/EPMall/epm
+
+nav:
+  - Introduction: index.md
+  - Installation: installation.md
+  - Getting Started: getting-start.md
+  - Package Development:
+    - Project: project.md
+    - Sandbox: sandbox.md
+
+  - Continus integration:
+      - Gitlab Flow at EPM: gitlab-flow.md
+  - Commands:
+      - build: commands/build.md
+      - create: commands/create.md
+      - init: commands/init.md
+      - run: commands/run.md
+      - sandbox: commands/sandbox.md
+      - upload: commands/upload.md
+      - venv: commands/venv.md
+
+
+theme:
+  name: material
+  
+  
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+      linenums: false
+  - toc:
+      permalink: true
+  - footnotes
+  - meta
+  - def_list
+  - pymdownx.arithmatex
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_png
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist
+  - pymdownx.tilde
+ 

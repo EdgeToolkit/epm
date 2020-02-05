@@ -1,0 +1,9 @@
+
+profile:
+  gcc5:
+    docker:
+      builder:
+        image: epmkit/gcc5:debug
+        epm:
+          source: d:/epmkit/epm
+          target: /home/conan/sources/epm

@@ -1,0 +1,15 @@
+name: {{ name }}
+version: {{ version }}
+group: example
+
+{{ license }}
+
+{{ description }}
+
+{{ scheme }}
+
+{{ sandbox }}
+
+{{ script }}
+
+{{ dependencies }}

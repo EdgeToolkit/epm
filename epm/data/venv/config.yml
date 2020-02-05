@@ -1,0 +1,27 @@
+#
+# EPM Config file template
+#
+localhost:
+  hostname: 127.0.0.1
+  username: xxxxx
+  password: <password>
+
+runner:
+  <runner name>:
+    shell: powershell/dos/bash/sh
+
+    docker:
+      image: xxxxx
+      WD: <Work Directory>
+      shell: /bin/bash
+
+    remote:
+      url: ssh://172.16.0.119:6000
+      username: <username>
+      password: <password>
+      ssh-key: <file|key string>
+
+    information:
+      platform: Windows| Linux| Android | iOS | Mac
+      arch: x86|x86_64|armv7
+      distro: Ubuntu, EdgeOS
