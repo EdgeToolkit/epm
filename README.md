@@ -127,6 +127,14 @@ HelloWorld 0.0.1
 
 
 
+## Development
+
+test
+
+nosetests epm.test --with-summary-report --summary-report-on class
+
+
+
 
 
 ## Contribution

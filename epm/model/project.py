@@ -57,11 +57,12 @@ class Project(object):
             f.write(text)
             f.flush()
 
-#    def save(self, private={}):
-#        return
-#        info = {'private': private}
-#        info['project'] = self.dir
-#        save_yaml(self.op_log_filename, info)
+    def save(self, info={}):
+        save_yaml(os.path.join(self.folder.out, 'buildinfo.yml'), info)
+
+    @property
+    def buildinfo(self):
+        return load_yaml(os.path.join(self.folder.out, 'buildinfo.yml'))
 
     @property
     def api(self):

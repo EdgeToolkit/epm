@@ -166,7 +166,6 @@ class Command(object):
             raise EException('epm api no method <%s>' % args.method)
         method(param)
 
-
     def create(self, *args):
         """
         Builds a binary package for a recipe (conanfile.py).
@@ -177,9 +176,7 @@ class Command(object):
         that the package has been created correctly. Check 'conan test' command
         to know more about 'test_folder' project.
         """
-        parser = argparse.ArgumentParser(description=self.create.__doc__,
-                                         prog="epm create",
-                                         formatter_class=SmartFormatter)
+        parser = self._argument_parser('create')
 
         parser.add_argument("-s", "--scheme", type=str,
                             help="the plan to build for, etc vs2019, gcc5@dynmic ....")
@@ -218,9 +215,7 @@ class Command(object):
 
         """
 
-        parser = argparse.ArgumentParser(description=self.build.__doc__,
-                                         prog="epm build",
-                                         formatter_class=SmartFormatter)
+        parser = self._argument_parser('build')
 
         parser.add_argument("-s", "--scheme", type=str,
                             help="the plan to build for, etc vs2019, gcc5@dynmic ....")
@@ -250,8 +245,6 @@ class Command(object):
 
         args = parser.parse_args(*args)
 
-#        self._warn_python_version()
-
         if args.package or args.configure or args.install or args.test:
             package, configure, install, test = \
                 (bool(args.package), bool(args.configure), bool(args.install), bool(args.test))
@@ -266,53 +259,6 @@ class Command(object):
                  'scheme': args.scheme,
                  'step': steps}
         self._api.build(param)
-        return
-
-        from epm.model.project import Project
-        project = Project(args.scheme, self._api)
-        profile = project.scheme.profile
-
-        runner = args.runner or 'auto'
-        if runner == ['auto']:
-            if profile.builders:
-                runner = profile.builders[0]
-            else:
-                raise EException('Not found proper builder according the --runner options %s' % args.runner)
-
-        if runner == 'shell':
-            self._api.build(param)
-        elif runner == 'docker':
-            from epm.tool.docker import Docker
-            debug = self._debug
-            config = profile.docker.builder
-
-            if debug:
-                image = debug.get('images', {}).get(config['image']).get('image')
-                if image:
-                    config['image'] = image
-
-            docker = Docker(profile.docker.builder)
-            docker.volume = {
-                '$home/host/.epm': {'source': self._api.cache_folder},
-                '$home/project/{}'.format(project.name): {'source': project.dir}
-            }
-
-            if debug:
-                install = debug.get('images', {}).get(config['image']).get('install')
-                if install:
-                    docker.volume[install]
-
-
-            # mount $CD => $docker.home/host/$(project.name)
-            # ~/.epm    => $docker.home/host/.epm
-
-            docker = Docker()
-            docker.volume.append({'type':'bind', 'source': os.path.abspath('.'), 'target': '$home/'})
-            pass
-        else:
-            print('remote build not support !!!')
-
-
 
     def upload(self, *args):
         """
@@ -321,111 +267,31 @@ class Command(object):
         If no remote is specified, the first configured remote (by default conan-center, use
         'conan remote list' to list the remotes) will be used.
         """
-        parser = argparse.ArgumentParser(description=self.upload.__doc__,
-                                         prog="conan upload",
-                                         formatter_class=SmartFormatter)
-        parser.add_argument('pattern_or_reference', help=_PATTERN_REF_OR_PREF_HELP)
-        parser.add_argument("-p", "--package", default=None,
-                            help="Package ID [DEPRECATED: use full reference instead]",
-                            action=OnceArgument)
-        parser.add_argument('-q', '--query', default=None, action=OnceArgument,
-                            help="Only upload packages matching a specific query. " + _QUERY_HELP)
-        parser.add_argument("-r", "--remote", action=OnceArgument,
-                            help='upload to this specific remote')
-        parser.add_argument("--all", action='store_true', default=False,
-                            help='Upload both package recipe and packages')
-        parser.add_argument("--skip-upload", action='store_true', default=False,
-                            help='Do not upload anything, just run the checks and the compression')
-        parser.add_argument("--force", action='store_true', default=False,
-                            help='Do not check conan recipe date, override remote with local')
-        parser.add_argument("--check", action='store_true', default=False,
-                            help='Perform an integrity check, using the manifests, before upload')
-        parser.add_argument('-c', '--confirm', default=False, action='store_true',
-                            help='Upload all matching recipes without confirmation')
-        parser.add_argument('--retry', default=None, type=int, action=OnceArgument,
-                            help="In case of fail retries to upload again the specified times.")
-        parser.add_argument('--retry-wait', default=None, type=int, action=OnceArgument,
-                            help='Waits specified seconds before retry again')
-        parser.add_argument("-no", "--no-overwrite", nargs="?", type=str, choices=["all", "recipe"],
-                            action=OnceArgument, const="all",
-                            help="Uploads package only if recipe is the same as the remote one")
-        parser.add_argument("-j", "--json", default=None, action=OnceArgument,
-                            help='json file path where the upload information will be written to')
-        parser.add_argument("--parallel", action='store_true', default=False,
-                            help='Upload files in parallel using multiple threads '
-                                 'The default number of launched threads is 8')
+        parser = self._argument_parser('upload')
+
+        parser.add_argument("-s", "--scheme", default=None, type=str,
+                            help="Which scheme built/created package to be uploaded,"
+                            "if not specified all packages will be uploaded")
+
+        parser.add_argument("-r", "--remote", default=None,
+                            help="the remote where upload to, if not specified,"
+                                 "upload to `group` defined in package.yml"),
+        parser.add_argument("--storage", default=None,
+                            help="upload the local conan cache "),
 
         args = parser.parse_args(*args)
+        param = {'scheme': args.scheme,
+                 'remote': args.remote,
+                 'storage': args.storage}
 
-        try:
-            pref = PackageReference.loads(args.pattern_or_reference, validate=True)
-        except ConanException:
-            reference = args.pattern_or_reference
-            package_id = args.package
-
-            if package_id:
-                self._out.warn("Usage of `--package` argument is deprecated."
-                               " Use a full reference instead: "
-                               "`conan upload [...] {}:{}`".format(reference, package_id))
-
-            if args.query and package_id:
-                raise ConanException("'--query' argument cannot be used together with '--package'")
-        else:
-            reference = repr(pref.ref)
-            package_id = "{}#{}".format(pref.id, pref.revision) if pref.revision else pref.id
-
-            if args.package:
-                raise ConanException("Use a full package reference (preferred) or the `--package`"
-                                     " command argument, but not both.")
-            if args.query:
-                raise ConanException("'--query' argument cannot be used together with "
-                                     "full reference")
-
-        if args.force and args.no_overwrite:
-            raise ConanException("'--no-overwrite' argument cannot be used together with '--force'")
-        if args.force and args.skip_upload:
-            raise ConanException("'--skip-upload' argument cannot be used together with '--force'")
-        if args.no_overwrite and args.skip_upload:
-            raise ConanException("'--skip-upload' argument cannot be used together "
-                                 "with '--no-overwrite'")
-
-        self._warn_python_version()
-
-        if args.force:
-            policy = UPLOAD_POLICY_FORCE
-        elif args.no_overwrite == "all":
-            policy = UPLOAD_POLICY_NO_OVERWRITE
-        elif args.no_overwrite == "recipe":
-            policy = UPLOAD_POLICY_NO_OVERWRITE_RECIPE
-        elif args.skip_upload:
-            policy = UPLOAD_POLICY_SKIP
-        else:
-            policy = None
-
-        info = None
-        try:
-            info = self._conan.upload(pattern=reference, package=package_id,
-                                      query=args.query, remote_name=args.remote,
-                                      all_packages=args.all, policy=policy,
-                                      confirm=args.confirm, retry=args.retry,
-                                      retry_wait=args.retry_wait, integrity_check=args.check,
-                                      parallel_upload=args.parallel)
-
-        except ConanException as exc:
-            info = exc.info
-            raise
-        finally:
-            if args.json and info:
-                self._outputer.json_output(info, args.json, os.getcwd())
+        self._api.upload(param)
 
     def init(self, *args):
         """
         Initialize project
 
         """
-        parser = argparse.ArgumentParser(description=self.init.__doc__,
-                                         prog="epm init",
-                                         formatter_class=SmartFormatter)
+        parser = self._argument_parser('init')
 
         subparsers = parser.add_subparsers(help='@@@', dest='command')
 

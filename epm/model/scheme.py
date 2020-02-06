@@ -30,6 +30,8 @@ class Profile(object):
     """
 
     def __init__(self, meta):
+
+        assert(meta and isinstance(meta, dict))
         self.name = meta['name']
         self.family = meta['family']
         self.description = meta['description']
@@ -39,11 +41,11 @@ class Profile(object):
 
     @property
     def docker(self):
-
         Docker = namedtuple('Docker', ['builder', 'runner'])
+        docker = self._meta.get('docker')
+        runner = docker.get('runner') if docker else None
+        builder = docker.get('builder') if docker else None
 
-        runner = self._meta.get('docker', {}).get('runner', None)
-        builder = self._meta.get('docker', {}).get('builder', None)
         return Docker(builder, runner)
 
     def save(self, filename):

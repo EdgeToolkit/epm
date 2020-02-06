@@ -7,6 +7,7 @@ from epm.paths import get_epm_user_home
 from epm.worker.build import Builder
 from epm.worker.create import Creator
 from epm.worker.sandbox import Sandbox
+from epm.worker.upload import Uploader
 from epm.util.files import load_yaml
 from conans.client.tools import environment_append
 
@@ -36,6 +37,7 @@ def api_method(f):
             os.chdir(old_curdir)
     return wrapper
 
+
 class APIv1(object):
 
     @classmethod
@@ -62,6 +64,7 @@ class APIv1(object):
                 from epm.util.files import mkdir
                 import shutil
                 filename = os.path.join(DATA_DIR, 'conan', 'settings.yml')
+                mkdir(cache_folder)
                 shutil.copy(filename, settings_file)
 
             self._conan = ConanAPI(cache_folder, self.out, self.user_io)
@@ -80,6 +83,11 @@ class APIv1(object):
     @api_method
     def create(self, param):
         worker = Creator(self)
+        worker.exec(param)
+
+    @api_method
+    def upload(self, param):
+        worker = Uploader(self)
         worker.exec(param)
 
     @api_method

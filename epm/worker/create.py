@@ -167,8 +167,10 @@ class Creator(Worker):
                     }
 
         self._sandbox(project, id=id)
+        project.save({'package_id': id})
         if dirs:
             result['dirs'] = dirs
+
         return result
 
     def _sandbox(self, project, id):
