@@ -14,6 +14,7 @@ PLATFORM, ARCH = system_info()
 
 from conans.client.tools.win import vs_installation_path
 
+
 class Configure(object):
 
     def __init__(self, filename=None):
