@@ -4,16 +4,14 @@ import platform
 
 from conans.paths import conan_expand_user
 
-
-def get_epm_user_home():
-    user_home = os.getenv("EPM_USER_HOME", "~")
-    tmp = conan_expand_user(user_home)
+def get_epm_home_dir(Global=False):
+    home = "~/.epm" if Global else  os.getenv("EPM_HOME_DIR", "~/.epm")
+    tmp = conan_expand_user(home)
     if not os.path.isabs(tmp):
-        raise Exception("Invalid EPM_USER_HOME value '%s', "
+        raise Exception("Invalid EPM_HOME_DIR value '%s', "
                         "please specify an absolute or path starting with ~/ "
                         "(relative to user home)" % tmp)
     return os.path.abspath(tmp)
-
 
 
 # Files and Folders

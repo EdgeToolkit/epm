@@ -3,7 +3,7 @@ import os
 from conans.client.conan_api import ConanAPIV1 as ConanAPI
 from conans.client.output import ConanOutput as Output, colorama_initialize
 from conans.client.userio import UserIO as UserIO
-from epm.paths import get_epm_user_home
+from epm.paths import get_epm_home_dir
 from epm.worker.build import Builder
 from epm.worker.create import Creator
 from epm.worker.sandbox import Sandbox
@@ -44,15 +44,15 @@ class APIv1(object):
     def factory(cls):
         return cls()
 
-    def __init__(self, cache_folder=None, output=None, user_io=None):
+    def __init__(self, home_dir=None, output=None, user_io=None):
         color = colorama_initialize()
         self.out = output or Output(sys.stdout, sys.stderr, color)
         self.user_io = user_io or UserIO(out=self.out)
-        self.cache_folder = cache_folder or os.path.join(get_epm_user_home(), ".epm")
+        self.home_dir = home_dir or get_epm_home_dir()
         self._conan = None
         self._config = None
-        self.env_vars = {'CONAN_STORAGE_PATH': os.path.join(self.cache_folder, '.conan', 'data'),
-                         }
+        self.env_vars = {'CONAN_USER_HOME': self.home_dir,
+                         'CONAN_STORAGE_PATH': os.path.join(self.home_dir, '.conan', 'data')}
 
     @property
     def conan(self):
@@ -102,7 +102,7 @@ class APIv1(object):
 
     @api_method
     def load_config(self, update=True):
-        path = os.path.join(self.cache_folder, 'config.yml')
+        path = os.path.join(self.home_dir, 'config.yml')
         if not os.path.exists(path):
             return {}
         if self._config is None or update:
@@ -111,7 +111,7 @@ class APIv1(object):
 
     @property
     def conan_storage_path(self):
-        return os.getenv('CONAN_STORAGE_PATH', os.path.join(self.cache_folder, '.conan', 'data'))
+        return os.getenv('CONAN_STORAGE_PATH', os.path.join(self.home_dir, '.conan', 'data'))
 
 
 API = APIv1

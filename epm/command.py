@@ -362,13 +362,47 @@ class Command(object):
         if result:
             raise EException('sandbox %s executed, exit code %d' % (command, result))
 
+    def venv(self, *args):
+        """
+        epm venv is used to work in different environment for user development
+
+        """
+        parser = self._argument_parser('venv')
+        subparsers = parser.add_subparsers(dest='command')
+
+        subparser = subparsers.add_parser("list", description='list all virtual environment')
+
+        subparser = subparsers.add_parser("setup", description='setup a virtual environment')
+        subparser.add_argument("name", type=str, help="name of the virtual environment to be setup")
+        subparser.add_argument("url", type=str, help="location of config")
+
+        subparser = subparsers.add_parser("shell", description='enter the specified virtual environment shell')
+        subparser.add_argument("name", type=str, help="name of the virtual environment")
+
+        args = parser.parse_args(*args)
+        from epm.tool.venv import VirtualEnviron
+
+        if args.command == 'list':
+            pass
+
+        elif args.command == 'setup':
+            venv = VirtualEnviron(args.name)
+            venv.setup(args.url)
+
+        elif args.command == 'shell':
+            pass
+
+
+
+
+
     def _show_help(self):
         """
         Prints a summary of all commands.
         """
         grps = [#("Consumer commands", ("config", )),
                 ("Creator commands", ("init", "create", "upload")),
-                ("Package development commands", ("build", "sandbox")),
+                ("Package development commands", ("build", "sandbox", "venv")),
                 ("Misc commands", ("help", "api"))]
 
         def check_all_commands_listed():

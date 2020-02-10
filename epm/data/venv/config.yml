@@ -2,9 +2,9 @@
 # EPM Config file template
 #
 localhost:
-  hostname: 127.0.0.1
-  username: xxxxx
-  password: <password>
+  hostname: <to be updated, ip address or hostname>
+  username: <to be updated>
+  password: <to be updated>
 
 runner:
   <runner name>:
@@ -25,3 +25,13 @@ runner:
       platform: Windows| Linux| Android | iOS | Mac
       arch: x86|x86_64|armv7
       distro: Ubuntu, EdgeOS
+
+
+conan:
+  remotes:
+  - download-only: url
+  - epm:
+      url: xxxxxx
+      username: <to be updated>
+      password: <to be updated>
+

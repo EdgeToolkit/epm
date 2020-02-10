@@ -2,8 +2,10 @@ import os
 import warnings
 import os
 import unittest
+import docker
 
-
+from conans.client.conan_api import ConanAPIV1 as ConanAPI
+from epm.api import API
 from epm.util.files import mkdir, rmdir
 from epm.util.files import load_yaml
 
@@ -18,6 +20,7 @@ from conans.client.tools.win import vs_installation_path
 class Configure(object):
 
     def __init__(self, filename=None):
+        self._is_docker_startup = None
         filename = filename or 'test-conf.yml'
         self._items = {}
         try:
@@ -39,15 +42,36 @@ class Configure(object):
     def platform(self):
         return ARCH
 
-
+    @property
+    def is_docker_startup(self):
+        if self._is_docker_startup is None:
+            client = docker.from_env()
+            try:
+                client.ping()
+                self._is_docker_startup = True
+            except:
+                self._is_docker_startup = False
+        return self._is_docker_startup
 
 CONFIG = Configure(os.environ.get('EPM_TEST_CONFIG'))
-
 
 class TestCase(unittest.TestCase):
 
     _WD = None
     _home = None
+
+    api = None
+    conan_server = False
+    remotes = None
+    config = CONFIG
+
+    @staticmethod
+    def setUpClass():
+        pass
+
+    @staticmethod
+    def tearDownClass():
+        pass
 
     def setUp(self):
 
@@ -61,15 +85,51 @@ class TestCase(unittest.TestCase):
             rmdir(self._home)
             mkdir(self._home)
 
-        self._OLD_EPM_USER_HOME = os.environ.get('EPM_USER_HOME')
-        os.environ['EPM_USER_HOME'] = self._home
+        self._OLD_EPM_HOME_DIR = os.getenv('EPM_HOME_DIR')
+        os.environ['EPM_HOME_DIR'] = self._home
 
         self._OLD_CD = os.path.abspath('.')
         os.chdir(self._WD)
 
+        if self.conan_server:
+            self._setup_conan_server()
+            api = API()
+            conan = api.conan
+            conan.remote_clean()
+            conan.remote_add(remote_name='epm', url='http://127.0.0.1:9300', verify_ssl=False)
+            conan.authenticate('demo', password='demo', remote_name='epm')
+
+    def assertEqualPath(self, first, second, msg=None):
+        from pathlib import PurePath
+        self.assertEqual(PurePath(first).as_posix(), PurePath(second).as_posix(), msg)
+
     def tearDown(self):
-        if self._OLD_EPM_USER_HOME:
-            os.environ['EPM_USER_HOME'] = self._OLD_EPM_USER_HOME
+
+        if self._OLD_EPM_HOME_DIR:
+            os.environ['EPM_HOME_DIR'] = self._OLD_EPM_HOME_DIR
         else:
-            del os.environ['EPM_USER_HOME']
+            del os.environ['EPM_HOME_DIR']
         os.chdir(self._OLD_CD)
+
+    def _setup_conan_server(self):
+        _CNAME = 'epm.test.conan_server'
+        self.assertTrue(self.config.is_docker_startup, 'not able setup conan_server as docker not startup')
+        client = docker.from_env()
+
+        cs = client.containers.list({'name': _CNAME})
+        if not cs:
+            volumes = {
+                'D:/epmkit/epm/epm/test/conan_server/server.conf': {
+                    'bind': '/root/.conan_server/server.conf', 'mode': 'ro'},
+                'D:/epmkit/epm/epm/test/conan_server/data': {
+                    'bind': '/root/.conan_server/data', 'mode': 'rw'},
+            }
+            ports = {'9300/tcp': 9300}
+
+            container = client.containers.run(image='conanio/conan_server',
+                                              name=_CNAME,
+                                              detach=True,
+                                              volumes=volumes,
+                                              ports=ports)
+        else:
+            container = cs[0]

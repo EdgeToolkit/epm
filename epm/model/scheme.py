@@ -8,7 +8,7 @@ import shutil
 from conans.model.options import OptionsValues
 
 from epm.errors import EException
-from epm.paths import DATA_DIR, get_epm_user_home
+from epm.paths import DATA_DIR, get_epm_home_dir
 from epm.util.files import load_yaml
 from epm.util import split_plan_name
 
@@ -191,7 +191,7 @@ class ProfileManager(object):
         :param folder: EPM cache folder where
         :param init: if profile folder is empty install default profiles
         """
-        self.folder = folder or os.path.join(get_epm_user_home(), '.epm', 'profiles')
+        self.folder = folder or os.path.join(get_epm_home_dir(), 'profiles')
         self.families = {}
         if init:
             self._initialize()

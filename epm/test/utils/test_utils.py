@@ -22,6 +22,4 @@ class Utils(unittest.TestCase):
         prefixs = [('two', '1/2'), ('one', '1')]
         self.assertEqual('${two}/3/4', sempath(path, prefixs))
 
-    def test_get_epm_user_home(self):
-        from epm.paths import get_epm_user_home
 
