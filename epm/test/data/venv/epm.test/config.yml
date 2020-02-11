@@ -1,0 +1,5 @@
+name: epm.test
+channel: public
+remotes:
+  - epm: http://127.0.0.1:9300
+  - example: http://127.0.0.1:9400

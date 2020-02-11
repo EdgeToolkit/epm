@@ -375,10 +375,10 @@ class Command(object):
 
         subparser = subparsers.add_parser("setup", description='setup a virtual environment')
         subparser.add_argument("url", type=str, help="location of config")
-        subparser.add_argument("name", default=None, type=str, help="name of the virtual environment to be setup")
+        subparser.add_argument("name", default=None, nargs='?', help="name of the virtual environment to be setup")
 
         subparser = subparsers.add_parser("shell", description='enter the specified virtual environment shell')
-        subparser.add_argument("name", nargs='?', help="name of the virtual environment")
+        subparser.add_argument("name", default=None, nargs='?', help="name of the virtual environment")
 
         subparser = subparsers.add_parser("clear", description='unregister specified virtual environment')
         subparser.add_argument("name", help="name of the virtual environment to be unregistered")
@@ -389,15 +389,19 @@ class Command(object):
         from epm.tool.venv import VirtualEnviron
 
         if args.command == 'list':
-            pass
+            venv = VirtualEnviron()
+            for name, info in venv.register().items():
+                self._out.highlight('* %s' % name)
+                self._out.info('    directory: %s' % info.get('install-dir'))
+                self._out.info('    from: %s' % info.get('install-source'))
 
         elif args.command == 'setup':
 
             venv = VirtualEnviron(args.name)
-            venv.setup(args.url)
+            venv.setup(args.url, args.name)
 
         elif args.command == 'shell':
-            name = args.name[0] if args.name else None
+            name = args.name
             venv = VirtualEnviron()
             venv.shell(name)
         elif args.command == 'clear':

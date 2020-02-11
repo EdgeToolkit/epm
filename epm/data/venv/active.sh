@@ -7,9 +7,9 @@ if [[ -n $EPM_VENV_NAME ]] ;; then
 fi
 
 export EPM_VENV_NAME={{name}}
-export EPM_VENV_DIR={{path}}
-export CONAN_USER_HOME=${EPM_VENV_DIR}
-export EPM_USER_HOME=${EPM_VENV_DIR}
+export EPM_HOME_DIR={{path}}
+export CONAN_USER_HOME=${EPM_HOME_DIR}
 export EPM_CHANNEL={{ channel }}
 
-python venv.py
+epm venv banner
+

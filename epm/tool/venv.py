@@ -60,7 +60,7 @@ class VirtualEnviron(object):
     def register(self):
         if not os.path.exists(self._reg_filename):
             return {}
-        return load_yaml(self._reg_filename)
+        return load_yaml(self._reg_filename) or {}
 
     def update(self, venv, name=None):
         name = name or self._name
@@ -87,9 +87,10 @@ class VirtualEnviron(object):
             raise Exception('Invalid install path {}'.format(path))
         return config_folder
 
-    def setup(self, url):
-        reg = self.register()
-        if self._name and reg.get(self._name) is not None:
+    def setup(self, url, name=None):
+
+        reg = self.register() or {}
+        if name in reg:
             raise Exception('{} venv already installed, clear it try again.'.format(self._name))
 
         if os.path.exists('.conan'):
@@ -97,12 +98,12 @@ class VirtualEnviron(object):
 
         instd = self.install_source(url)
         path = os.path.join(instd, 'config.yml')
-        conf = load_yaml(path)
-#        with open(path) as f:
-#            conf = yaml.safe_load(f)
+        conf = load_yaml(path) or {}
+        self._name = name = name or conf.get('name')
+        if not name:
+            raise Exception('venv name not defined, neither command nor config file.>')
 
-        name = self._name or conf['name']
-        if reg.get(name) is not None:
+        if name in reg:
             raise Exception('{} venv already installed, clear it try again.'.format(self._name))
 
         wd = os.path.abspath('.')
@@ -111,8 +112,12 @@ class VirtualEnviron(object):
             'install-source': url,
             'name': name,
             'install-dir': wd,
-            'config': conf
+            'config': conf,
+            'channel': channel,
         }
+        remotes = conf.get('remotes')
+        if remotes:
+            self._venv['remotes'] = remotes
 
         self.update(self._venv, name)
 
@@ -122,53 +127,34 @@ class VirtualEnviron(object):
         conan.remote_clean()
         conan.users_clean()
 
-        remotes = conf.get('conan', {}).get('remotes', [])
+        remotes = conf.get('remotes', [])
         for remote in remotes:
             for name, url in remote.items():
                 conan.remote_add(name, url, verify_ssl=True)
 
-#        env = os.environ.copy()
-#        env['CONAN_USER_HOME'] = wd
-#        env['EPM_USER_HOME'] = wd
-#        venv = self._venv
-#        try:
-#            subprocess.run(['conan', 'remote', 'clean'], env=env)
-#
-#            remotes = conf.get('conan', {}).get('remotes', [])
-#            for remote in remotes:
-#                for name, url in remote.items():
-#                    proc = subprocess.run(['conan', 'remote', 'add', name, url], env=env)
-#                    if proc.returncode:
-#                        self._out.error('setup conan remote {} failed, cancel setup.'.format(self._name))
-#                        raise Exception('setup failed')
-#        except Exception as e:
-#            if os.path.exists('.conan'):
-#                shutil.rmtree('.conan')
-#            raise e
-#
         def render(template, filename):
             tmpl = self._jinja2.get_template(template)
             content = tmpl.render(name=self._venv['name'],
                                   path=self._venv['install-dir'],
-                                  channel='public')
+                                  channel=channel)
 
             with open(filename, 'w') as f:
                 f.write(content)
 
         render('active.bat', 'active.bat')
         render('active.sh', 'active.sh')
-        self._out.info(_SetupHint.format(name=name))
+        self._out.info(_SetupHint.format(name=self._name))
 
     def clear(self, name, do_clear=False):
-        if not name:
-            return
         reg = self.register()
         if not name or name not in reg:
             print('do nothing as %s is not a setup virtual environment' % name)
             return
+
         info = reg[name]
         instd = info.get('install-dir')
-        print(instd, '#############')
+
+        self.update(None, name)
         if do_clear:
             if os.path.exists(instd):
                 rmdir(instd)
@@ -186,15 +172,14 @@ class VirtualEnviron(object):
             from epm.paths import get_epm_home_dir
             instd = get_epm_home_dir()
         else:
-            venv = reg.get(self._name)
+            venv = reg.get(name)
             if not venv:
-                self._out.error('{} venv not setup.'.format(self._name))
+                self._out.error('{} venv not setup.'.format(name))
                 return
 
             instd = venv.get('install-dir')
-            print(instd, 'INSTD')
             if not instd or not os.path.exists(instd):
-                self._out.error('{} install dir({}) was destroyed.'.format(self._name, instd))
+                self._out.error('{} install dir({}) was destroyed.'.format(name, instd))
                 return
 
         script = os.path.join(instd, 'active.{}'.format('bat' if PLATFORM == 'Windows' else 'sh'))
