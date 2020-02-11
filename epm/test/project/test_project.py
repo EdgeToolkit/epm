@@ -3,6 +3,7 @@ import unittest
 import tempfile
 
 from epm.util.files import mkdir, rmdir
+from epm.test import TestCase
 from epm.paths import TEST_DATA_DIR
 from epm.model.project import Project
 from conans.client.profile_loader import read_profile
@@ -11,35 +12,35 @@ from collections import OrderedDict
 _DEFAULT_LIB_PRJ_DIR = os.path.join(TEST_DATA_DIR, 'project', 'lib')
 
 
-class TestCase(unittest.TestCase):
-
-    _WD = None
-    _home = None
-
-    def setUp(self):
-
-        if self._WD is None:
-            self._WD = os.path.abspath('epm.test.temp')
-            rmdir(self._WD)
-            mkdir(self._WD)
-
-        if self._home is None:
-            self._home = os.path.join(self._WD, 'epm.home')
-            rmdir(self._home)
-            mkdir(self._home)
-
-        self._OLD_EPM_USER_HOME = os.environ.get('EPM_USER_HOME')
-        os.environ['EPM_USER_HOME'] = self._home
-
-        self._OLD_CD = os.path.abspath('.')
-        os.chdir(self._WD)
-
-    def tearDown(self):
-        if self._OLD_EPM_USER_HOME:
-            os.environ['EPM_USER_HOME'] = self._OLD_EPM_USER_HOME
-        else:
-            del os.environ['EPM_USER_HOME']
-        os.chdir(self._OLD_CD)
+#class TestCase(unittest.TestCase):
+#
+#    _WD = None
+#    _home = None
+#
+#    def setUp(self):
+#
+#        if self._WD is None:
+#            self._WD = os.path.abspath('epm.test.temp')
+#            rmdir(self._WD)
+#            mkdir(self._WD)
+#
+#        if self._home is None:
+#            self._home = os.path.join(self._WD, 'epm.home')
+#            rmdir(self._home)
+#            mkdir(self._home)
+#
+#        self._OLD_EPM_USER_HOME = os.environ.get('EPM_USER_HOME')
+#        os.environ['EPM_USER_HOME'] = self._home
+#
+#        self._OLD_CD = os.path.abspath('.')
+#        os.chdir(self._WD)
+#
+#    def tearDown(self):
+#        if self._OLD_EPM_USER_HOME:
+#            os.environ['EPM_USER_HOME'] = self._OLD_EPM_USER_HOME
+#        else:
+#            del os.environ['EPM_USER_HOME']
+#        os.chdir(self._OLD_CD)
 
 
 class ProjectTestCase(TestCase):

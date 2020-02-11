@@ -5,39 +5,26 @@ import unittest
 
 from conans.tools import environment_append
 
+from epm.test import TestCase
 from epm.model.scheme import ProfileManager
 
 
-class ProfileTestCase(unittest.TestCase):
-
-    _home = None
-
-    def setUp(self):
-        if self._home is None:
-            self._home = tempfile.mkdtemp(suffix='@epm.test_profile')
-        self._OLD_EPM_USER_HOME = os.environ.get('EPM_USER_HOME')
-        os.environ['EPM_USER_HOME'] = self._home
-
-    def tearDown(self):
-        if self._OLD_EPM_USER_HOME:
-            os.environ['EPM_USER_HOME'] = self._OLD_EPM_USER_HOME
-        else:
-            del os.environ['EPM_USER_HOME']
+class ProfileTestCase(TestCase):
 
     def test_not_init(self):
-        cache_folder = os.path.join(self._home, '_not_init')
-        os.makedirs(cache_folder)
-        with environment_append({'EPM_USER_HOME': cache_folder}):
+        home_dir = os.path.join(self._WD, '_not_init')
+        os.makedirs(home_dir)
+        with environment_append({'EPM_HOME_DIR': home_dir}):
             pm = ProfileManager(init=False)
-            self.assertEqual(pm.folder, os.path.join(cache_folder, '.epm', 'profiles'))
+            self.assertEqual(pm.folder, os.path.join(home_dir, 'profiles'))
             self.assertFalse(os.path.exists(pm.folder))
 
     def test_init(self):
-        cache_folder = os.path.join(self._home, '_init')
-        os.makedirs(cache_folder)
-        with environment_append({'EPM_USER_HOME': cache_folder}):
+        home_dir = os.path.join(self._WD, '_init')
+        os.makedirs(home_dir)
+        with environment_append({'EPM_HOME_DIR': home_dir}):
             pm = ProfileManager()
-            self.assertEqual(pm.folder, os.path.join(cache_folder, '.epm', 'profiles'))
+            self.assertEqual(pm.folder, os.path.join(home_dir, 'profiles'))
             self.assertTrue(os.path.exists(pm.folder))
             self.assertSetEqual(set(os.listdir(pm.folder)), {'linux.yml', 'windows.yml'})
 

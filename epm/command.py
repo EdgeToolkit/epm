@@ -371,13 +371,19 @@ class Command(object):
         subparsers = parser.add_subparsers(dest='command')
 
         subparser = subparsers.add_parser("list", description='list all virtual environment')
+        subparser = subparsers.add_parser("banner", description='print banner of the virtual environment')
 
         subparser = subparsers.add_parser("setup", description='setup a virtual environment')
-        subparser.add_argument("name", type=str, help="name of the virtual environment to be setup")
         subparser.add_argument("url", type=str, help="location of config")
+        subparser.add_argument("name", default=None, type=str, help="name of the virtual environment to be setup")
 
         subparser = subparsers.add_parser("shell", description='enter the specified virtual environment shell')
-        subparser.add_argument("name", type=str, help="name of the virtual environment")
+        subparser.add_argument("name", nargs='?', help="name of the virtual environment")
+
+        subparser = subparsers.add_parser("clear", description='unregister specified virtual environment')
+        subparser.add_argument("name", help="name of the virtual environment to be unregistered")
+        subparser.add_argument("--clear-installation", default=False, action="store_true",
+                               help="clear installed content")
 
         args = parser.parse_args(*args)
         from epm.tool.venv import VirtualEnviron
@@ -386,11 +392,24 @@ class Command(object):
             pass
 
         elif args.command == 'setup':
+
             venv = VirtualEnviron(args.name)
             venv.setup(args.url)
 
         elif args.command == 'shell':
-            pass
+            name = args.name[0] if args.name else None
+            venv = VirtualEnviron()
+            venv.shell(name)
+        elif args.command == 'clear':
+            name = args.name
+            clear = args.clear_installation
+
+            venv = VirtualEnviron(name)
+            venv.clear(name, clear)
+
+        elif args.command == 'banner':
+            print(VirtualEnviron.banner())
+
 
 
 

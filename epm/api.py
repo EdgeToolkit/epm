@@ -57,7 +57,7 @@ class APIv1(object):
     @property
     def conan(self):
         if self._conan is None:
-            cache_folder = os.path.join(self.cache_folder, '.conan')
+            cache_folder = os.path.join(self.home_dir, '.conan')
             settings_file = os.path.join(cache_folder, 'settings.yml')
             if not os.path.exists(settings_file):
                 from epm.paths import DATA_DIR

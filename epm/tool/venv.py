@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 from jinja2 import Environment, BaseLoader
 from conans.client.output import ConanOutput as Output
 from epm.util import system_info
-from epm.util.files import load_yaml, save_yaml, save
+from epm.util.files import load_yaml, save_yaml, save, rmdir
 
 PLATFORM, ARCH = system_info()
 
@@ -27,19 +27,22 @@ _Banner = '''
    / /___/ ____/ /  / /   Channel: {channel}
   /_____/_/   /_/  /_/    
                                
-@{instd}
+
+  * directory     : {instd}
+  * conan         : {conan}
+  * conan storage : {storage_path}
 
 '''
 
 _SetupHint = '''
-{name} virtual environment setup done, run active script to startup
+virtual environment '{name}' setup done, run active script to active
 In Windows
    $ active.bat
 In Linux
    $ source ./active.sh
 
 or use epm
-   $ epm venv active {name}
+   $ epm venv shell {name}
   
  
 '''
@@ -62,10 +65,11 @@ class VirtualEnviron(object):
     def update(self, venv, name=None):
         name = name or self._name
         reg = self.register()
-        reg[name] = venv
+        if name in reg and venv is None:
+            del reg[name]
+        else:
+            reg[name] = venv
         save_yaml(self._reg_filename, reg)
-#        with open(self._reg_filename, 'w') as f:
-#            yaml.safe_dump(reg, f, default_flow_style=False, indent=2)
 
     def install_source(self, path):
         url = urlparse(path)
@@ -102,7 +106,7 @@ class VirtualEnviron(object):
             raise Exception('{} venv already installed, clear it try again.'.format(self._name))
 
         wd = os.path.abspath('.')
-        channel = conf.get('channel', 'testing')
+        channel = conf.get('channel', 'public')
         self._venv = {
             'install-source': url,
             'name': name,
@@ -146,7 +150,7 @@ class VirtualEnviron(object):
             tmpl = self._jinja2.get_template(template)
             content = tmpl.render(name=self._venv['name'],
                                   path=self._venv['install-dir'],
-                                  channel=channel)
+                                  channel='public')
 
             with open(filename, 'w') as f:
                 f.write(content)
@@ -155,8 +159,53 @@ class VirtualEnviron(object):
         render('active.sh', 'active.sh')
         self._out.info(_SetupHint.format(name=name))
 
+    def clear(self, name, do_clear=False):
+        if not name:
+            return
+        reg = self.register()
+        if not name or name not in reg:
+            print('do nothing as %s is not a setup virtual environment' % name)
+            return
+        info = reg[name]
+        instd = info.get('install-dir')
+        print(instd, '#############')
+        if do_clear:
+            if os.path.exists(instd):
+                rmdir(instd)
+        else:
+            print('install dir <%s> not clean' % instd)
+
     def shell(self, name=None):
-        name =
+        if os.getenv('EPM_VENV_NAME'):
+            self._out.error('running in %s virtual environment, can not open another venv shell.')
+            return
+
+        reg = self.register()
+
+        if name is None:
+            from epm.paths import get_epm_home_dir
+            instd = get_epm_home_dir()
+        else:
+            venv = reg.get(self._name)
+            if not venv:
+                self._out.error('{} venv not setup.'.format(self._name))
+                return
+
+            instd = venv.get('install-dir')
+            print(instd, 'INSTD')
+            if not instd or not os.path.exists(instd):
+                self._out.error('{} install dir({}) was destroyed.'.format(self._name, instd))
+                return
+
+        script = os.path.join(instd, 'active.{}'.format('bat' if PLATFORM == 'Windows' else 'sh'))
+
+        env = os.environ.copy()
+        if PLATFORM == 'Windows':
+            subprocess.run(['cmd.exe', '/k', script], env=env)
+        else:
+            # TODO:
+            pass
+            #subprocess.run(['/bin/bash','-i', script)
 
     def active(self):
         env = os.environ.copy()
@@ -190,9 +239,19 @@ class VirtualEnviron(object):
 
     @staticmethod
     def banner():
+        from epm.paths import get_epm_home_dir
+        from conans.paths import get_conan_user_home
+        from epm.tool import Dummy
+        from epm.api import API
+        api = API()
+        conan = api.conan
+        storage_path = conan.config_get('storage.path', quiet=True)
+
         return _Banner.format(name=os.environ.get('EPM_VENV_NAME'),
                               channel=os.environ.get('EPM_CHANNEL'),
-                              instd=os.environ.get('EPM_VENV_DIR'))
+                              instd=get_epm_home_dir(),
+                              conan=os.path.join(get_conan_user_home(), '.conan'),
+                              storage_path=storage_path)
 
 
 

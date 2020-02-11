@@ -6,10 +6,8 @@ if defined EPM_VENV_NAME (
 
 
 set EPM_VENV_NAME={{name}}
-set EPM_VENV_DIR={{path}}
-set EPM_USER_HOME=%EPM_VENV_DIR%
-set CONAN_USER_HOME=%EPM_VENV_DIR%
-
+set EPM_HOME_DIR={{path}}
+set CONAN_USER_HOME=%EPM_HOME_DIR%
 set EPM_CHANNEL={{ channel }}
 
 epm venv banner
