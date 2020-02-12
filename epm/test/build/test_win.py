@@ -53,7 +53,7 @@ class GCC5BuildInWindowsDocker(TestCase):
         call('epm init app', check=True)
         call('epm build --scheme gcc5.d --runner docker')
         proc = call('epm sandbox --scheme gcc5.d app_gcc5_d', stdout=PIPE, stderr=PIPE)
-        print(proc.stdout)
+
         self.assertEqual(proc.returncode, 0)
         content = str(proc.stdout, encoding='utf-8').strip()
         lines = content.split('\n')
