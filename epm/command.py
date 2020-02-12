@@ -639,5 +639,4 @@ def api_main(argv):
     param = None
     if args.param:
         param = param_decode(args.param)
-    print('----------------api_main------------------------')
-    print(param)
+

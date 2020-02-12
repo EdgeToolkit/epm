@@ -20,7 +20,6 @@ class Dummy(object):
         pass
 
     def info(self, data):
-        print(data, '@@@@@@@@')
         pass
 
     def highlight(self, data):
