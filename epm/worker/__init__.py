@@ -55,6 +55,7 @@ class DockerBase(object):
         self._project = project
         self.volumes = {}
         self.environment = {}
+        self.links = {}
         self.WD = None
         self._pre_script = ''
 
@@ -70,6 +71,7 @@ class DockerBase(object):
 
         command = self._command(commands, config, WD, volumes, environment)
 
+
         try:
             container = client.containers.run(command=command, image=config['image'],
                                               detach=True,
@@ -77,7 +79,8 @@ class DockerBase(object):
                                               remove=True,
                                               working_dir=WD,
                                               environment=environment,
-                                              volumes=volumes)
+                                              volumes=volumes,
+                                              links=self.links)
             for log in container.logs(stream=True):
                 self._api.out.write(log.decode(encoding='utf-8'))
 
@@ -101,6 +104,7 @@ class DockerBase(object):
 
         if isinstance(commands, str):
             commands = [commands]
+        commands = ["echo ***************", "conan remote list"] + commands
 
         command = r'%s -c "%s"' % (sh, " && ".join(commands))
         return command

@@ -99,11 +99,11 @@ class Creator(Worker):
                 docker.WD = '$home/project/%s' % project.name
 
                 docker.add_volume(project.dir, docker.WD)
-                docker.add_volume(self.api.cache_folder, '$home/host/.epm')
+                docker.add_volume(self.api.home_dir, '$home/host/.epm')
                 if storage:
                     docker.environment['CONAN_STORAGE_PATH'] = '%s/%s' % (docker.WD, storage)
 
-                docker.environment['EPM_USER_HOME'] = '$home/host/'
+                docker.environment['EPM_HOME_DIR'] = '$home/host/.epm'
 
                 docker.exec('epm api create %s' % param_encode(param))
 

@@ -39,7 +39,7 @@ class Configure(object):
         return PLATFORM
 
     @property
-    def platform(self):
+    def arch(self):
         return ARCH
 
     @property
@@ -96,12 +96,12 @@ class TestCase(unittest.TestCase):
             api = API()
             conan = api.conan
             conan.remote_clean()
-            conan.remote_add(remote_name='epm', url='http://127.0.0.1:9300', verify_ssl=False)
+            conan.remote_add(remote_name='epm', url='http://conan_server:9300', verify_ssl=False)
             conan.authenticate('demo', password='demo', remote_name='epm')
+            print('---------------------------------------------------')
+            print(conan.remote_list())
+            print('---------------------------------------------------')
 
-    def assertEqualPath(self, first, second, msg=None):
-        from pathlib import PurePath
-        self.assertEqual(PurePath(first).as_posix(), PurePath(second).as_posix(), msg)
 
     def tearDown(self):
 
