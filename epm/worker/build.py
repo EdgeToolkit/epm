@@ -56,12 +56,8 @@ class Builder(Worker):
             docker.add_volume(self.api.home_dir, '$home/host/.epm')
             docker.environment['EPM_HOME_DIR'] = '$home/host/.epm'
             docker.environment['CONAN_USER_HOME'] = '$home/host/.epm'
-            docker.links['epm.test.conan_server'] = 'conan_server'
 
-
-            docker.exec('conan remote list && conan download -r epm -re gtest/1.8.1@epm/public')
-
-            #docker.exec('epm api build %s' % param_encode(param))
+            docker.exec('epm api build %s' % param_encode(param))
 
     def _configure(self, project):
         scheme = project.scheme

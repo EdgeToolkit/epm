@@ -78,3 +78,18 @@ This was only valid when runner is docker. if the runner is docker, docker will 
 |         |        |      |
 |         |        |      |
 
+
+
+
+
+## advance
+
+
+
+### mount
+
+
+
+host project dir => $home/@host/project
+
+​        conan_storage                         /conan.storage

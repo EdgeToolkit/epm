@@ -27,28 +27,28 @@ SETLOCAL
 
 set _SHELL=%EPM_SANDBOX_SHELL%
 set _IMAGE=%EPM_SANDBOX_IMAGE%
+set _HOME=%EPM_SANDBOX_HOME%
 if not defined EPM_SANDBOX_IMAGE set _IMAGE={{ image }}
 if not defined EPM_SANDBOX_SHELL set _SHELL={{ shell }}
+if not defined EPM_SANDBOX_HOME set _HOME={{ home }}
+if not defined EPM_SANDBOX_PROJECT set EPM_SANDBOX_PROJECT=%CD%
 if not defined EPM_SANDBOX_STORAGE (
     if defined CONAN_STORAGE_PATH (
         set EPM_SANDBOX_STORAGE=%CONAN_STORAGE_PATH%
     ) else (
-        set EPM_SANDBOX_STORAGE=%USERPROFILE%\.conan\data
+        set EPM_SANDBOX_STORAGE=%USERPROFILE%\.epm\.conan\data
     )
 )
 
-
-if not defined EPM_SANDBOX_PROJECT set EPM_SANDBOX_PROJECT=%CD%
-
-
 set _CMD=docker run -it --rm --name sandbox.{{ name }}
-set _CMD=%_CMD% -v %EPM_SANDBOX_STORAGE%:/mnt/epm/conan
-set _CMD=%_CMD% -v %EPM_SANDBOX_PROJECT%:/mnt/epm/project
-set _CMD=%_CMD% -e EPM_SANDBOX_STORAGE=/mnt/epm/conan
-set _CMD=%_CMD% -e EPM_SANDBOX_PROJECT=/mnt/epm/project
-set _CMD=%_CMD% -w /mnt/epm/project
+set _CMD=%_CMD% -v %EPM_SANDBOX_STORAGE%:%_HOME%/@host/conan.storage
+set _CMD=%_CMD% -v %EPM_SANDBOX_PROJECT%:%_HOME%/@host/project
+set _CMD=%_CMD% -e EPM_SANDBOX_HOME=%_HOME
+set _CMD=%_CMD% -e EPM_SANDBOX_STORAGE=%_HOME%/@host/conan.storage
+set _CMD=%_CMD% -e EPM_SANDBOX_PROJECT=%_HOME%/@host/project
+set _CMD=%_CMD% -w %_HOME%
 set _CMD=%_CMD% %_IMAGE% %_SHELL%
-set _CMD=%_CMD% /mnt/epm/project/{{ scheme }}/sandbox/{{ name }} %*
+set _CMD=%_CMD% %_HOME%/@host/project/.epm/{{ scheme }}/sandbox/{{ name }} %*
 
 %_CMD%
 

@@ -18,19 +18,21 @@
 _runner=$EPM_SANDBOX_RUNNER
 _storage=$EPM_SANDBOX_STORAGE
 _sudo=$EPM_SANDBOX_SUDO
+_home=$EPM_SANDBOX_HOME
 _project=$EPM_SANDBOX_PROJECT
 
 [[ -z $_storage ]] && _storage=$CONAN_STORAGE_PATH
-[[ -z $_storage ]] && _storage=~/.conan/data
+[[ -z $_storage ]] && _storage=~/.epm/.conan/data
 [[ -z $_runner  ]] && _runner='auto'
+[[ -z $_home    ]] && _home={{ home }}
 [[ -z $_project  ]] && _project=$PWD
 
 if [[ -z $_sudo ]]; then
   $(which sudo > /dev/null)
   if [[ -$? -eq 0 ]]; then
-    _sudo=yes
+    _sudo=sudo
   else
-    _sudo=no
+    _sudo=
   fi
 fi
 
@@ -46,25 +48,24 @@ fi
 
 _mount()
 {
+    home=$1
     storage=$2
+    project=$3
 
-    if [[ $_sudo == yes ]]; then
-      sudo rm -rf /mnt/epm/sandbox
-      sudo mkdir -p /mnt/epm/sandbox
-      sudo chmod 777 /mnt/epm/sandbox
-    else
-      rm -rf /mnt/epm/sandbox
-      mkdir -p /mnt/epm/sandbox
-    fi
-    
-    mkdir -p /mnt/epm/sandbox/lib
-    mkdir -p /mnt/epm/sandbox/bin
+    $_sudo rm -rf $_home/.sandbox
+    $_sudo mkdir -p $_home/.sandbox
+
+    $_sudo chmod 777 $_home/.sandbox
+
+    mkdir -p $home/.sandbox/lib
+    mkdir -p $home/.sandbox/bin
+
 
     {% for libname, lib in dylibs.items() %}
-    ln -s {{ lib['target']}} /mnt/epm/sandbox/lib/{{ libname }}
+    ln -s {{ lib['target']}} $home/.sandbox/lib/{{ libname }}
     {% endfor %}
 
-    ln -s {{ filename }} /mnt/epm/sandbox/bin/{{ name }}
+    ln -s {{ filename }} $home/.sandbox/bin/{{ name }}
 
 }
 
@@ -74,9 +75,9 @@ _mount()
 set -e
 
 if [[ $_runner == shell ]]; then
-   _mount $_storage
-   export LD_LIBRARY_PATH=/mnt/epm/sandbox/lib:$LD_LIBRARY_PATH
-   /mnt/epm/sandbox/bin/{{ name }} {{ arguments }} $*
+   _mount $_home $_storage $_project
+   export LD_LIBRARY_PATH=$_home/.sandbox/lib:$LD_LIBRARY_PATH
+   $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
 else
   _image=$EPM_SANDBOX_IMAGE
   [[ -z $_image ]] && _image={{ image }}

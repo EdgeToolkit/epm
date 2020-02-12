@@ -243,14 +243,14 @@ class Program(object):
 
     @property
     def _docker_image(self):
-        docker = self._project.profile.docker('runner')
+        docker = self._project.scheme.profile.docker.runner
         if not docker:
             raise EException('{} no docker for runner'.format(self._project.name))
         return docker.get('image')
 
     @property
     def _docker_shell(self):
-        docker = self._project.profile.docker('runner')
+        docker = self._project.scheme.profile.docker.runner
         if not docker:
             raise EException('{} no docker for runner'.format(self._project.name))
         return docker.get('shell', '/bin/bash')
@@ -276,18 +276,21 @@ class Program(object):
         filename = self._filename
 
         template = self._template('linux.j2')
-        image = 'None'
-        shell = '/bin/bash'
-        try:
-           image=self._docker_image,
-           shell=self._docker_shell,
-        except:
-            pass
+#        image = 'None'
+#        shell = '/bin/bash'
+#        try:
+#           image=self._docker_image
+#           shell=self._docker_shell
+#        except:
+#            pass
+        docker = self._project.scheme.profile.docker.runner or {}
+        docker = dict({'image': 'alpine', 'shell': '/bin/bash', 'home': '/tmp'}, **docker)
 
         return template.render(libdirs=libdirs, filename=filename, name=name,
                                dylibs=self.dynamic_libs,
-                               image=image,
-                               shell=shell,
+                               image=docker['image'],
+                               shell=docker['shell'],
+                               home=docker['home'],
                                scheme=self._project.scheme.name,
                                arguments=" ".join(self._argv))
 
@@ -304,19 +307,31 @@ class Program(object):
 
         template = self._template('linux.cmd.j2')
         
-        image = 'None'
-        shell = '/bin/bash'
-        try:
-           image=self._docker_image,
-           shell=self._docker_shell,
-        except:
-            pass
-            
+#        image = 'None'
+#        shell = '/bin/bash'
+#        try:
+#           image=self._docker_image
+#           shell=self._docker_shell
+#        except:
+#            raise
+        
+        docker = self._project.scheme.profile.docker.runner or {}
+        docker = dict({'image': 'alpine', 'shell': '/bin/bash', 'home': '/tmp'}, **docker)
+
         return template.render(libdirs=libdirs, filename=filename, name=name,
-                               image=image,
-                               shell=shell,
+                               dylibs=self.dynamic_libs,
+                               image=docker['image'],
+                               shell=docker['shell'],
+                               home=docker['home'],
                                scheme=self._project.scheme.name,
                                arguments=" ".join(self._argv))
+
+#        return template.render(libdirs=libdirs, filename=filename, name=name,
+#                               image=image,
+##                               shell=shell,
+ #                              home=home,
+ #                              scheme=self._project.scheme.name,
+ #                              arguments=" ".join(self._argv))
 
     def generate(self, name):
 

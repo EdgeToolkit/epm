@@ -100,15 +100,12 @@ class TestCase(unittest.TestCase):
             conan = api.conan
             conan.remote_clean()
             for name, remote in self.config.remotes.items():
-              print(remote)
-              url = remote['url']
-              username = remote['username']
-              password = remote['password']
-              conan.remote_add(remote_name=name, url=url, verify_ssl=False)
-            conan.authenticate(username, password=password, remote_name=name, skip_auth=True)
-            print('---------------------------------------------------')
-            print(conan.remote_list())
-            print('---------------------------------------------------')
+                url = remote['url']
+                conan.remote_add(remote_name=name, url=url, verify_ssl=False)
+                username = remote.get('username')
+                password = remote.get('password')
+                if username and password:
+                    conan.authenticate(username, password=password, remote_name=name, skip_auth=True)
 
 
     def tearDown(self):
