@@ -1,0 +1,7 @@
+
+remotes:
+  epm:
+    url:  http://192.168.1.5:8081/artifactory/api/conan/epm.test
+    username: admin
+    passowrd: passowrd1
+
