@@ -71,14 +71,18 @@ class Runner(object):
 
         localhost, runner_config = self._load_config()
         if runner_config.get('remote'):
-            pass
-        elif runner_config.get('docker'):
-            pass
+            raise NotImplemented('sandbox remote')
         else:  # local
             from conans.client.tools import ConanRunner
             runner = ConanRunner(output=self._sandbox.api.out)
             command = [filename] + argv
-            return runner(command)
+            from conans.tools import environment_append
+            from epm.paths import get_epm_home_dir
+            conan = self._sandbox.api.conan
+            home = get_epm_home_dir()
+            storage = conan.config_get('storage.path', quiet=True)
+            with environment_append({'EPM_HOME_DIR': home, 'CONAN_STORAGE_PATH': storage}):
+                return runner(command)
 
 
 class Sandbox(Worker):
@@ -89,4 +93,5 @@ class Sandbox(Worker):
 
     def exec(self, command, runner=None, argv=[]):
         runner = Runner(self, runner)
+
         return runner.exec(command, argv)

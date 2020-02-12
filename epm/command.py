@@ -357,7 +357,6 @@ class Command(object):
                  'scheme': args.scheme,
                  'command': command,
                  'args': argv[pos+1:]}
-
         result = self._api.sandbox(param)
         if result:
             raise EException('sandbox %s executed, exit code %d' % (command, result))

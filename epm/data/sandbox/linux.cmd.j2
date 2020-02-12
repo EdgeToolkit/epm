@@ -40,6 +40,8 @@ if not defined EPM_SANDBOX_STORAGE (
     )
 )
 
+if not exist %EPM_SANDBOX_STORAGE% mkdir %EPM_SANDBOX_STORAGE%
+
 set _CMD=docker run -it --rm --name sandbox.{{ name }}
 set _CMD=%_CMD% -v %EPM_SANDBOX_STORAGE%:%_HOME%/@host/conan.storage
 set _CMD=%_CMD% -v %EPM_SANDBOX_PROJECT%:%_HOME%/@host/project
