@@ -160,19 +160,20 @@ class VirtualEnviron(object):
             for name, url in remote.items():
                 conan.remote_add(name, url, verify_ssl=True)
 
-        def render(template, filename):
-            tmpl = self._jinja2.get_template(template)
-            content = tmpl.render(name=self._venv['name'],
-                                  path=self._venv['install-dir'],
-                                  channel=channel)
-
-            with open(filename, 'w') as f:
-                f.write(content)
-
-        render('active.bat.j2', 'active.bat')
-        render('active.sh.j2', 'active.sh')
+        self._render('active.bat.j2', 'active.bat')
+        self._render('active.sh.j2', 'active.sh')
+        self._render('bash.rc.j2', 'bash.rc')
 
         self._out.info(_SetupHint.format(name=self._name))
+
+    def _render(self, template, filename, venv=None):
+        venv = venv or self._venv
+        tmpl = self._jinja2.get_template(template)
+        content = tmpl.render(name=venv.get('name', ''),
+                              path=venv['install-dir'],
+                              channel=venv.get('channel', 'public'))
+        print('~~~~~~~`', filename)
+        save(filename, content)
 
     def clear(self, name, do_clear=False):
         reg = self.register()
@@ -200,6 +201,11 @@ class VirtualEnviron(object):
         if name is None:
             from epm.paths import get_epm_home_dir
             instd = get_epm_home_dir()
+            venv = {'name': '', 'install-dir':instd, 'channel': 'public'}
+            for i in ['active.bat', 'active.sh', 'bash.rc']:
+                filename = os.path.join(instd, i)
+                if not os.path.exists(filename):
+                    self._render('%s.j2' % i, filename, venv)
         else:
             venv = reg.get(name)
             if not venv:
@@ -211,48 +217,14 @@ class VirtualEnviron(object):
                 self._out.error('{} install dir({}) was destroyed.'.format(name, instd))
                 return
 
-        for script, name in [(_ACTIVE_BASH, 'active.sh'), (_ACTIVE_BAT, 'active.bat')]:
-            filename = os.path.join(instd, name)
-            if not os.path.exists(filename):
-                save(filename, script)
-
         filename = os.path.join(instd, 'active.{}'.format('bat' if PLATFORM == 'Windows' else 'sh'))
+        rcfile = os.path.join(instd, 'bash.rc')
 
         env = os.environ.copy()
         if PLATFORM == 'Windows':
             subprocess.run(['cmd.exe', '/k', filename], env=env)
         else:
-            subprocess.run(['/bin/bash', '-i', filename], env=env)
-
-    def active(self):
-        env = os.environ.copy()
-        if env.get('EPM_VENV_NAME') or env.get('EPM_VENV_DIR'):
-            self._out.error('venv can not be active in a venv shell.')
-            return
-
-        reg = self.register()
-        venv = reg.get(self._name)
-        if not venv:
-            self._out.error('{} venv not setup.'.format(self._name))
-            return
-
-        instd = venv.get('install-dir')
-        if not instd or not os.path.exists(instd) or \
-                not os.path.isdir(instd + '/.conan') or \
-                not os.path.isdir(instd + '/.epm') or \
-                not os.path.isfile(instd + '/active.bat') or\
-                not os.path.isfile(instd + '/active.sh'):
-            self._out.error('{} install dir({}) was destroyed.'.format(self._name,instd))
-            return
-
-        script = os.path.join(instd, 'active.{}'.format('bat' if PLATFORM == 'Windows' else 'sh'))
-
-        if PLATFORM == 'Windows':
-            subprocess.run(['cmd.exe', '/k', script], env=env)
-        else:
-            # TODO:
-            pass
-            #subprocess.run(['/bin/bash','-i', script)
+            subprocess.run(['/bin/bash', '--rcfile', rcfile], env=env)
 
     @staticmethod
     def banner():

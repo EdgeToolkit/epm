@@ -12,9 +12,9 @@ export EPM_CHANNEL={{ channel }}
 
 if [[ -n $TERM ]]
 then
-        PS1='[{{name}}@epm.venv] \[\033[02;32m\]\u@\h \w \n\$ '
+        PS1='\[\033[02;32m\]\u@\h [{{name}}@epm.venv] \w \n\$ '
 else
-        PS1='[{{name}}@epm.venv]  \u@\h \w \n\$ '
+        PS1='\u@\h [{{name}}@epm.venv] \w \n\$ '
 fi
 '''
 

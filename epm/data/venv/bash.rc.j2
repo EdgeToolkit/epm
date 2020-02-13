@@ -1,5 +1,10 @@
 if [ -e .bashrc ]; then
   source ~/.bashrc
 fi
+export EPM_VENV_NAME={{name}}
+export EPM_HOME_DIR={{path}}
+export CONAN_USER_HOME=${EPM_HOME_DIR}
+export EPM_CHANNEL={{ channel }}
 
-export PS1='[{{name}}@epm.venv] \[\033[02;32m\]\u@\h \w \n\$ '
+epm venv banner
+export PS1='\[\033[02;32m\]\u@\h [{{name}}@epm.venv] \w \n\$ '
