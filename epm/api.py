@@ -22,6 +22,9 @@ def api_method(f):
 #            api.create_app(quiet_output=quiet_output)
 #            log_command(f.__name__, kwargs)
             with environment_append(api.env_vars):
+                print('CONAN_USER_HOME', os.environ.get('CONAN_USER_HOME'))
+                import subprocess
+                subprocess.run(['conan', 'remote', 'list'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 return f(api, *args, **kwargs)
         except Exception as exc:
 #            if quiet_output:
@@ -49,6 +52,7 @@ class APIv1(object):
         self.out = output or Output(sys.stdout, sys.stderr, color)
         self.user_io = user_io or UserIO(out=self.out)
         self.home_dir = home_dir or get_epm_home_dir()
+        print('********', self.home_dir, '**', home_dir, '#', get_epm_home_dir())
         self._conan = None
         self._config = None
         self.env_vars = {'CONAN_USER_HOME': self.home_dir,
@@ -56,8 +60,8 @@ class APIv1(object):
 
     @property
     def conan(self):
+        cache_folder = os.path.join(self.home_dir, '.conan')
         if self._conan is None:
-            cache_folder = os.path.join(self.home_dir, '.conan')
             settings_file = os.path.join(cache_folder, 'settings.yml')
             if not os.path.exists(settings_file):
                 from epm.paths import DATA_DIR
@@ -67,7 +71,9 @@ class APIv1(object):
                 mkdir(cache_folder)
                 shutil.copy(filename, settings_file)
 
-            self._conan = ConanAPI(cache_folder, self.out, self.user_io)
+        self._conan = ConanAPI(cache_folder, self.out, self.user_io)
+
+        print(cache_folder, '<----------------------------------------------', self.home_dir)
         return self._conan
 
     def project(self, scheme):

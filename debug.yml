@@ -5,5 +5,5 @@ profile:
       builder:
         image: epmkit/gcc5:debug
         epm:
-          source: d:/epmkit/epm
-          target: /home/conan/sources/epm
+          source: /home/mingyiz/epmkit/epm
+          target: /mnt/epm

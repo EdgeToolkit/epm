@@ -21,7 +21,7 @@ from epm import __version__
 from epm.errors import EException, ECommandError, EInvalidConfiguration
 from epm.api import API
 from epm.util.files import load_yaml
-
+from epm.worker import param_decode
 
 # Exit codes for conan command:
 SUCCESS = 0                         # 0: Success (done)
@@ -153,8 +153,9 @@ class Command(object):
         API param is json with base64 encode pass to command.
         """
         parser = self._argument_parser('api')
-        parser.add_argument('method', nargs=1, help=_APICALL_METHOD)
-        parser.add_argument('param', nargs='?', help=_APICALL_PARAM)
+
+        parser.add_argument('method', nargs=1, help="the api method to be called")
+        parser.add_argument('param', nargs='?', help="param of api method which is base64 encode for json")
 
         args = parser.parse_args(*args)
         param = None
@@ -413,11 +414,6 @@ class Command(object):
         elif args.command == 'banner':
             print(VirtualEnviron.banner())
 
-
-
-
-
-
     def _show_help(self):
         """
         Prints a summary of all commands.
@@ -620,22 +616,22 @@ def main(args):
         os.chdir(current_dir)
     sys.exit(error)
 
+#
 
-_APICALL_METHOD = "the api method to be called"
-
-_APICALL_PARAM = "param of api method which is base64 encode for json"
-
-from epm.worker import param_decode
-
-def api_main(argv):
-    parser = argparse.ArgumentParser(description="epm api invoke command",
-                                     prog="epm.api.call")
-
-    parser.add_argument('method', nargs=1, help=_APICALL_METHOD)
-    parser.add_argument('param', nargs='?', help=_APICALL_PARAM)
-
-    args = parser.parse_args(argv)
-    param = None
-    if args.param:
-        param = param_decode(args.param)
-
+#
+#from epm.worker import param_decode
+#
+#def api_main(argv):
+#    print('api main')
+#    parser = argparse.ArgumentParser(description="epm api invoke command",
+#                                     prog="epm.api.call")
+#
+#    parser.add_argument('method', nargs=1, help=_APICALL_METHOD)
+#    parser.add_argument('param', nargs='?', help=_APICALL_PARAM)
+#
+#    args = parser.parse_args(argv)
+#    param = None
+#    if args.param:
+#        param = param_decode(args.param)
+#
+#

@@ -133,8 +133,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'epm=epm.main:run',
-            'epm.api.call=epm.main:api_run'
+            'epm=epm.main:run'
         ],
     },
 )

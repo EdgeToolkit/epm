@@ -56,7 +56,6 @@ class Builder(Worker):
             docker.add_volume(self.api.home_dir, '$home/host/.epm')
             docker.environment['EPM_HOME_DIR'] = '$home/host/.epm'
             docker.environment['CONAN_USER_HOME'] = '$home/host/.epm'
-
             docker.exec('epm api build %s' % param_encode(param))
 
     def _configure(self, project):
@@ -117,8 +116,12 @@ class Builder(Worker):
         wd = '.'
         profile_path = os.path.join(project.folder.out, 'profile')  # already generated in configure step
         import subprocess
+        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`')
 
-        subprocess.run(["conan", "remote", "list"])
+        subprocess.run(["conan", "remote", "list"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print('===============================-------')
+        print(conan.cache_folder)
+        print(conan.remote_list())
 
         info = conan.editable_add(path=project.dir,
                                   reference=project.reference,

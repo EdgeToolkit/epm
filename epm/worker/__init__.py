@@ -2,8 +2,10 @@ import os
 import base64
 import json
 
-
+from epm.util import system_info
 from epm.errors import EException, APIError
+
+PLATFORM, ARCH = system_info()
 
 def param_encode(param):
     if not param:
@@ -55,17 +57,58 @@ class DockerBase(object):
         self._project = project
         self.volumes = {}
         self.environment = {}
-        self.links = {}
         self.WD = None
         self._pre_script = ''
 
     def exec(self, commands, config=None):
+
+        from conans.client.runner import ConanRunner as Runner
+
+        config, WD, volumes, environment = self._preprocess(config)
+
+        command = self._command(commands, config, WD, volumes, environment)
+        args = ['docker', 'run']
+
+        if PLATFORM == 'Linux' and os.getuid():
+            args = ['sudo'] + args
+
+        for path, value in volumes.items():
+            mode = value.get('mode', 'rw')
+            bind = value['bind']
+            vol = '%s:%s' % (path, bind)
+            if mode == 'ro':
+                vol += ':ro'
+            args += ['-v', vol]
+        #-v /home/mingyiz/tmp/lib1:/home/conan/project/lib1 -v /home/mingyiz/.epm:/home/conan/host/.epm -v /home/mintyiz/epmkit/epm:/mnt/epm -e EPM_HOME_DIR:/home/conan/host/.epm -e CONAN_USER_HOME:/home/conan/host/.epm -w /home/conan/project/lib1 epmkit/gcc5:debug /bin/bash -c "epm --version"
+        #args += ['-v', '/home/mingyiz/tmp/lib1:/home/conan/project/lib1']
+        ##args += ['-v', '/home/mingyiz/.epm:/home/conan/host/.epm']
+        #args += ['-v', '/home/mingyiz/epmkit/epm:/mnt/epm']
+        for name, val in environment.items():
+            args += ['-e', '%s=%s' % (name, val)]
+        
+        wd = WD or self._project.dir or os.path.abspath('.')
+        args += ['-w', wd]
+        args += [config['image'], command]
+
+        out = self._api.out
+        docker = Runner(output=out)
+        print('--------------------------------------')
+        print(args)
+        print('=======================================')
+        print(" ".join(args))
+        print('--------------------------------------')
+        return docker(" ".join(args))
+
+    def exec_(self, commands, config=None):
         import docker
         try:
+            print('================[  XXXX ]=====================')
             client = docker.from_env()
+            print('================[  ping ]=====================')
             client.ping()
-        except:
-            raise EException('Can not connect to docker.')
+        except Exception as e:
+            print(e)
+            raise #EException('Can not connect to docker.')
 
         config, WD, volumes, environment = self._preprocess(config)
 
@@ -104,7 +147,6 @@ class DockerBase(object):
 
         if isinstance(commands, str):
             commands = [commands]
-        commands = ["echo ***************", "conan remote list"] + commands
 
         command = r'%s -c "%s"' % (sh, " && ".join(commands))
         return command
