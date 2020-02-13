@@ -9,12 +9,11 @@ from subprocess import PIPE
 Config = CONFIG
 
 
-@skipIf(Config.with_vs2019, 'BuildVS2019: Visual Studio 2019 not installed')
+@skipIf(not Config.with_vs2019, 'BuildVS2019: Visual Studio 2019 not installed')
 class VS2019(TestCase):
     conan_server = True
 
     def test_lib_vs2019(self):
-        return
         mkdir('lib1')
         os.chdir('lib1')
         call('epm init lib', check=True)
@@ -23,7 +22,6 @@ class VS2019(TestCase):
         self.assertEqual(proc.returncode, 0)
 
     def test_app_vs2019(self):
-        return
         mkdir('app1')
         os.chdir('app1')
         call('epm init app', check=True)
@@ -37,7 +35,6 @@ class VS2019(TestCase):
 class GCC5BuildInWindowsDocker(TestCase):
     conan_server = True
 
-    @skip('--')
     def test_lib_gcc5_in_win_docker(self):
         mkdir('lib1')
         os.chdir('lib1')

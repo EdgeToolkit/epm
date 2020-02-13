@@ -107,7 +107,6 @@ class TestCase(unittest.TestCase):
                 if username and password:
                     conan.authenticate(username, password=password, remote_name=name, skip_auth=True)
 
-
     def tearDown(self):
 
         if self._OLD_EPM_HOME_DIR:
