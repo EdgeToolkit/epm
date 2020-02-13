@@ -1,0 +1,5 @@
+if [ -e .bashrc ]; then
+  source ~/.bashrc
+fi
+
+export PS1='[{{name}}@epm.venv] \[\033[02;32m\]\u@\h \w \n\$ '

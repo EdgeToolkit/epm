@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 from jinja2 import Environment, BaseLoader
 from conans.client.output import ConanOutput as Output
 from epm.util import system_info
-from epm.util.files import load_yaml, save_yaml, save, rmdir
+from epm.util.files import load_yaml, save_yaml, save, rmdir, mkdir
 
 PLATFORM, ARCH = system_info()
 
@@ -46,6 +46,34 @@ or use epm
   
  
 '''
+
+_ACTIVE_BASH = r'''#!/bin/bash
+_WD=$(cd $(dirname "${BASH_SOURCE[0]}"); $PWD)
+
+if [[ -n "$EPM_VENV_NAME" ]]
+then
+  echo "Already in virtual environment <$EPM_VENV_NAME>, you have to exits this venv, then try again."
+  exit/b 1
+fi
+
+export EPM_VENV_NAME=~/.epm
+export EPM_HOME_DIR=~/.epm
+export CONAN_USER_HOME=$EPM_HOME_DIR
+export EPM_CHANNEL=public
+
+epm venv banner
+
+if [[ -n $TERM ]]
+then
+        PS1='\[\033[02;32m\]\u@\h (@epm.venv)\[\033[02;34m\] \w \n\$\[\033[00m\] '
+else
+        PS1='\u@\h (@epm.venv) \w \n\$ '
+fi
+'''
+
+_ACTIVE_BAT = r'''
+'''
+
 class VirtualEnviron(object):
 
     def __init__(self, name=None, directory=None, out=None):
@@ -141,8 +169,9 @@ class VirtualEnviron(object):
             with open(filename, 'w') as f:
                 f.write(content)
 
-        render('active.bat', 'active.bat')
-        render('active.sh', 'active.sh')
+        render('active.bat.j2', 'active.bat')
+        render('active.sh.j2', 'active.sh')
+
         self._out.info(_SetupHint.format(name=self._name))
 
     def clear(self, name, do_clear=False):
@@ -182,15 +211,18 @@ class VirtualEnviron(object):
                 self._out.error('{} install dir({}) was destroyed.'.format(name, instd))
                 return
 
-        script = os.path.join(instd, 'active.{}'.format('bat' if PLATFORM == 'Windows' else 'sh'))
+        for script, name in [(_ACTIVE_BASH, 'active.sh'), (_ACTIVE_BAT, 'active.bat')]:
+            filename = os.path.join(instd, name)
+            if not os.path.exists(filename):
+                save(filename, script)
+
+        filename = os.path.join(instd, 'active.{}'.format('bat' if PLATFORM == 'Windows' else 'sh'))
 
         env = os.environ.copy()
         if PLATFORM == 'Windows':
-            subprocess.run(['cmd.exe', '/k', script], env=env)
+            subprocess.run(['cmd.exe', '/k', filename], env=env)
         else:
-            # TODO:
-            pass
-            #subprocess.run(['/bin/bash','-i', script)
+            subprocess.run(['/bin/bash', '-i', filename], env=env)
 
     def active(self):
         env = os.environ.copy()
