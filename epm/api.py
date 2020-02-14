@@ -22,9 +22,6 @@ def api_method(f):
 #            api.create_app(quiet_output=quiet_output)
 #            log_command(f.__name__, kwargs)
             with environment_append(api.env_vars):
-                print('CONAN_USER_HOME', os.environ.get('CONAN_USER_HOME'))
-                import subprocess
-                subprocess.run(['conan', 'remote', 'list'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 return f(api, *args, **kwargs)
         except Exception as exc:
 #            if quiet_output:
@@ -52,11 +49,13 @@ class APIv1(object):
         self.out = output or Output(sys.stdout, sys.stderr, color)
         self.user_io = user_io or UserIO(out=self.out)
         self.home_dir = home_dir or get_epm_home_dir()
-        print('********', self.home_dir, '**', home_dir, '#', get_epm_home_dir())
+
         self._conan = None
         self._config = None
         self.env_vars = {'CONAN_USER_HOME': self.home_dir,
                          'CONAN_STORAGE_PATH': os.path.join(self.home_dir, '.conan', 'data')}
+
+        self._CONFIG = None
 
     @property
     def conan(self):
@@ -72,9 +71,15 @@ class APIv1(object):
                 shutil.copy(filename, settings_file)
 
         self._conan = ConanAPI(cache_folder, self.out, self.user_io)
-
-        print(cache_folder, '<----------------------------------------------', self.home_dir)
         return self._conan
+
+    @property
+    def config(self):
+        if self._CONFIG is None:
+            from epm.model.config import Config
+            self._CONFIG = Config(os.path.join(self.home_dir, 'config.yml'))
+
+        return self._CONFIG
 
     def project(self, scheme):
         from epm.model.project import Project
@@ -104,7 +109,6 @@ class APIv1(object):
         command = param['command']
         argv = param.get('args') or []
         runner = param.get('runner', None)
-
         return sandbox.exec(command, runner=runner, argv=argv)
 
     @api_method

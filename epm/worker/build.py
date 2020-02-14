@@ -1,11 +1,11 @@
 import os
-from epm.worker import Worker, DockerBase, param_encode
+from epm.worker import Worker, DockerRunner, param_encode
 from epm.model.project import Project
 from epm.errors import EException, APIError
 from epm.model.sandbox import Program
 
 
-class Docker(DockerBase):
+class Docker(DockerRunner):
 
     def __init__(self, api, project):
         super(Docker, self).__init__(api, project)
@@ -50,12 +50,12 @@ class Builder(Worker):
         elif runner == 'docker':
             param['runner'] = 'shell'
             docker = Docker(self.api, project)
-            docker.WD = '$home/project/%s' % project.name
+            docker.WD = '$home/.project/%s' % project.name
 
             docker.add_volume(project.dir, docker.WD)
-            docker.add_volume(self.api.home_dir, '$home/host/.epm')
-            docker.environment['EPM_HOME_DIR'] = '$home/host/.epm'
-            docker.environment['CONAN_USER_HOME'] = '$home/host/.epm'
+            docker.add_volume(self.api.home_dir, '$home/@host/.epm')
+            docker.environment['EPM_HOME_DIR'] = '$home/@host/.epm'
+            docker.environment['CONAN_USER_HOME'] = '$home/@host/.epm'
             docker.exec('epm api build %s' % param_encode(param))
 
     def _configure(self, project):
@@ -67,8 +67,6 @@ class Builder(Worker):
         filename = os.path.join(project.folder.out, 'profile')
         scheme.profile.save(filename)
 
-
-#        settings = ['%s=%s' % (k, v) for k, v in profile.settings.items()], include in profile
         options = ['%s=%s' % (k, v) for (k, v) in scheme.options.as_list()]
 
         info = conan.install(path=wd,
@@ -88,7 +86,6 @@ class Builder(Worker):
                            })
 
         conan.source(wd)
-#        project.save(private={'command': 'build'})
 
     def _package(self, project):
         conan = self.api.conan
@@ -115,13 +112,6 @@ class Builder(Worker):
         conan = self.api.conan
         wd = '.'
         profile_path = os.path.join(project.folder.out, 'profile')  # already generated in configure step
-        import subprocess
-        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`')
-
-        subprocess.run(["conan", "remote", "list"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print('===============================-------')
-        print(conan.cache_folder)
-        print(conan.remote_list())
 
         info = conan.editable_add(path=project.dir,
                                   reference=project.reference,

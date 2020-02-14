@@ -49,10 +49,10 @@ class Worker(object):
         return self.api.conan
 
 
-class DockerBase(object):
+class DockerRunner(object):
     _DEBUG = None
 
-    def __init__(self, api, project):
+    def __init__(self, api, project=None):
         self._api = api
         self._project = project
         self.volumes = {}
@@ -79,59 +79,19 @@ class DockerBase(object):
             if mode == 'ro':
                 vol += ':ro'
             args += ['-v', vol]
-        #-v /home/mingyiz/tmp/lib1:/home/conan/project/lib1 -v /home/mingyiz/.epm:/home/conan/host/.epm -v /home/mintyiz/epmkit/epm:/mnt/epm -e EPM_HOME_DIR:/home/conan/host/.epm -e CONAN_USER_HOME:/home/conan/host/.epm -w /home/conan/project/lib1 epmkit/gcc5:debug /bin/bash -c "epm --version"
-        #args += ['-v', '/home/mingyiz/tmp/lib1:/home/conan/project/lib1']
-        ##args += ['-v', '/home/mingyiz/.epm:/home/conan/host/.epm']
-        #args += ['-v', '/home/mingyiz/epmkit/epm:/mnt/epm']
+
         for name, val in environment.items():
             args += ['-e', '%s=%s' % (name, val)]
-        
-        wd = WD or self._project.dir or os.path.abspath('.')
-        args += ['-w', wd]
+
+        wd = WD or config.get('home')
+        args += ['-w', wd] if wd else []
+
         args += [config['image'], command]
+        cmd = " ".join(args)
 
         out = self._api.out
         docker = Runner(output=out)
-        print('--------------------------------------')
-        print(args)
-        print('=======================================')
-        print(" ".join(args))
-        print('--------------------------------------')
-        return docker(" ".join(args))
-
-    def exec_(self, commands, config=None):
-        import docker
-        try:
-            print('================[  XXXX ]=====================')
-            client = docker.from_env()
-            print('================[  ping ]=====================')
-            client.ping()
-        except Exception as e:
-            print(e)
-            raise #EException('Can not connect to docker.')
-
-        config, WD, volumes, environment = self._preprocess(config)
-
-        command = self._command(commands, config, WD, volumes, environment)
-
-
-        try:
-            container = client.containers.run(command=command, image=config['image'],
-                                              detach=True,
-                                              stream=True,
-                                              remove=True,
-                                              working_dir=WD,
-                                              environment=environment,
-                                              volumes=volumes,
-                                              links=self.links)
-            for log in container.logs(stream=True):
-                self._api.out.write(log.decode(encoding='utf-8'))
-
-            result = container.wait()
-            if result['StatusCode']:
-                raise EException(result)
-        except BaseException as e:
-            raise e
+        return docker(cmd)
 
     def add_volume(self, path, bind, mode='rw'):
         """
@@ -190,8 +150,8 @@ class DockerBase(object):
 
     @property
     def _dc(self):
-        if DockerBase._DEBUG is None:
-            DockerBase._DEBUG = False
+        if DockerRunner._DEBUG is None:
+            DockerRunner._DEBUG = False
 
             path = os.environ.get('EPM_DEBUG_CONFIG')
             if path:
@@ -200,7 +160,10 @@ class DockerBase(object):
                 else:
                     try:
                         from epm.util.files import load_yaml
-                        DockerBase._DEBUG = load_yaml(path)
+                        DockerRunner._DEBUG = load_yaml(path)
                     except:
                         self._api.out.warn('load debug config %s filed.' % path)
-        return DockerBase._DEBUG
+        return DockerRunner._DEBUG
+
+
+DockerBase = DockerRunner

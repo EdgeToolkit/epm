@@ -4,9 +4,8 @@ import platform
 
 from conans.paths import conan_expand_user
 
-def get_epm_home_dir(Global=False):
-    home = "~/.epm" if Global else os.getenv("EPM_HOME_DIR", "~/.epm")
-    print('============= get_epm_home_dir ======', home, '*', Global, '$', os.getenv('EPM_HOME_DIR'))
+def get_epm_home_dir():
+    home = os.getenv("EPM_HOME_DIR") or "~/.epm"
     tmp = conan_expand_user(home)
     if not os.path.isabs(tmp):
         raise Exception("Invalid EPM_HOME_DIR value '%s', "

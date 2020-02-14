@@ -130,9 +130,10 @@ class Command(object):
         """
         Shows help for a specific command.
         """
-        parser = argparse.ArgumentParser(description=self.help.__doc__,
-                                         prog="epm help",
-                                         formatter_class=SmartFormatter)
+#        parser = argparse.ArgumentParser(description=self.help.__doc__,
+#                                         prog="epm help",
+#                                         formatter_class=SmartFormatter)
+        parser = self._argument_parser('help')
         parser.add_argument("command", help='command', nargs="?")
         args = parser.parse_args(*args)
         if not args.command:
@@ -386,10 +387,12 @@ class Command(object):
                                help="clear installed content")
 
         args = parser.parse_args(*args)
-        from epm.tool.venv import VirtualEnviron
+        from epm.tool.venv import VirtualEnvironment
+
+        venv = VirtualEnvironment(self._api)
 
         if args.command == 'list':
-            venv = VirtualEnviron()
+
             for name, info in venv.register().items():
                 self._out.highlight('* %s' % name)
                 self._out.info('    directory: %s' % info.get('install-dir'))
@@ -397,22 +400,24 @@ class Command(object):
 
         elif args.command == 'setup':
 
-            venv = VirtualEnviron(args.name)
+
             venv.setup(args.url, args.name)
 
         elif args.command == 'shell':
-            name = args.name
-            venv = VirtualEnviron()
-            venv.shell(name)
+            cur = os.getenv('EPM_VENV_NAME')
+            if cur:
+                raise EException('Can entry venv, as you are already in venv %s.' % cur)
+            venv.shell(args.name)
+
         elif args.command == 'clear':
             name = args.name
             clear = args.clear_installation
 
-            venv = VirtualEnviron(name)
+
             venv.clear(name, clear)
 
         elif args.command == 'banner':
-            print(VirtualEnviron.banner())
+            print(VirtualEnvironment.banner())
 
     def _show_help(self):
         """
