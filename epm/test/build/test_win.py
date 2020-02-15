@@ -9,7 +9,9 @@ from subprocess import PIPE
 Config = CONFIG
 
 
-@skipIf(not Config.with_vs2019, 'BuildVS2019: Visual Studio 2019 not installed')
+@skipIf(not Config.with_vs2019,
+        'VS2019: %s, Visual Studio 2019 not installed' %
+        (Config.platform))
 class VS2019(TestCase):
     conan_server = True
 
@@ -31,7 +33,9 @@ class VS2019(TestCase):
         self.assertEqual('app1 0.0.1', str(proc.stdout, encoding='utf-8').strip())
 
 
-@skipIf(Config.platform != 'Windows' or not Config.is_docker_startup, 'GCC5BuildInWindowsDocker: ')
+@skipIf(Config.platform != 'Windows' or not Config.is_docker_startup,
+        'GCC5BuildInWindowsDocker: %s, docker %s startup.'
+        % (Config.platform, '' if Config.is_docker_startup else 'not'))
 class GCC5BuildInWindowsDocker(TestCase):
     conan_server = True
 

@@ -86,9 +86,8 @@ _docker_exec()
   _CMD=" $_CMD -e EPM_SANDBOX_RUNNER=shell"
   _CMD=" $_CMD -w $home"
   _CMD=" $_CMD $_image {{ shell }} -c "
-  _CMD=" $_CMD \"{{ filename }} $*\""
 
-  $_sudo $_CMD
+  $_sudo $_CMD "{{ filename }} $*"
 }
 #
 #

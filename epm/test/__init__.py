@@ -3,7 +3,7 @@ import warnings
 import os
 import unittest
 import docker
-
+import subprocess
 from conans.client.conan_api import ConanAPIV1 as ConanAPI
 from epm.api import API
 from epm.util.files import mkdir, rmdir
@@ -45,12 +45,12 @@ class Configure(object):
     @property
     def is_docker_startup(self):
         if self._is_docker_startup is None:
+            cmd = ['docker', 'ps', '-q']
+            if PLATFORM == 'Linux':
+                cmd = ['sudo'] + cmd
+            proc = subprocess.run(cmd)
             client = docker.from_env()
-            try:
-                client.ping()
-                self._is_docker_startup = True
-            except:
-                self._is_docker_startup = False
+            self._is_docker_startup = proc.returncode == 0
         return self._is_docker_startup
         
     @property
