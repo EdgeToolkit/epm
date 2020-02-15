@@ -156,7 +156,7 @@ class DockerRunner(object):
             path = os.environ.get('EPM_DEBUG_CONFIG')
             if path:
                 if not os.path.exists(path):
-                    self._api.out.warn('you have defined PIP_EPM_DEBUG=%s, but the file not exits' % path)
+                    self._api.out.warn('you have defined EPM_DEBUG_CONFIG=%s, but the file not exits' % path)
                 else:
                     try:
                         from epm.util.files import load_yaml

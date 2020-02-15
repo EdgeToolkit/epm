@@ -20,26 +20,29 @@ _storage=$EPM_SANDBOX_STORAGE
 _sudo=$EPM_SANDBOX_SUDO
 _home=$EPM_SANDBOX_HOME
 _project=$EPM_SANDBOX_PROJECT
+_image=$EPM_SANDBOX_IMAGE
+_docker_home=$EPM_SANDBOX_DOCKER_HOME
+[ -z $_storage ] && _storage=$CONAN_STORAGE_PATH
+[ -z $_storage ] && _storage=~/.epm/.conan/data
+[ -z $_runner  ] && _runner='auto'
+[ -z $_home    ] && _home={{ home }}
+[ -z $_project ] && _project=$PWD
+[ -z $_image   ] && _image={{ image }}
 
-[[ -z $_storage ]] && _storage=$CONAN_STORAGE_PATH
-[[ -z $_storage ]] && _storage=~/.epm/.conan/data
-[[ -z $_runner  ]] && _runner='auto'
-[[ -z $_home    ]] && _home={{ home }}
-[[ -z $_project  ]] && _project=$PWD
 
-if [[ -z $_sudo ]]; then
+if [ -z $_sudo ]; then
   $(which sudo > /dev/null)
-  if [[ -$? -eq 0 ]]; then
+  if [ -$? -eq 0 ]; then
     _sudo=sudo
   else
     _sudo=
   fi
 fi
 
-if [[ -z $_runner || $_runner == auto ]]; then
+if [ $_runner=auto ]; then
   $(which docker > /dev/null)
   _has_docker=$?
-  if [[ "$_has_docker" == "0" ]]; then
+  if [ $_has_docker -eq 0 ]; then
     _runner='docker'
   else
     _runner='shell'
@@ -69,24 +72,33 @@ _mount()
 
 }
 
+_docker_exec()
+{
+  home=$_home
+  storage=$_home/@host/conan.storage
+  project=$_home/@host/project
+
+  _CMD="docker run -it --rm --name sandbox.{{ name }}"
+  _CMD=" $_CMD -v $_storage:${storage}"
+  _CMD=" $_CMD -v $_project:${project}"
+  _CMD=" $_CMD -e EPM_SANDBOX_STORAGE=${storage}"
+  _CMD=" $_CMD -e EPM_SANDBOX_PROJECT=${project}"
+  _CMD=" $_CMD -e EPM_SANDBOX_RUNNER=shell"
+  _CMD=" $_CMD -w $home"
+  _CMD=" $_CMD $_image {{ shell }} -c "
+  _CMD=" $_CMD \"{{ filename }} $*\""
+
+  $_sudo $_CMD
+}
 #
 #
 #
 set -e
 
-if [[ $_runner == shell ]]; then
+if [ $_runner=shell ]; then
    _mount $_home $_storage $_project
    export LD_LIBRARY_PATH=$_home/.sandbox/lib:$LD_LIBRARY_PATH
    $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
 else
-  _image=$EPM_SANDBOX_IMAGE
-  [[ -z $_image ]] && _image={{ image }}
-  _CMD="docker run -it --rm --name sandbox.{{ name }}"
-  _CMD=" $_CMD -v $_storage:/mnt/epm/conan"
-  _CMD=" $_CMD -e EPM_SANDBOX_STORAGE=/mnt/epm/conan"
-  _CMD=" $_CMD -w /mnt/epm/project"
-  _CMD=" $_CMD $_image {{ shell }}"
-  _CMD=" $_CMD /mnt/epm/project/sandbox/bin/{{ name }} $*"
-  sudo $_CMD
-
+   _docker_exec $*
 fi
