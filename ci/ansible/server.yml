@@ -1,0 +1,5 @@
+---
+- hosts: reposerver
+  remote_user: root
+  roles: 
+    - { role: server, become: yes }

@@ -1,0 +1,4 @@
+[reposerver]
+172.16.0.119 ansible_ssh_user=epmci ansible_ssh_port=22 ansible_ssh_pass=epmci ansible_sudo_pass=epmci
+
+
