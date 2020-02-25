@@ -1,2 +1,2 @@
-- include: setup/install.yml
+- include: install.yml
 - include: setup/nexus.yml
