@@ -91,4 +91,5 @@ def main():
         subprocess.run(command, check=True)
 
 if __name__ == '__main__':
+    print(os.path.abspath('.'))
     main()
