@@ -26,8 +26,8 @@
   with_items:
     - gcc5
 #    - gcc5-x86
-  args:
-    chdir: ./tmpdir/epm
+#  args:
+#    chdir: ./tmpdir/epm
   register: output
 
 - debug:
