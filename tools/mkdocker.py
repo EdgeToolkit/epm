@@ -90,7 +90,7 @@ def main():
     config = Config(args.config or None)
     name = args.name[0]
 #    if args.root_dir:
-    os.chdir(args.root_dir)
+    os.chdir(prj_dir)
 #    print('WORKING AT:', os.path.abspath('.'))
 
 #    import epm
