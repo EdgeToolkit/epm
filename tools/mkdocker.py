@@ -39,14 +39,13 @@ class Dockerfile(object):
 
     def __init__(self, name, version, dir=None, config=None):
       self._name = name
-      self._dir = os.path.abspath( dir or 'tools/docker')
-#      m = __import__('./epm')
+      self._dir = os.path.abspath(dir or 'tools/docker')
       self._version = version #or m.__version__
       self._config = config or Config()
 
 
     def _render(self, **kwargs):
-        if not os.path.exists(os.path.join(self._dir,self._name +'.j2')):
+        if not os.path.exists(os.path.join(self._dir, self._name +'.j2')):
             raise Exception('Jinja2 template %s not exists' % self._name)
 
         loader = jinja2.FileSystemLoader(searchpath=self._dir)
@@ -96,7 +95,7 @@ def main():
 #    import epm
     filename = 'Dockerfile-%s' % name
     version = args.version or epm.__version__
-    docerfile = Dockerfile(name, version, config=config)
+    docerfile = Dockerfile(name, version, dir=prj_dir, config=config)
     docerfile.write(filename)
     if args.build:
         import subprocess
