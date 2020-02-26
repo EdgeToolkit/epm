@@ -1,0 +1,30 @@
+---
+- name: Remove a directory if it exist
+  file:
+    path: ./tmpdir/epm
+    state: absent
+
+- name: Create a directory if it does not exist
+  file:
+    path: ./tmpdir
+    state: directory
+    mode: '0755'
+    
+- name: clone epm repository
+  command: git clone {{ epm.url }} -b {{ epm.branch }}
+  args:
+    chdir: ./tmpdir
+
+- name: Copy file with owner and permissions
+  copy:
+    src: docker.yml
+    dest: ./tmpdir/epm
+    mode: '0644'
+    
+- name: create nexus container
+  command: python3 tools/mkdocker.yml -c docker.yml -B
+  with_items:
+    - gcc5
+    - gcc5-x86
+  args:
+    chdir: ./tmpdir/epm

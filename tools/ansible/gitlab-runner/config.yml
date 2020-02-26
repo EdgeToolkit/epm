@@ -1,0 +1,5 @@
+Gitlab:
+  root:
+    runner:
+      url: http://172.16.0.119:8000/
+      token: HuTeuBHHCHS-zGnxQRY8

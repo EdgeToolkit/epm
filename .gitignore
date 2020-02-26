@@ -10,3 +10,5 @@ __pycache__
 /.coverage
 /debug.yml
 epm.test.temp
+.vscode
+/Dockerfile

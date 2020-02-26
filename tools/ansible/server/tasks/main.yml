@@ -1,0 +1,5 @@
+- include: setup/registry.yml
+- include: setup/nginx.yml
+- include: setup/gitlab.yml
+- include: setup/artifactory.yml
+- include: setup/nexus.yml

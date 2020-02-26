@@ -1,0 +1,5 @@
+---
+- hosts: runners
+  remote_user: root
+  roles: 
+    - { role: epm_docker, become: yes }

@@ -9,7 +9,7 @@ import yaml
 from conans import ConanFile, CMake, tools
 from epm.tool.conan import ConanMeta
 
-class Lib-1Conan(ConanFile):
+class Lib1Conan(ConanFile):
     _meta = ConanMeta()
     name = _meta.name
     version = _meta.version

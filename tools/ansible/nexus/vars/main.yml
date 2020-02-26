@@ -1,0 +1,5 @@
+---
+
+nexus:
+    name: epm.nexus
+    port: 8040

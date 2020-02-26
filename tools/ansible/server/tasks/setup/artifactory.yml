@@ -1,0 +1,16 @@
+---
+- name: Create docker volume of artifactory
+  docker_volume:
+    name: "{{volume_prefix}}artifactory"
+
+- name: create artifactory container
+  docker_container:
+    name: "{{ artifactory.name }}"
+    image: docker.bintray.io/jfrog/artifactory-cpp-ce:6.17.0
+    restart_policy: always
+    ports:
+    - "{{ artifactory.port }}:8081"
+    volumes:
+    - "{{volume_prefix}}artifactory:/var/opt/jfrog/artifactory"
+
+        
