@@ -39,7 +39,7 @@ class Dockerfile(object):
     def __init__(self, name, version=None, dir=None, config=None):
       self._name = name
       self._dir = os.path.abspath( dir or 'tools/docker')
-      m = __import__('epm')
+      m = __import__('./epm')
       self._version = version or m.__version__
       self._config = config or Config()
 
@@ -80,7 +80,7 @@ def main():
     parser.add_argument('-B', '--build', default=False, action="store_true", help="buildconfigure file path.")
     args = parser.parse_args()
     config = Config(args.config or None)
-    m = __import__('epm')
+    m = __import__('./epm')
     version = args.version or m.__version__
     name = args.name[0]
     docerfile = Dockerfile(name,version, config=config)
