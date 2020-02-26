@@ -40,6 +40,7 @@ class Dockerfile(object):
     def __init__(self, name, version, dir=None, config=None):
       self._name = name
       self._dir = os.path.abspath(dir or 'tools/docker')
+      print('-------DIR-', self._dir)
       self._version = version #or m.__version__
       self._config = config or Config()
 
