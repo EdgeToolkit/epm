@@ -36,11 +36,11 @@ class Config(object):
 
 class Dockerfile(object):
 
-    def __init__(self, name, version=None, dir=None, config=None):
+    def __init__(self, name, version, dir=None, config=None):
       self._name = name
       self._dir = os.path.abspath( dir or 'tools/docker')
-      m = __import__('./epm')
-      self._version = version or m.__version__
+#      m = __import__('./epm')
+      self._version = version #or m.__version__
       self._config = config or Config()
 
 
@@ -85,8 +85,10 @@ def main():
     if args.root_dir:
         os.chdir(args.root_dir)
     print('WORKING AT:', os.path.abspath('.'))
-    m = __import__('epm')
-    version = args.version or m.__version__
+    import sys
+    sys.path.insert(0, '.')
+    import epm
+    version = args.version or epm.__version__
     docerfile = Dockerfile(name, version, config=config)
     docerfile.write()
     if args.build:
