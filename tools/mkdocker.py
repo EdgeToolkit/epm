@@ -78,17 +78,22 @@ def main():
     parser.add_argument('--version', help="configure file path.")
     parser.add_argument('-c', '--config', help="configure file path.")
     parser.add_argument('-B', '--build', default=False, action="store_true", help="buildconfigure file path.")
+    parser.add_argument('--root-dir')
     args = parser.parse_args()
     config = Config(args.config or None)
-    m = __import__('./epm/__init__')
-    version = args.version or m.__version__
     name = args.name[0]
-    docerfile = Dockerfile(name,version, config=config)
+    if args.root_dir:
+        os.chdir(args.root_dir)
+    print('WORKING AT:', os.path.abspath('.'))
+    m = __import__('epm')
+    version = args.version or m.__version__
+    docerfile = Dockerfile(name, version, config=config)
     docerfile.write()
     if args.build:
         import subprocess
-        command = ['docker', 'build','.', '-t', 'epmkit/%s:%s' % (name, version)]
+        command = ['docker', 'build', '.', '-t', 'epmkit/%s:%s' % (name, version)]
         subprocess.run(command, check=True)
+
 
 if __name__ == '__main__':
     print(os.path.abspath('.'))
