@@ -80,7 +80,7 @@ def main():
     parser.add_argument('-B', '--build', default=False, action="store_true", help="buildconfigure file path.")
     args = parser.parse_args()
     config = Config(args.config or None)
-    m = __import__('./epm')
+    m = __import__('./epm/__init__')
     version = args.version or m.__version__
     name = args.name[0]
     docerfile = Dockerfile(name,version, config=config)
