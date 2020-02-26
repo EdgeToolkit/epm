@@ -79,7 +79,9 @@ def main():
     parser.add_argument('-c', '--config', help="configure file path.")
     parser.add_argument('-B', '--build', default=False, action="store_true", help="build.")
     prj_dir = os.path.join(os.path.dirname(__file__), '..', '..')
+    print('1',prj_dir)
     prj_dir = os.path.normpath(os.path.abspath(prj_dir))
+    print('2', prj_dir)
     sys.path.insert(0, prj_dir)
     import epm
     print('EPM', epm)
