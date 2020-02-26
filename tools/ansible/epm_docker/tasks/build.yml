@@ -25,7 +25,7 @@
   command: python3 tmpdir/epm/tools/mkdocker.py {{item}} -c docker.yml -B --version latest --root-dir tmpdir/epm
   with_items:
     - gcc5
-#    - gcc5-x86
+    - gcc5-x86
 #  args:
 #    chdir: ./tmpdir/epm
   register: output

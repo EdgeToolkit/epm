@@ -8,6 +8,7 @@
 #
 ##########################################################
 import os
+import sys
 import yaml
 import jinja2
 import argparse
@@ -77,23 +78,29 @@ def main():
     parser.add_argument('name', nargs=1, help="name of the docker image to build.")
     parser.add_argument('--version', help="configure file path.")
     parser.add_argument('-c', '--config', help="configure file path.")
-    parser.add_argument('-B', '--build', default=False, action="store_true", help="buildconfigure file path.")
-    parser.add_argument('--root-dir')
+    parser.add_argument('-B', '--build', default=False, action="store_true", help="build.")
+    prj_dir = os.path.join(os.path.dirname(__file__), '..', '..')
+    prj_dir = os.path.normpath(os.path.abspath(prj_dir))
+    sys.path.insert(0, prj_dir)
+    import epm
+    print('EPM', epm)
+
+#    parser.add_argument('--root-dir')
     args = parser.parse_args()
     config = Config(args.config or None)
     name = args.name[0]
-    if args.root_dir:
-        os.chdir(args.root_dir)
-    print('WORKING AT:', os.path.abspath('.'))
-    import sys
-    sys.path.insert(0, '.')
-    import epm
+#    if args.root_dir:
+    os.chdir(args.root_dir)
+#    print('WORKING AT:', os.path.abspath('.'))
+
+#    import epm
+    filename = 'Dockerfile-%s' % name
     version = args.version or epm.__version__
     docerfile = Dockerfile(name, version, config=config)
-    docerfile.write()
+    docerfile.write(filename)
     if args.build:
         import subprocess
-        command = ['docker', 'build', '.', '-t', 'epmkit/%s:%s' % (name, version)]
+        command = ['docker', 'build', '.', '-f', filename, '-t', 'epmkit/%s:%s' % (name, version)]
         subprocess.run(command, check=True)
 
 

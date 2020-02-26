@@ -1,0 +1,13 @@
+# GCC5 EPM Builder
+# Version: {{version}}
+#
+FROM conanio/gcc5-x86:1.18.0
+
+LABEL maintainer="Mingyi Zhang <mingyi.z@outlooke.com>"
+
+{% include 'copy.j2' %}
+
+RUN pip uninstall -y conan-package-tools conan \
+{% include 'pre.j2' %}
+    &&  pip install {{options}} . \
+{% include 'post.j2' %}
