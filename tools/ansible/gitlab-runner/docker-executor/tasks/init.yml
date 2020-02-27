@@ -1,0 +1,13 @@
+
+#- apt: name=docker.io state=present  
+#- apt: name=python3 state=present
+#- apt: name=python3-pip state=present
+#- command: python3 -m pip install {{ pip_options }} docker-py 
+- name: Get known docker image (debug)
+  command: echo HELLO_WORLD
+  register: result
+
+- name: show exec infomation
+  debug:
+    var: output
+

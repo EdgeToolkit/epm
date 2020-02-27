@@ -1,0 +1,4 @@
+
+[docker-executor]
+172.16.192.169 ansible_ssh_user=epm ansible_ssh_port=22 ansible_ssh_pass=epm ansible_sudo_pass=epm
+#172.16.192.241 ansible_ssh_user=epm ansible_ssh_port=22 ansible_ssh_pass=epm ansible_sudo_pass=epm
