@@ -1,5 +1,5 @@
-COPY epm ./epm.tmp/epm
-COPY README.md ./epm.tmp/README.md
-COPY pylint.cnf ./epm.tmp/pylint.cnf
-COPY setup.cfg ./epm.tmp/setup.cfg
-COPY setup.py ./epm.tmp/setup.py
+COPY epm {{epm_source_dir}}/epm
+COPY README.md  {{epm_source_dir}}/README.md
+COPY pylint.cnf {{epm_source_dir}}/pylint.cnf
+COPY setup.cfg {{epm_source_dir}}/setup.cfg
+COPY setup.py {{epm_source_dir}}/setup.py

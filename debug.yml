@@ -5,5 +5,5 @@ profile:
       builder:
         image: epmkit/gcc5:debug
         epm:
-          source: /home/mingyiz/epmkit/epm
-          target: /mnt/epm
+          source: D:\EdgeOS\epmkit\epm\epm
+          target: /home/conan/.cache/epm/epm

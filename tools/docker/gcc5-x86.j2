@@ -9,5 +9,6 @@ LABEL maintainer="Mingyi Zhang <mingyi.z@outlooke.com>"
 
 RUN pip uninstall -y conan-package-tools conan \
 {% include 'pre.j2' %}
-    &&  pip install {{options}} . \
+    && {{ install_epm }} \
 {% include 'post.j2' %}
+
