@@ -6,6 +6,7 @@
 - name: Get known docker image (debug)
   command: echo HELLO_WORLD
   register: result
+  when: debug
 
 - name: show exec infomation
   debug:

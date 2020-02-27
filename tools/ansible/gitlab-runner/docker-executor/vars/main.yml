@@ -1,5 +1,5 @@
 ---
 
-
+debug: yes
 #
 pip_options: "-i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com --proxy=http://172.16.0.119:8888"
