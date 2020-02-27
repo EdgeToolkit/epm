@@ -1,5 +1,5 @@
 ---
-- hosts: main-server
+- hosts: docker-executor
   remote_user: root
   roles: 
-    - { role: server, become: yes }
+    - { role: docker-executor, become: yes }
