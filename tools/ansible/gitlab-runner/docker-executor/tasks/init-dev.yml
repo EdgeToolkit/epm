@@ -1,0 +1,7 @@
+- name: Get known docker image (debug)
+  command: echo In dev enviroment
+  register: result
+
+- name: show exec infomation
+  debug:
+    var: result
