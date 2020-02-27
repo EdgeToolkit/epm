@@ -1,7 +1,0 @@
-- name: Get known docker image
-  command: echo In production
-  register: result
-
-- name: show exec infomation
-  debug:
-    var: result

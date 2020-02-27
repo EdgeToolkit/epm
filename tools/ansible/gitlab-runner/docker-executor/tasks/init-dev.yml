@@ -1,10 +1,26 @@
 
-- name: clone epm git
-  command: git clone 
-- name: Get known docker image (debug)
-  command: echo In dev enviroment
-  register: result
-
-- name: show exec infomation
-  debug:
-    var: result
+#- name: clone epm git
+#  command: git clone {{ epm.url }} {{epm.source}}
+#  args:
+#    creates: "{{ epm.source }}"
+#  register: result
+#
+#- name: pull and checkout
+#  command: git checkout {{epm.branch}}
+#  args:
+#    chdir: "{{epm.source}}"
+#  register: result
+#
+- name: copy docker config file
+  copy:
+    src: docker-config.yml
+    dest:  "{{epm.source}}/docker-config.yml"
+ 
+- name: build docker images
+  command: python3 tools/mkdocker.py {{item}} -c docker-config.yml -B --debug    
+  args:
+      chdir: "{{epm.source}}"
+  with_items:
+    - gcc5
+    - gcc5-x86
+  become: yes

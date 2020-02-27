@@ -1,5 +1,5 @@
 ---
 - hosts: docker-executor
-  remote_user: root
+#  remote_user: root
   roles: 
-    - { role: docker-executor, become: yes }
+    - { role: docker-executor}

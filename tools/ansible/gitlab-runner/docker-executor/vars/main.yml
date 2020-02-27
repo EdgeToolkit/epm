@@ -4,7 +4,8 @@ epm_ci_env: dev
 #
 pip_options: "-i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com --proxy=http://172.16.0.119:8888"
 
-
+gitlab_runner_base_url: http://172.16.0.119/software/gitlab/runner/12.8.0/
 epm:
-  url: 
+  url: http://172.16.0.119:8000/epmkit/epm.git
+  branch: 2019-nConv.basic
   source: .cache/epm
