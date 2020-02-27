@@ -9,5 +9,5 @@
 
 - name: show exec infomation
   debug:
-    var: output
+    var: result
 
