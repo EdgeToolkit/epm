@@ -24,4 +24,7 @@ registry:
         remoteurl: https://ru8upqqy.mirror.aliyuncs.com
         #remoteurl: https://registry-1.docker.io
 
-        
+proxy:
+    pypi: http://mirrors.aliyun.com/pypi/simple/
+    pypi_trust: mirrors.aliyun.com
+    http: http://172.16.0.119:8888

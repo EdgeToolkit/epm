@@ -1,0 +1,17 @@
+- include: install.yml
+
+- include: nexus.yml
+  when: hosts == 'nexus'
+
+- include: registry.yml
+  when: hosts == 'registry'
+
+- include: nginx.yml
+  when: hosts == 'nginx'
+
+- include: gitlab.yml
+  when: hosts == 'gitlab'
+
+- include: artifactory.yml
+  when: hosts == 'artifactory'
+

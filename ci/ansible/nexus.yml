@@ -1,5 +1,0 @@
----
-- hosts: nexus
-  remote_user: root
-  roles: 
-    - { role: nexus, become: yes }

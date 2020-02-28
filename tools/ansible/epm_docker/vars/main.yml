@@ -1,7 +1,0 @@
----
-
-epm:
-  url: http://172.16.0.119:8000/epmkit/epm.git
-  branch: 2019-nConv.basic
-
-  
