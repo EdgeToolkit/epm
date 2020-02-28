@@ -1,0 +1,13 @@
+# EPM MKDOCS docker Builder
+# Version: {{version}}
+#
+FROM python:3.6-alpine
+
+LABEL maintainer="Mingyi Zhang <mingyi.z@outlooke.com>"
+
+{% include 'copy.j2' %}
+
+RUN sudo pip uninstall -y conan-package-tools conan \
+{% include 'pre.j2' %}
+    && {{ install_epm }} \
+{% include 'post.j2' %}

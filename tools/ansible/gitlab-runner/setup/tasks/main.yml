@@ -1,6 +1,6 @@
-- include: init.yml
-#- include: init-dev.yml
-#  when: epm_ci_env == "dev"
+#- include: init.yml
+- include: init-dev.yml
+  when: epm_ci_env == "dev"
 #- include: init-prod.yml
 #  when: not epm_ci_env == "dev"
 
