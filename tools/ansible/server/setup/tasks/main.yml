@@ -1,17 +1,27 @@
-- include: install.yml
+#- name: initial environment
+#  include: init.yml
 
-- include: nexus.yml
-  when: hosts == 'nexus'
+- name: install nexus server
+  include: nexus.yml
+#  debug: "msg='install nexus on {{inventory_hostname}}'"
+  when:  "'nexus' in group_names"
 
-- include: registry.yml
-  when: hosts == 'registry'
+- name: install nginx server
+#  include: nginx.yml
+  debug: "msg='install nginx on {{inventory_hostname}}'"
+  when:  "'nginx' in group_names"
 
-- include: nginx.yml
-  when: hosts == 'nginx'
+- name: install gitlab server
+#  include: gitlab.yml
+  debug: "msg='install gitlab on {{inventory_hostname}}'"
+  when:  "'gitlab' in group_names"
 
-- include: gitlab.yml
-  when: hosts == 'gitlab'
-
-- include: artifactory.yml
-  when: hosts == 'artifactory'
-
+- name: install registry server
+#  include: registry.yml
+  debug: "msg='install registry on {{inventory_hostname}}'"
+  when:  "'registry' in group_names"
+  
+- name: install artifactory server
+#  include: artifactory.yml
+  debug: "msg='install artifactory on {{inventory_hostname}}'"
+  when:  "'artifactory' in group_names"  

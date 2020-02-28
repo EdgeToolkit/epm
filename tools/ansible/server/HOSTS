@@ -1,19 +1,19 @@
 #[main]
 #172.16.0.119 ansible_ssh_user=epmci ansible_ssh_port=22 ansible_ssh_pass=epmci ansible_sudo_pass=epmci
 
-[nginx]
-172.16.0.119
-
-
-[artifactory]
-172.16.0.119
-
-[gitlab]
-172.16.0.119
-
-
-[registry]
-172.16.0.119
+#[nginx]
+#172.16.0.119 ansible_ssh_user=epmci ansible_ssh_port=22 ansible_ssh_pass=epmci ansible_sudo_pass=epmci
+#
+#
+#[artifactory]
+#172.16.0.119
+#
+#[gitlab]
+#172.16.0.119
+#
+#
+#[registry]
+#172.16.0.119
 
 [nexus]
 172.16.192.169

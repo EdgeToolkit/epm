@@ -2,6 +2,7 @@
 - name: Create docker volume of nexus
   docker_volume:
     name: "{{volume_prefix}}nexus"
+  become: yes
 
 - name: create nexus container
   docker_container:
@@ -12,3 +13,4 @@
     - "{{ nexus.port }}:8081"
     volumes:
     - "{{volume_prefix}}nexus:/nexus-data"
+  become: yes
