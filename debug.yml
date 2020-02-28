@@ -1,9 +1,0 @@
-
-profile:
-  gcc5:
-    docker:
-      builder:
-        image: epmkit/gcc5:debug
-        epm:
-          source: D:\EdgeOS\epmkit\epm\epm
-          target: /home/conan/.cache/epm/epm
