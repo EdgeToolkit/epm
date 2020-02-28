@@ -6,5 +6,5 @@ scp >=0.13.2
 mkdocs>=1.0.0
 pymdown-extensions
 mkdocs-material
-mkdocs-markdownextradata-plugin
+mkdocs-markdownextradata-plugin>=0.12
 docker>= 4.1.0
