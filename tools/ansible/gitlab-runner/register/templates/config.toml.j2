@@ -10,8 +10,8 @@ check_interval = 0
 [session_server]
   session_timeout = {{ gitlab_runner_session_timeout | default(1800) }}
 
-{{gitlab_runner}}
-{% if 'docker' in gitlab_runner  %}
+
+{% if gitlab_runner and 'docker' in gitlab_runner  %}
 {% include 'docker.toml.j2' %}
 {% endif %}
 
