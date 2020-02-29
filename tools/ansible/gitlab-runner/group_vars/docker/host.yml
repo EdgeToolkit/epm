@@ -1,1 +1,1 @@
-host_group_var=host.yml
+host_group_var: host.yml

@@ -1,1 +1,1 @@
-runner_group_var=runner.yml
+runner_group_var: runner.yml
