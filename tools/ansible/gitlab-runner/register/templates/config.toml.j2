@@ -5,9 +5,12 @@
 #
 
 concurrent = {{ gitlab_runner_concurrent | default(1) }}
-#check_interval = 0
+check_interval = 0
 
 [session_server]
   session_timeout = {{ gitlab_runner_session_timeout | default(1800) }}
+
+{{gitlab_runner}}
+
 
 
