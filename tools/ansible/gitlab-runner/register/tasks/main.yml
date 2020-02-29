@@ -1,0 +1,8 @@
+
+- debug:
+    msg:
+      - "host_group_var:{{host_group_var}}"
+      - "runner_group_var:{{runner_group_var}}"
+      - "inventory_hostname:{{inventory_hostname}}"
+
+
