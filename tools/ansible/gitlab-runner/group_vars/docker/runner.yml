@@ -1,1 +1,5 @@
 runner_group_var: runner.yml
+
+gitlab_runner:
+  docker:
+    token: This is TOKEN
