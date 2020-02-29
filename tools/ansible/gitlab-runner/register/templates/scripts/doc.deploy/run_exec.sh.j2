@@ -1,0 +1,15 @@
+#!/bin/bash
+__Dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+script=$1
+action=$2
+
+if [[ $stage == build_script ]]; then
+	#cd $(dirname $script)
+  pwd
+  echo CUSTOM_ENV_CI_BUILDS_DIR=$CUSTOM_ENV_CI_BUILDS_DIR
+  ls $CUSTOM_ENV_CI_BUILDS_DIR -l
+  echo CI_PROJECT_DIR=$CUSTOM_ENV_CI_PROJECT_DIR
+  ls -l $CUSTOM_ENV_CI_PROJECT_DIR
+  exit
+fi
+$script

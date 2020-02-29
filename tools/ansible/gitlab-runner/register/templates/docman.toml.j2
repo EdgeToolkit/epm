@@ -1,0 +1,21 @@
+#
+# doc.deploy
+#
+{% set config = gitlab_runner['doc.deploy'] %}
+{% set config = dict(gitlab_runner_default, **config) %}
+{% set root_dir = gitlab_runner_root_dir %}
+{% set build_dir = '%s/%s' % (root_dir, config['build_dir])' %}
+{% set cache_dir = '%s/%s' % (root_dir, config['cache_dir])' %}
+[[runners]]
+  name = "document deployment runner"
+  url = "gitlab_ci_url"
+  token = "{{config['token']}}"
+  executor = "custom"
+  builds_dir = "{{build_dir}}"
+  cache_dir = "{{cache}}"
+  [runners.custom_build_dir]
+  [runners.cache]
+    [runners.cache.s3]
+    [runners.cache.gcs]
+  [runners.custom]
+    run_exec = "{{root_dir}}/scripts/doc.deploy/run_exec.sh"

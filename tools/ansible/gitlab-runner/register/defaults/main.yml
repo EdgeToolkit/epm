@@ -1,2 +1,8 @@
 # epm_ci_env [production, dev]
 epm_ci_env: production
+
+gitlab_runner_root_dir: /home/epm/_ci
+gitlab_runner_default:
+  root_dir: '/home/epm/_ci'
+  build_dir: '_builds'
+  cache_dir: '_cache'
