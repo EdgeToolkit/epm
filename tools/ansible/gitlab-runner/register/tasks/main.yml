@@ -5,4 +5,9 @@
       - "runner_group_var:{{runner_group_var}}"
       - "inventory_hostname:{{inventory_hostname}}"
 
+- name: generate gitlab runner config file
+  template:
+    src: config.toml.j2
+    dest: config.toml-test
+
 

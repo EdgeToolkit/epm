@@ -28,3 +28,4 @@ ansible_ssh_port=22
 ansible_ssh_pass=epm
 ansible_sudo_pass=epm
 
+gitlab_url=172.16.0119:8000
