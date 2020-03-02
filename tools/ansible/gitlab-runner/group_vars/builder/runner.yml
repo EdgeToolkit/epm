@@ -1,0 +1,13 @@
+gitlab_runners:
+  172.16.192.169:
+    description: Linux docker builder @172.16.192.169
+    id: 94
+    tag_list: &id001
+    - builder
+    - docker-executor
+    token: UBmvQxznaW7Q91KGBxeL
+  172.16.192.241:
+    description: Linux docker builder @172.16.192.241
+    id: 95
+    tag_list: *id001
+    token: 1fq84_c3ziAL-AodEUoF

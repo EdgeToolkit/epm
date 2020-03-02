@@ -2,7 +2,24 @@
 epm_ci_env: production
 
 gitlab_runner_root_dir: /home/epm/_ci
+gitlab_runner_root_dir_win: d:/_ci
 gitlab_runner_default:
-  root_dir: '/home/epm/_ci'
-  build_dir: '_builds'
-  cache_dir: '_cache'
+  build_folder: '_builds'
+  cache_folder: '_cache'
+
+
+gitlab_runner_tags:
+  docker:
+    - docker-executor
+  builder:
+    - docker-executor
+    - builder
+  conan.deployer:
+    - conan.deployer
+  msbuilder:
+    - msbuilder
+    - vs2019
+  doc.publisher:
+    - doc.publisher
+  
+    

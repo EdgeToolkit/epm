@@ -1,0 +1,104 @@
+gitlab_ci_url: http://172.16.0.119:8000/
+
+runners:
+  docker:
+    description: 'Linux docker executor @{hostname}'
+    tags: ['docker-executor']
+    tokens:
+    - HuTeuBHHCHS-zGnxQRY8
+
+  builder:
+    description: 'Linux docker builder @{hostname}'
+    tags: ['builder', 'docker-executor' ]
+    tokens:
+    - HuTeuBHHCHS-zGnxQRY8
+
+  msbuilder:
+    description: 'Visual Studio builder @{hostname}'
+    tags: ['builder', 'vs2019']
+    tokens:
+    - HuTeuBHHCHS-zGnxQRY8
+
+  conan.deployer:
+    description: 'Conan deployer @{hostname}'
+    tags: [conan.deployer]
+    tokens:
+    - HuTeuBHHCHS-zGnxQRY8
+
+  doc.publisher:
+    description: 'Document publisher @{hostname}'
+    tags: ['doc.publisher']
+    tokens:
+    - HuTeuBHHCHS-zGnxQRY8
+
+hosts:
+  docker:
+  - 172.16.192.169
+  - 172.16.192.241
+
+  builder:
+  - 172.16.192.169
+  - 172.16.192.241
+  msbuilder:
+  - 172.16.19.238
+  - 172.16.19.240
+
+  conan.deployer:
+  - 172.16.192.169
+  - 172.16.192.241
+
+  doc.publisher:
+  - 172.16.0119
+
+
+
+
+
+
+
+
+
+
+
+
+
+tags:
+  docker:  
+    - docker-executor
+  builder:
+    - builder
+    - docker-executor
+  conan.deployer:
+    - conan.deployer
+  msbuilder:
+    - builder
+    - vs2019
+  doc.publisher:
+    - doc.publisher
+
+
+deployment:
+    # Document publish
+  - runners:
+    - doc.publisher
+    hosts:
+    - 172.16.0.119
+    tokens:
+    - HuTeuBHHCHS-zGnxQRY8
+    # General Linux host
+  - runners:
+    - docker
+    - builder
+    - conan.deployer
+    hosts:
+    - 172.16.192.169:
+    - 172.16.192.241
+    tokens:
+    - HuTeuBHHCHS-zGnxQRY8
+    # Windows Host
+  - runners:
+    - msbuilder
+    hosts:
+    - 172.16.192.238
+    tokens:
+    - HuTeuBHHCHS-zGnxQRY8

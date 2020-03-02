@@ -1,0 +1,13 @@
+gitlab_runners:
+  172.16.19.238:
+    description: Visual Studio builder @172.16.19.238
+    id: 96
+    tag_list: &id001
+    - builder
+    - vs2019
+    token: gu49WeA4HTtL77xTqHdR
+  172.16.19.240:
+    description: Visual Studio builder @172.16.19.240
+    id: 97
+    tag_list: *id001
+    token: qow2SqD6BSjSF3jCQQsy
