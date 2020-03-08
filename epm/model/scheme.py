@@ -110,14 +110,17 @@ class Options(object):
         :param manifest: manifest (package.yml)
         :return:
         '''
-
         manifest = manifest or self.project.manifest
-        plan = manifest.get('plan', {})
-        scheme = plan.get('scheme', {}).get(name, {})
-        dependencies = manifest.get('dependencies', {})
+        scheme = manifest.get('scheme', {})
+        options = scheme.get('options', {}).get(name, {})
+        dependencies = manifest.get('dependencies', [])
 
         # pick up options of this package.yml
-        options = {k: v for k, v in scheme.items() if k[0] != '.'}
+        options = {k: v for k, v in options.items() if k[0] != '.'}
+        print('----------------------------')
+        print(options)
+        print('----------------------------')
+
         deps = {}
 
         for pkg, sch in scheme.get('.dependencies', {}).items():

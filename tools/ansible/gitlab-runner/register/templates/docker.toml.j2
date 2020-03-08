@@ -1,7 +1,7 @@
 #
 # Linux docker (executor)
 #
-{% set config = gitlab_runner['docker'] %}
+{% set config = gitlab_runners[inventory_hostname] %}
 [[runners]]
   name = "Linux docker-executor @{{inventory_hostname}}"
   url = "{{gitlab_ci_url}}"

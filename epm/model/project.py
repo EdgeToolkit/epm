@@ -81,7 +81,7 @@ class Project(object):
 
     @property
     def user(self):
-        return self.conan_meta.user
+        return self.conan_meta.group
 
     @property
     def channel(self):

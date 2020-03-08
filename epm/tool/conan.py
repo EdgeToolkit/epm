@@ -18,10 +18,9 @@ def get_channel(name=None):
 
 
 _require_format_example = '''
-{}:
-  zlib:
-    version: 1.2.3
-    group: epm 
+{what}, {reason}
+<{name}>
+{value} 
 '''
 
 
@@ -43,8 +42,11 @@ class ConanMeta(object):
     def name(self):
         return self._meta['name']
 
+#    @property
+#    def user(self):
+#        return self._meta['group']
     @property
-    def user(self):
+    def group(self):
         return self._meta['group']
 
     @property
@@ -87,28 +89,42 @@ class ConanMeta(object):
     @property
     def dependencies(self):
         references = []
-        for name, value in self._meta.get('dependencies', {}).items():
-            self._require_check("dependencies illegal.\n'dependencies")
-            version = value.get['version']
-            user = value.get('user') or self.user
-            channel = value.get('channel') or get_channel(name)
-
-            references.append("%s/%s@%s/%s" % (name, version, user, channel))
+        dependencies = self._meta.get('dependencies', [])
+        print("@", dependencies)
+        for package in self._meta.get('dependencies', []):
+            print('packaginfo', package, type(package), '*', isinstance(package, dict))
+            assert isinstance(package, dict)
+            assert len(package) == 1
+            for name, value in package.items():
+                self._require_check("dependencies illegal.", name, value)
+                version = value['version']
+                user = value.get('group') or self.group
+                channel = value.get('channel') or get_channel(name)
+                references.append("%s/%s@%s/%s" % (name, version, user, channel))
         return references
 
     @property
     def build_requires(self):
         references = []
         for name, value in self._meta.get('build_requires', {}).items():
-            self._require_check("build requirements configuration illegal.\n'build_requires")
-            version = value.get['version']
-            user = value.get('user') or self.user
+            self._require_check("build requirements configuration illegal", name, value)
+            version = value['version']
+            user = value.get('group') or self.user
             channel = value.get('channel') or get_channel(name)
             references.append("%s/%s@%s/%s" % (name, version, user, channel))
         return references
 
     @staticmethod
-    def _require_check(what, value):
-        if not isinstance(value, dict) or 'user' not in value or 'version' not in value:
-            raise Exception(_require_format_example.format(what))
+    def _require_check(what, name, value):
+        reason = ''
+        if not isinstance(value, dict):
+            reason += "format error, should be dict"
+            for i in ['group', 'version']:
+                if i not in value:
+                    reason +=" missing filed %s" % i
+        if reason:
+            raise Exception(_require_format_example.format(waht=what, reason=reason, value=value, name=name))
+
+    def get(self, key, default=None):
+        return self._meta.get(key, default)
 

@@ -228,34 +228,34 @@ class Command(object):
         parser.add_argument("-c", "--configure", default=None, action="store_true",
                             help="Execute the configuration step to configure the this C/C++ project. "
                             "When specified, build/install/test won't run unless "
-                            "--build/--install/--test specified")
+                            "--make/--package/--test specified")
 
-        parser.add_argument("-p", "--package", default=None, action="store_true",
-                            help="Execute the package build step to make the C/C++ lib or program,. When "
+        parser.add_argument("-m", "--make", default=None, action="store_true",
+                            help="Execute the make step to build the C/C++ lib or executable,. When "
                             "specified, configure/install/test won't run unless "
-                            "--configure/--install/--test specified")
-
-        parser.add_argument("-i", "--install", default=None, action="store_true",
-                            help="Execute the package install step to install the built package to package folder. When"
-                            "specified, configure/package/test won't run unless "
                             "--configure/--package/--test specified")
 
+        parser.add_argument("-p", "--package", default=None, action="store_true",
+                            help="Execute the package step to archive the project to package folder. When"
+                            "specified, configure/make/test won't run unless "
+                            "--configure/--make/--test specified")
+
         parser.add_argument("-t", "--test", default=None, action="store_true",
-                            help="Execute the test_package build step. When "
+                            help="Execute the package test build step when `test_package` exists. When "
                             "specified, configure/package/install won't run unless "
                             "--configure/--package/--install specified")
 
         args = parser.parse_args(*args)
 
-        if args.package or args.configure or args.install or args.test:
-            package, configure, install, test = \
-                (bool(args.package), bool(args.configure), bool(args.install), bool(args.test))
+        if args.configure or args.make or args.package or args.test:
+            configure, make, package, test = \
+                bool(args.configure), bool(args.make), bool(args.package), bool(args.test)
         else:
-            package = configure = install = test = True
+            configure = make = package = test = True
 
         steps = ['configure'] if configure else []
+        steps += ['make'] if make else []
         steps += ['package'] if package else []
-        steps += ['install'] if install else []
         steps += ['test'] if test else []
         param = {'runner': args.runner,
                  'scheme': args.scheme,

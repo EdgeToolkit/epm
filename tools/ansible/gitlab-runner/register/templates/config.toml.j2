@@ -11,7 +11,16 @@ check_interval = 0
   session_timeout = {{ gitlab_runner_session_timeout | default(1800) }}
 
 
-{% if gitlab_runner and 'docker' in gitlab_runner  %}
+gitlab_runners:
+  172.16.0119:
+    description: Document publisher @172.16.0119
+    id: 100
+    tag_list:
+    - doc.publisher
+    token: zuoteBzssHCdf1p_dYB4
+
+
+{% if gitlab_runners and inventory_hostname in gitlab_runners  %}
 {% include 'docker.toml.j2' %}
 {% endif %}
 

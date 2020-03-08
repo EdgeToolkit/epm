@@ -20,10 +20,13 @@ class Builder(Worker):
         for i in self.conan.editable_list():
             self.conan.editable_remove(i)
 
-        for i in ['configure', 'package', 'install', 'test']:
+        for i in ['configure', 'make', 'package', 'test']:
             if i in steps:
                 fn = getattr(self, '_%s' % i)
                 self.out.highlight('[building - %s ......]' % i)
+                if i == 'test' and not os.path.exists('test_package'):
+                    self.out.warn('Skip test because of test_package folder not existing')
+                    continue
                 fn(project)
 
     def exec(self, param):
@@ -35,7 +38,7 @@ class Builder(Worker):
             runner = 'docker' if scheme.profile.docker.builder else 'shell'
 
         if runner == 'shell':
-            steps = param.get('step') or ['configure', 'package', 'install', 'test']
+            steps = param.get('step') or ['configure', 'make', 'package', 'test']
             if isinstance(steps, str):
                 steps = [steps]
 
@@ -69,6 +72,10 @@ class Builder(Worker):
 
         options = ['%s=%s' % (k, v) for (k, v) in scheme.options.as_list()]
 
+        print('--------------------------------------')
+        print(options)
+        print('--------------------------------------')
+
         info = conan.install(path=wd,
                              name=project.name,
                              version=project.version,
@@ -87,7 +94,7 @@ class Builder(Worker):
 
         conan.source(wd)
 
-    def _package(self, project):
+    def _make(self, project):
         conan = self.api.conan
         wd = '.'
 
@@ -97,7 +104,7 @@ class Builder(Worker):
                            install_folder=project.folder.build)
         self._sandbox(project, 'build')
 
-    def _install(self, project):
+    def _package(self, project):
 
         conan = self.api.conan
         wd = '.'

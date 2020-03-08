@@ -99,26 +99,6 @@ def XSym(filename):
             return line if line else None
     return None
 
-
-def _develop_config():
-    import epm
-
-    filename = os.path.join(os.path.dirname(epm.__file__), 'debug.yml')
-    if not os.path.exists(filename):
-        return {}
-
-    try:
-        with open(filename) as f:
-            return yaml.safe_load(f)
-
-    except BaseException as e:
-        print("-= parse EPM_DEVELOP_CONFIG={} failed, {}".format(filename, e))
-    return {}
-
-
-DEVELOP_CONFIG = _develop_config()
-
-
 def sempath(path, kwords, format='${%s}'):
     """ semantic path, replace path prefix with folders value and return the met one
 
@@ -178,3 +158,28 @@ def merge_plan_name(profile, scheme=None):
     :return:
     """
     return profile + '@%s' % scheme if scheme else ''
+
+
+
+##################################
+_debug_configuration = None
+
+
+def _get_debug_configuration():
+    global _debug_configuration
+    if _debug_configuration is None:
+        _debug_configuration = {}
+        filename = os.getenv('EPM_DEBUG_CONFIG_FILE')
+        if filename:
+            if os.path.exists(filename):
+                try:
+                    with open(filename) as f:
+                        _debug_configuration = yaml.safe_load(f)
+                except Exception as e:
+                    print('load debug config file %s failed.\n%s' % (filename, e))
+                print('==== EPM_DEBUG_CONFIG_FILE: %s ====' % filename)
+                import pprint
+                pprint.pprint(_debug_configuration, depth=10, indent=2)
+            else:
+                print('the specified debug config file <%s> not exists' % filename)
+    return _debug_configuration

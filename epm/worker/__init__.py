@@ -60,6 +60,12 @@ class DockerRunner(object):
         self.WD = None
         self._pre_script = ''
 
+    @property
+    def _container_name(self):
+        import time
+        name = '%s_%s_%s' % (self._project.name, self._project.scheme.name, time.time())
+        return name.replace('@', '-')
+
     def exec(self, commands, config=None):
 
         from conans.client.runner import ConanRunner as Runner
@@ -67,7 +73,7 @@ class DockerRunner(object):
         config, WD, volumes, environment = self._preprocess(config)
 
         command = self._command(commands, config, WD, volumes, environment)
-        args = ['docker', 'run']
+        args = ['docker', 'run', '--name', self._container_name, '--rm']
 
         if PLATFORM == 'Linux' and os.getuid():
             args = ['sudo'] + args
@@ -151,18 +157,8 @@ class DockerRunner(object):
     @property
     def _dc(self):
         if DockerRunner._DEBUG is None:
-            DockerRunner._DEBUG = False
-
-            path = os.environ.get('EPM_DEBUG_CONFIG')
-            if path:
-                if not os.path.exists(path):
-                    self._api.out.warn('you have defined EPM_DEBUG_CONFIG=%s, but the file not exits' % path)
-                else:
-                    try:
-                        from epm.util.files import load_yaml
-                        DockerRunner._DEBUG = load_yaml(path)
-                    except:
-                        self._api.out.warn('load debug config %s filed.' % path)
+            from epm.util import _get_debug_configuration
+            DockerRunner._DEBUG = _get_debug_configuration() or False
         return DockerRunner._DEBUG
 
 

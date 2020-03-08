@@ -180,7 +180,7 @@ class Generator(object):
             if not sandbox.get('test_package', {}):
                 sandbox = {'test_package': 'test_package/%s_test' % self.name}
 
-        for key in ['name', 'version', 'user', 'sandbox', 'plan', 'script',
+        for key in ['name', 'version', 'group', 'sandbox', 'plan', 'script',
                     'dependencies', 'license', 'description']:
             if key in manifest.keys():
                 del manifest[key]
