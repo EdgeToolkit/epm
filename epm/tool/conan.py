@@ -59,7 +59,7 @@ class ConanMeta(object):
 
     @property
     def reference(self):
-        return '{}/{}@{}/{}'.format(self.name, self.version, self.user, self.channel)
+        return '{}/{}@{}/{}'.format(self.name, self.version, self.group, self.channel)
 
     @property
     def author(self):
