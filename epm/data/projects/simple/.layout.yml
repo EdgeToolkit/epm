@@ -1,0 +1,20 @@
+
+common:
+  - .gitignore
+  - package.yml
+  - conanfile.py
+  - CMakeLists.txt
+  - cmake/CMakeLists.txt
+  - cmake/config.cmake.in
+lib:
+  - include/declaration.h: include/declaration.h.j2
+  - include/${name}.h: include/lib.h.j2
+  - source/${name}.c: source/lib.c.j2
+  - tests/main.cpp: tests/lib/main.cpp
+  - tests/test.cpp: tests/lib/test.cpp.j2
+  - tests/conanfile.py: tests/lib/conanfile.py
+  - tests/CMakeLists.txt: tests/lib/CMakeLists.txt.j2
+app:
+  - source/main.c
+  - tests/main.py: tests/app/main.py
+  - tests/test_version.py: tests/app/test_version.py.j2

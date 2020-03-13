@@ -1,0 +1,22 @@
+
+all:
+- package.yml
+- conanfile.py
+- CMakeLists.txt
+- .gitignore
+
+lib:
+- include/declaration.h: include/declaration.h.j2
+- include/${name}.h: include/lib.h.j2
+- source/${name}.c: source/lib.c.j2
+- cmake/CMakeLists.txt
+- cmake/${name}-config.cmake.in: cmake/config.cmake.in.j2
+- tests/src/main.cpp: tests/lib/main.cpp
+- tests/src/test.cpp: tests/lib/test.cpp.j2
+- tests/conanfile.py: tests/lib/conanfile.py.j2
+- tests/CMakeLists.txt: tests/lib/CMakeLists.txt.j2
+
+app:
+- source/main.c
+- tests/main.py: tests/app/main.py
+- tests/test_version.py: tests/app/test_version.py.j2

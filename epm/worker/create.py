@@ -7,7 +7,7 @@ from conans.client.tools import environment_append
 
 from epm.worker import Worker, DockerBase, param_encode
 from epm.model.project import Project
-from epm.errors import APIError
+from epm.errors import APIError, EException
 from epm.model.sandbox import Program
 from epm.util import is_elf
 from epm.util.files import remove, rmdir
@@ -117,6 +117,8 @@ class Creator(Worker):
             })
 
     def _exec(self, project, clear=False):
+
+
         conan = self.api.conan
         scheme = project.scheme
 
@@ -126,18 +128,23 @@ class Creator(Worker):
 
         options = ['%s=%s' % (k, v) for (k, v) in scheme.options.as_list()]
 
+#        self._test(project)
+#        self._sandbox(project, '3fb49604f9c2f729b85ba3115852006824e72cab')
+#        return
+
         for i in conan.editable_list():
             conan.editable_remove(i)
 
         info = self.conan.create('.',
                                  name=project.name,
                                  version=project.version,
-                                 user=project.user,
+                                 user=project.group,
                                  channel=project.channel,
                                  settings=None,
                                  options=options,
                                  profile_names=[profile_path],
-                                 test_build_folder=project.folder.test)
+                                 test_folder=False)
+#                                 test_build_folder=project.folder.test)
         if info['error']:
             raise APIError('failed when create package %s | %s '
                            % (project.name, scheme.name), details={})
@@ -145,6 +152,13 @@ class Creator(Worker):
         id = info.get('installed')[0].get('packages')[0]['id']
         result = {'id': id}
         dirs = None
+
+        ######
+        self._test(project)
+
+
+        ######
+
 
         if clear:
             for i in glob.glob(project.folder.test):
@@ -173,12 +187,50 @@ class Creator(Worker):
 
         return result
 
+    def _test(self, project):
+        conan = self.api.conan
+        wd = '.'
+        profile_path = os.path.join(project.folder.out, 'profile')  # already generated in configure step
+
+        options = ['%s=%s' % (k, v) for k, v in project.scheme.options.as_list(package=True)]
+        tests = []
+        if not project.tests:
+            if os.path.exists('tests/conanfile.py'):
+                tests = ['tests']
+
+        for i in tests:
+            conanfile_path = os.path.join(i, 'conanfile.py')
+            if not os.path.exists(conanfile_path):
+                raise EException('specified test <%s> miss Makefile.py' % i)
+            instd = os.path.join(project.folder.test, i, 'build')
+            pkgdir = os.path.join(project.folder.test, i, 'package')
+            info = conan.install(path=conanfile_path,
+                                 name='%s-%s' % (project.name, i),
+                                 settings=None,  # should be same as profile
+                                 options=options,
+                                 profile_names=[project.generate_profile()],
+                                 install_folder=instd)
+
+            info = conan.build(conanfile_path=conanfile_path,
+                               package_folder=pkgdir,
+                               build_folder=instd,
+                               install_folder=instd)
+
+            info = conan.package(path=conanfile_path,
+                                 build_folder=instd,
+                                 package_folder=pkgdir,
+                                 install_folder=instd)
+
     def _sandbox(self, project, id):
         storage = os.environ.get('CONAN_STORAGE_PATH')
+        for name, command in project.manifest.get('sandbox', {}).items():
+            program = Program(project, command, storage, is_create=True, id=id)
+            program.generate(name)
 
-        for folder in ['build', 'package', 'test_package']:
-            for name, command in project.manifest.get('sandbox', {}).items():
-                if command.startswith(folder):
-                    program = Program(project, command, storage, is_create=True, id=id)
-
-                    program.generate(name)
+        #for folder in ['build', 'package', 'test_package']:
+        #    for name, command in project.manifest.get('sandbox', {}).items():
+        #        if command.startswith(folder):
+        #            program = Program(project, command, storage, is_create=True, id=id)
+        #
+        #            program.generate(name)
+        #

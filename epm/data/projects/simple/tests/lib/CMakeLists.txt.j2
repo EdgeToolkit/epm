@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.2)
+cmake_minimum_required(VERSION 3.1.0)
 project({{ name }}_test CXX)
 
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
@@ -27,18 +27,20 @@ endif()
 set(test_source_dir ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories( ${test_source_dir}/src )
 
-set(_SRC_PATTERN ${test_source_dir}/src/*.c
-    ${test_source_dir}/src/*.h ${test_source_dir}/src/*.hpp
-    ${test_source_dir}/src/*.cpp ${test_source_dir}/src/*.cc)
+set(_SRCs)
+set(_PATTERN_SRC *.c *.cpp *.cc *.h *.hpp *.hxx)
 
-file(GLOB_RECURSE _test_SRCS  ${_SRC_PATTERN})
+foreach(i in ${_PATTERN_SRC})
+   file(GLOB_RECURSE _SRCs  ${_SRCs} ${test_source_dir}/src/${i})
+endforeach()
 
-source_group(TREE ${test_source_dir} FILES ${_test_SRCS} )
+
+source_group(TREE ${test_source_dir} FILES ${_SRCs} )
 
 if(WITH_MAIN)
-    add_executable(${PROJECT_NAME} ${_test_SRCS})
+    add_executable(${PROJECT_NAME} ${_SRCs})
 else()
-    add_executable(${PROJECT_NAME} main.cpp ${_test_SRCS})
+    add_executable(${PROJECT_NAME} main.cpp ${_SRCs})
 endif()
 
 

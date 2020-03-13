@@ -2,10 +2,10 @@ import os
 import yaml
 import sys
 import shutil
-
+from string import Template
 from conans.tools import ConanOutput as Output
 from epm.util.files import mkdir
-from jinja2 import PackageLoader, Environment
+from jinja2 import PackageLoader, Environment, FileSystemLoader
 
 _DEP_DEMO = '''#
 #dependencies:
@@ -104,10 +104,10 @@ class Generator(object):
         self._out('cmake/libCMakeLists.txt', 'cmake/CMakeLists.txt')
         self._out('cmake/config.cmake.in', 'cmake/{}-config.cmake.in'.format(self.name))
 
-        self._out('test_package/main.cpp', 'test_package/src/main.cpp')
-        self._out('test_package/test.cpp', 'test_package/src/test.cpp')
-        self._out('test_package/CMakeLists.txt', 'test_package/CMakeLists.txt')
-        self._out('test_package/conanfile.py', 'test_package/conanfile.py')
+        self._out('test_package/main.cpp', 'tests/src/main.cpp')
+        self._out('test_package/test.cpp', 'tests/src/test.cpp')
+        self._out('test_package/CMakeLists.txt', 'tests/CMakeLists.txt')
+        self._out('test_package/conanfile.py', 'tests/conanfile.py')
 
     def _application(self):
         self._common()
@@ -117,9 +117,9 @@ class Generator(object):
         self._out('CMakeLists.txt', 'CMakeLists.txt')
         self._out('cmake/CMakeLists.txt', 'cmake/CMakeLists.txt')
 
-        self._out('test_package/main.py', 'test_package/main.py')
-        self._out('test_package/test_version.py', 'test_package/test_{}.py'.format(self.name))
-        self._out('test_package/app-conanfile.py', 'test_package/conanfile.py')
+        self._out('test_package/main.py', 'tests/main.py')
+        self._out('test_package/test_version.py', 'tests/test_{}.py'.format(self.name))
+        self._out('test_package/app-conanfile.py', 'tests/conanfile.py')
 
     def _out(self, template, filename, **kwargs):
         env = self._jinja2_project_env
@@ -165,20 +165,23 @@ class Generator(object):
 #                scheme['options']['dynamic']['.dependencies'] = deps
 
         script = manifest.get('script', {})
+        test = manifest.get('test', {})
 
         if not script.get('gitlab-ci'):
             script['gitlab-ci'] = 'script/gitlab-ci.py'
 
         if self._type == 'app':
             if not script.get('test', {}):
-                script['test'] = 'test_package/main.py'
+                script['test'] = 'tests/main.py'
 
             if not sandbox.get(self.name, {}):
                 sandbox = {self.name: 'package/bin/%s' % self.name}
 
         else:
-            if not sandbox.get('test_package', {}):
-                sandbox = {'test_package': 'test_package/%s_test' % self.name}
+            if not sandbox.get('test', {}):
+                sandbox = {'test': 'test/tests/package/%s_test' % self.name}
+            if not test:
+                test = ['tests']
 
         for key in ['name', 'version', 'group', 'sandbox', 'plan', 'script',
                     'dependencies', 'license', 'description']:
@@ -212,13 +215,18 @@ class Generator(object):
                 filename = 'package.yml.origin.{}'.format(i)
 
             os.rename('package.yml', filename)
+        if test:
+            test = yaml.dump({'test': test}, default_flow_style=False)
+        else:
+            test = ''
         self._out('package.yml', 'package.yml',
                   scheme=scheme,
                   sandbox=sandbox,
                   script=script,
                   dependencies=dependencies,
                   license=license,
-                  description=description)
+                  description=description,
+                  test=test)
 
     def run(self):
         if self._type == 'lib':
@@ -231,3 +239,78 @@ class Generator(object):
             self.type, self.name))
 
         self.out.info('Please check README.md for details')
+
+
+
+
+class Creator(object):
+
+    def __init__(self, meta, directory):
+        self._meta = meta
+        self._type = meta['type']
+        self._dir = os.path.abspath(directory)
+        filename = os.path.join(self._dir, '.manifest.yml')
+        if not os.path.exists(filename):
+            raise Exception('specify directory %s miss <.manifest.yml>' % directory)
+        with open(filename) as f:
+            self._manifest = yaml.safe_load(f)
+
+
+    @property
+    def artifacts(self):
+        def _(templ):
+            s = Template(templ)
+            return s.substitute(self._meta)
+
+        results = []
+        for item in self._manifest.get('all', []) + self._manifest.get(self._type, []):
+            if isinstance(item, str):
+                item = _(item)
+                filename = os.path.join(self._dir, item)
+                if os.path.exists(filename + '.j2'):
+                    results.append((item + '.j2', item, 'jinja'))
+                elif os.path.exists(filename):
+                    results.append((item, item, ''))
+                else:
+                    raise Exception('illegal item %s' % item)
+            elif isinstance(item, dict):
+                for k, v in item.items():
+                    assert isinstance(v, str)
+                    assert isinstance(k, str)
+                    k = _(k)
+                    v = _(v)
+                    j2 = 'jinja' if v.endswith('.j2') else ''
+                    filename = os.path.join(self._dir, v)
+                    if not os.path.exists(filename):
+                        raise Exception('not exists template file %s' % filename)
+                    results.append((v, k, j2))
+            else:
+                raise Exception('unsupported %s %s' % (item, type(item)))
+        return results
+
+    def copy(self, src, dst):
+        folder = os.path.dirname(dst)
+        if folder and not os.path.exists(folder):
+            os.makedirs(folder)
+        import shutil
+        shutil.copyfile(os.path.join(self._dir, src), dst)
+
+    def jinja(self, src, dst):
+        folder = os.path.dirname(os.path.join(self._dir, src))
+        env = Environment(loader=FileSystemLoader(folder))
+        template = env.get_template(os.path.basename(src))
+        content = template.render(self._meta)
+
+        folder = os.path.dirname(dst)
+        if folder and not os.path.exists(folder):
+            os.makedirs(folder)
+        with open(dst, 'w') as f:
+            f.write(content)
+
+    def run(self):
+        for src, dst, type in self.artifacts:
+            print(src, dst, bool(type))
+            if type == 'jinja':
+                self.jinja(src, dst)
+            else:
+                self.copy(src, dst)

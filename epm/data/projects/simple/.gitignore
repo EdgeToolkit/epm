@@ -1,0 +1,7 @@
+.idea/
+.vscode/
+.conan/
+.epm/
+*.pyc
+package.yml.origin
+

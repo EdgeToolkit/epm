@@ -1,0 +1,112 @@
+
+if (BUILD_SHARED_LIBS)
+  set({{ name }}_BUILD_SHARED_LIBS_DEFAULT ON)
+else (BUILD_SHARED_LIBS)
+  set({{ name }}_BUILD_SHARED_LIBS_DEFAULT OFF)
+endif (BUILD_SHARED_LIBS)
+
+option({{ name }}_BUILD_SHARED_LIBS "Build Shared Libraries" {{ '${%s_BUILD_SHARED_LIBS_DEFAULT}' % name }})
+  
+set({{ name }}_DEBUG_POSTFIX "d" CACHE STRING "Default debug postfix")
+mark_as_advanced({{ name }}_DEBUG_POSTFIX)
+
+if ({{ name }}_BUILD_SHARED_LIBS)
+  set({{ name }}_SHARED_OR_STATIC "SHARED")
+else ({{ name }}_BUILD_SHARED_LIBS)
+  set({{ name }}_SHARED_OR_STATIC "STATIC")
+  # In case we are building static libraries, link also the runtime library statically
+  # so that MSVCR*.DLL is not required at runtime.
+  # https://msdn.microsoft.com/en-us/library/2kzt1wy3.aspx
+  # This is achieved by replacing msvc option /MD with /MT and /MDd with /MTd
+  # http://www.cmake.org/Wiki/CMake_FAQ#How_can_I_build_my_MSVC_application_with_a_static_runtime.3F
+  if (MSVC AND {{ name }}_MSVC_STATIC_RUNTIME)
+    foreach(flag_var
+        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+      if(${flag_var} MATCHES "/MD")
+        string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+      endif(${flag_var} MATCHES "/MD")
+    endforeach(flag_var)
+  endif (MSVC AND {{ name }}_MSVC_STATIC_RUNTIME)
+endif ({{ name }}_BUILD_SHARED_LIBS)
+
+
+
+get_filename_component(lib_source_dir {{ '${%s_SOURCE_DIR} ' % name }} PATH)
+include_directories( ${lib_source_dir}/include ${lib_source_dir}/source)
+
+if (MSVC)
+  # Add the "lib" prefix for generated .lib outputs.
+  set(LIB_PREFIX lib)
+else (MSVC)
+  # When building with "make", "lib" prefix will be added automatically by
+  # the build tool.
+  set(LIB_PREFIX)
+endif (MSVC)
+
+##############################################################
+#
+# {{ name }} library
+#
+##############################################################
+set(_SRCs)
+set(_HDRs)
+set(_PATTERN_SRC *.c *.cpp *.cc)
+set(_PATTERN_HDR *.h *.hpp *.hxx)
+
+foreach(i in ${_PATTERN_HDR})
+   file(GLOB_RECURSE _HDRs  ${_HDRs} ${lib_source_dir}/source/${i})
+endforeach()
+foreach(i in ${_PATTERN_SRC}  ${_PATTERN_HDR})
+   file(GLOB_RECURSE _SRCs  ${_SRCs} ${lib_source_dir}/source/${i})
+endforeach()
+
+add_library({{ name }}  ${_SRCs} ${_HDRs})
+
+if(BUILD_SHARED_LIBS)
+  if(MSVC)
+    target_compile_definitions({{ name }}
+		PUBLIC  {{ name | upper }}_USE_DLLS
+		PRIVATE {{ name | upper }}_EXPORTS)
+
+  endif()
+
+target_link_libraries({{ name }} ${CONAN_LIBS} )
+endif()
+source_group(TREE ${lib_source_dir} FILES  ${_SRCs} ${_HDRs})
+
+
+# Install configuration
+set(_cmakedir_desc "Directory relative to CMAKE_INSTALL to install the cmake configuration files")
+if(NOT MSVC)
+  set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/{{name}}" CACHE STRING "${_cmakedir_desc}")
+else()
+  set(CMAKE_INSTALL_CMAKEDIR "cmake" CACHE STRING "${_cmakedir_desc}")
+endif()
+mark_as_advanced(CMAKE_INSTALL_CMAKEDIR)
+
+# Install configuration
+set(_cmakedir_desc "Directory relative to CMAKE_INSTALL to install the cmake configuration files")
+configure_file({{ name }}-config.cmake.in
+               ${CMAKE_INSTALL_CMAKEDIR}/{{ name }}-config.cmake @ONLY)
+
+
+export(TARGETS {{ name }}
+  NAMESPACE {{ name }}::
+  FILE ${CMAKE_INSTALL_CMAKEDIR}/{{ name }}-targets.cmake )
+
+install(EXPORT {{ name }}-targets
+  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
+  NAMESPACE {{ name }}::
+  COMPONENT {{ name }}-export)
+
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/
+  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
+  COMPONENT {{ name }}-export
+  PATTERN {{ name }}-targets.cmake EXCLUDE )
+
+install(DIRECTORY ${lib_source_dir}/include/ DESTINATION  include)
+install(TARGETS {{ name }} EXPORT {{ name }}-targets
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT {{ name }}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT {{ name }}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT {{ name }})

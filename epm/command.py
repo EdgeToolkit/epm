@@ -317,12 +317,20 @@ class Command(object):
         app = subparsers.add_parser("app")
         _common_args(app)
         args = parser.parse_args(*args)
-        print(args)
+
+        from epm.tool.project import Creator
+        import epm
+        name = args.name or os.path.basename(os.path.abspath('.'))
+        version = args.version or '0.0.1'
+        folder = os.path.join(os.path.dirname(epm.__file__), 'data', 'projects', 'simple')
+        gen = Creator({'type': args.command,
+                       'name': name,
+                       'version': version}, folder)
 
 #        if args not in ['app', 'lib']:
 #            raise EException('Unsupported package type %s' % args.command)
-        from epm.tool.project import Generator
-        gen = Generator(args, args.command)
+        #from epm.tool.project import Generator
+        #gen = Generator(args, args.command)
         return gen.run()
 
     def sandbox(self, *args):

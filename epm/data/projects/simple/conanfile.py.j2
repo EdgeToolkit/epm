@@ -21,8 +21,7 @@ class {{ name | capitalize | replace('-', '_') }}Conan(ConanFile):
     topics = _meta.topics
 
     exports = ["package.yml", "conanfile.py"]
-    exports_sources = ["CMakeLists.txt", "test_pacakge/*",
-                       "include/*", "source/*", "cmake/*"]
+    exports_sources = ["CMakeLists.txt", "tests/*", "include/*", "source/*", "cmake/*"]
     generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False],
@@ -53,20 +52,6 @@ class {{ name | capitalize | replace('-', '_') }}Conan(ConanFile):
     def package(self):
         cmake = self._configure_cmake()
         cmake.install()
-{% if type == 'lib' %}
-        if self.settings.compiler == 'gcc' and 'arm' in self.settings.arch:
-            for i in glob.glob('%s/lib/*.so*' % self.package_folder):
-                if os.path.isfile(i) and not i.endswith('.strip'):
-                    name = os.path.basename(i)
-                    getsize = os.path.getsize
-                    print('[%s] %d KB' % (name, getsize(i) / 1000))
-
-                    strip = i + '.strip'
-                    shutil.copy(i, strip)
-                    self.run('$STRIP %s' % strip)
-                    print('[%s] %d KB after striped' % (name, getsize(strip) / 1000))
-                    os.remove(strip)
-{% endif %}
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)

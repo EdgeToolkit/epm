@@ -1,0 +1,31 @@
+
+##############################################################
+#
+# {{ name }} executable program
+#
+##############################################################
+set(_SRCs)
+set(_HDRs)
+set(_PATTERN_SRC *.c *.cpp *.cc)
+set(_PATTERN_HDR *.h *.hpp *.hxx)
+
+foreach(i in ${_PATTERN_HDR})
+   file(GLOB_RECURSE _HDRs  ${_HDRs} ${lib_source_dir}/source/${i})
+endforeach()
+foreach(i in ${_PATTERN_SRC}  ${_PATTERN_HDR})
+   file(GLOB_RECURSE _SRCs  ${_SRCs} ${lib_source_dir}/source/${i})
+endforeach()
+
+add_executable({{ name }}  ${_SRCs} ${_HDRs})
+target_link_libraries({{ name }}  ${CONAN_LIBS} )
+
+source_group(TREE ${app_source_dir} FILES ${_SRCs} ${_HDRs})
+
+
+# Install configuration
+set(_cmakedir_desc "Directory relative to CMAKE_INSTALL to install the cmake configuration files")
+mark_as_advanced(CMAKE_INSTALL_CMAKEDIR)
+
+# Install configuration
+install(TARGETS {{ name }} EXPORT {{ name }}-targets
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT {{ name }})

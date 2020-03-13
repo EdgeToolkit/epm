@@ -117,8 +117,8 @@ setup(
     # have to be included in MANIFEST.in as well.
     package_data={
         'epm': ['*.txt', 
-        'data/*/*/*', 'data/*/*','data/*/*', 'data/*',
-        'test/data/*/*/*', 'test/data/*/*','test/data/*/*', 'test/data/*'
+        'data/*/*/*', 'data/*/*', 'data/*/*', 'data/*',
+        'test/data/*/*/*', 'test/data/*/*', 'test/data/*/*', 'test/data/*'
         ]
     },
 

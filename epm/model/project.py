@@ -80,7 +80,7 @@ class Project(object):
         return self.manifest['version']
 
     @property
-    def user(self):
+    def group(self):
         return self.conan_meta.group
 
     @property
@@ -89,7 +89,7 @@ class Project(object):
 
     @property
     def reference(self):
-        return '%s/%s@%s/%s' % (self.name, self.version, self.user, self.channel)
+        return '%s/%s@%s/%s' % (self.name, self.version, self.group, self.channel)
 
     @property
     def scheme(self):
@@ -111,7 +111,7 @@ class Project(object):
             out = '%s/%s' % (cache, self.scheme.name)
             build = '%s/build' % out
             package = '%s/package' % out
-            test = '%s/test_package' % out
+            test = '%s/test' % out
 
         return Folder(cache, out, build, package, test)
 
@@ -132,3 +132,14 @@ class Project(object):
         if not self._conan_meta:
             self._conan_meta = ConanMeta(self.manifest)
         return self._conan_meta
+
+    @property
+    def tests(self):
+        return self.manifest.get('tests', None)
+
+    def generate_profile(self, force=False):
+        filename = os.path.join(self.folder.out, 'profile')
+        if not os.path.exists(filename):
+            self.scheme.profile.save(filename)
+        return filename
+

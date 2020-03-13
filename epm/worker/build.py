@@ -24,9 +24,9 @@ class Builder(Worker):
             if i in steps:
                 fn = getattr(self, '_%s' % i)
                 self.out.highlight('[building - %s ......]' % i)
-                if i == 'test' and not os.path.exists('test_package'):
-                    self.out.warn('Skip test because of test_package folder not existing')
-                    continue
+                #if i == 'test' and not os.path.exists('test_package'):
+                #    self.out.warn('Skip test because of test_package folder not existing')
+                #    continue
                 fn(project)
 
     def exec(self, param):
@@ -79,7 +79,7 @@ class Builder(Worker):
         info = conan.install(path=wd,
                              name=project.name,
                              version=project.version,
-                             user=project.user,
+                             user=project.group,
                              channel=project.channel,
                              settings=None,  # should be same as profile
                              options=options,
@@ -125,14 +125,33 @@ class Builder(Worker):
                                   layout=project.layout,
                                   cwd=wd)
         options = ['%s=%s' % (k, v) for k, v in project.scheme.options.as_list(package=True)]
+        tests = []
+        if not project.tests:
+            if os.path.exists('tests/conanfile.py'):
+                tests = ['tests']
 
-        info = conan.test(path='./test_package',
-                          reference=project.reference,
-                          settings=None,
-                          options=options,
-                          test_build_folder=project.folder.test,
-                          profile_names=[profile_path])
-        self._sandbox(project, 'test_package')
+        for i in tests:
+            conanfile_path = os.path.join(i, 'conanfile.py')
+            if not os.path.exists(conanfile_path):
+                raise EException('specified test <%s> miss Makefile.py' % i)
+            instd = os.path.join(project.folder.test, i, 'build')
+            pkgdir = os.path.join(project.folder.test, i, 'package')
+            info = conan.install(path=conanfile_path,
+                                 name='%s-%s' % (project.name, i),
+                                 settings=None,  # should be same as profile
+                                 options=options,
+                                 profile_names=[project.generate_profile()],
+                                 install_folder=instd)
+
+            info = conan.build(conanfile_path=conanfile_path,
+                               package_folder=pkgdir,
+                               build_folder=instd,
+                               install_folder=instd)
+
+            info = conan.package(path=conanfile_path,
+                                 build_folder=instd,
+                                 package_folder=pkgdir,
+                                 install_folder=instd)
 
     def _sandbox(self, project, folder):
         storage = self.api.conan_storage_path

@@ -1,5 +1,5 @@
 # Minimum CMake required
-cmake_minimum_required(VERSION 3.1.3)
+cmake_minimum_required(VERSION 3.1.0)
 
 if({{ name }}_VERBOSE)
   message(STATUS "{{ name }} Configuring...")
@@ -93,9 +93,7 @@ if (MSVC)
 endif (MSVC)
 
 get_filename_component(lib_source_dir {{ '${%s_SOURCE_DIR} ' % name }} PATH)
-include_directories(
-  ${lib_source_dir}/include
-  ${lib_source_dir}/source)
+include_directories( ${lib_source_dir}/include ${lib_source_dir}/source)
 
 if (MSVC)
   # Add the "lib" prefix for generated .lib outputs.
@@ -113,35 +111,10 @@ endif (MSVC)
 ##############################################################
 set(_all_SRCs)
 
-# protobuf-nano lib part if you need
-if(PROTOBUF_NANO_LIBRARY)
-set(_pb_nano_srcs)
-set(_pb_imports)
-file(GLOB_RECURSE _protos  ${CMAKE_CURRENT_SOURCE_DIR}/include/*.proto)
-foreach( i name-of-import-protobuf-modules )
-  string(TOUPPER i name)
-  list(APPEND _pb_imports CONAN_${name}_ROOT/include)
-endforeach()
-
-protoc_nano(PROTOS ${_protos}
-            APPEND_PATH
-            ENGINE nano
-            NAMESPACE_PREFIX nano
-            OUT_VAR _pb_nano_SRCs
-            BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include
-            PROTOC_OUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include
-
-            if(_pb_imports)
-            IMPORT_DIRS ${_pb_imports}
-            endif()
-            )
-  list(APPEND _all_SRCs ${_pb_nano_SRCs})
-endif()
 
 set(_SRC_PATTERN ${lib_source_dir}/source/*.c
     ${lib_source_dir}/source/*.h ${lib_source_dir}/source/*.hpp
     ${lib_source_dir}/source/*.cpp ${lib_source_dir}/source/*.cc)
-
 
 set(_HDR_PATTERN ${lib_source_dir}/include/*.h ${lib_source_dir}/include/*.hpp)
 
