@@ -17,231 +17,11 @@ from collections import OrderedDict, namedtuple
 
 from epm.util import is_elf, system_info
 from epm.util.files import remove, rmdir, load_yaml
+from epm.paths import get_epm_home_dir
 
 from conans.client.tools import environment_append
 
 PLATFORM, ARCH = system_info()
-
-
-def is_running_native(scheme):
-    profile = scheme.profile
-
-
-class Profile_(object):
-    """ Specific profile
-
-    """
-
-    def __init__(self, meta):
-
-        assert(meta and isinstance(meta, dict))
-        self.name = meta['name']
-        self.family = meta['family']
-        self.description = meta['description']
-        self.type = meta['type']
-        self.settings = meta['settings']
-        self._meta = meta
-
-    @property
-    def docker(self):
-        Docker = namedtuple('Docker', ['builder', 'runner'])
-        docker = self._meta.get('docker')
-        runner = docker.get('runner') if docker else None
-        builder = docker.get('builder') if docker else None
-
-        return Docker(builder, runner)
-
-    def save(self, filename):
-
-        from conans.model.profile import Profile as ConanProfile
-        from conans.util.files import save
-        profile = ConanProfile()
-        profile.update_settings(self.settings)
-        save(filename, profile.dumps())
-
-    @property
-    def is_running_native(self):
-        if PLATFORM != self.settings['os']:
-            return False
-        arch = self.settings['arch']
-        assert(arch in ['x86', 'x86_64'])
-        if ARCH == arch:
-            return True
-
-        if PLATFORM == 'Windows':
-            return 'x86' == arch
-        else:
-            return False
-
-    @property
-    def builders(self):
-
-        arch = self.settings['arch']
-        platform = self.settings['os']
-
-        if PLATFORM == 'Windows':
-            if platform == 'Windows':
-                return ['shell']
-            elif platform == 'Linux':
-                return ['docker']
-        elif PLATFORM == 'Linux':
-            if platform == 'Linux':
-                return ['docker', 'shell']
-        return None
-
-    @property
-    def is_cross_build(self):
-        return PLATFORM != self.settings['os'] or ARCH != self.settings['arch']
-
-class ProfileManager(object):
-
-    def __init__(self, folder=None, init=True):
-        """
-
-        :param folder: EPM cache folder where
-        :param init: if profile folder is empty install default profiles
-        """
-        self.folder = folder or os.path.join(get_epm_home_dir(), 'profiles')
-        self.families = {}
-        if init:
-            self._initialize()
-        self._load()
-
-    def _load(self):
-
-        for filename in glob.glob('{}/*.yml'.format(self.folder)):
-            families = self.parse(filename)
-
-            for name, family in families.items():
-                if name in self.families:
-                    raise EException('%s duplicated defined' % name)
-
-                for sname, spec in family.items():
-                    if sname in self.specs:
-                        raise EException('%s duplicated defined' % sname)
-                self.families[name] = family
-
-    @property
-    def specs(self):
-        specs = {}
-        for _, spec in self.families.items():
-            specs = dict(specs, **spec)
-        return specs
-
-    def metadata(self, name):
-        """get the sepc profile meta data
-
-        :param name:
-        :return:
-        """
-        return self.specs.get(name)
-
-    def profile(self, name):
-        meta = self.specs.get(name)
-        if not meta:
-            raise EException('The spec profile %s not exists.' % name)
-        return Profile(meta)
-
-    def _initialize(self):
-        if not os.path.exists(self.folder):
-            os.makedirs(self.folder)
-        profiles = glob.glob('{}/*.yml'.format(self.folder))
-        if not profiles:
-            for filename in ['windows.yml', 'linux.yml']:
-                shutil.copy(os.path.join(DATA_DIR, 'default_profiles', filename),
-                            os.path.join(self.folder, filename))
-
-    @staticmethod
-    def _assembly_scheme(items):
-        result = OrderedDict()
-        for it in items:
-            if isinstance(it, list):
-                for i in it:
-                    assert (isinstance(i, dict))
-                    assert (len(i) == 1)
-                    result.update(i)
-            elif isinstance(it, dict):
-                assert (len(it) == 1)
-                result.update(it)
-        return result
-
-    @staticmethod
-    def _assembly(items, scheme):
-        assert (isinstance(scheme, OrderedDict))
-        assert (isinstance(items, (dict, OrderedDict)))
-        expect = set(scheme.keys())
-        actual = set(items.keys())
-
-        diff = expect.difference(actual)
-        if diff:
-            i = expect.intersection()
-            missing = expect.difference(i)
-            illegal = actual.difference(i)
-            raise EException('Bad spec profile fields. {} {}'.format(
-                "missing: {}".format(",".join(missing)) if missing else ' ',
-                "illegal: {}".format(",".join(illegal)) if illegal else ' '))
-        result = copy.copy(scheme)
-
-        for name, value in items.items():
-
-            if value not in scheme[name]:
-                raise EException('illegal spec profile value {}, should be: {}'.format(
-                    value, ",".join(scheme[name])))
-
-            if isinstance(value, (int, float,)) and name in ['compiler.version']:
-                value = str(value)
-
-            result[name] = value
-        return result
-
-    @staticmethod
-    def parse(filename):
-        meta = load_yaml(filename)
-        schema = meta['.schema']
-        families = {}
-
-        for name, profile in meta.items():
-            if name.startswith('.'):
-                continue
-
-            specs = {}
-            settings = schema[profile['.scheme']]['settings']
-            docker = profile.get('.docker')
-
-            scheme = ProfileManager._assembly_scheme(settings)
-
-            for type, spec in profile.items():
-                description = None
-                if type == '.description':
-                    description = spec
-
-                if type.startswith('.'):
-                    continue
-
-                sname = spec['name']
-                assert (sname not in specs)
-
-                try:
-                    settings = ProfileManager._assembly(spec['settings'], scheme)
-                except EException as e:
-                    msg = str(e) + ' spec={}'.format(sname)
-                    raise EException(msg)
-
-                specs[sname] = {'type': type,
-                                'name': sname,
-                                'family': name,
-                                'docker': docker,
-                                'description': description,
-                                '__file__': filename,
-                                'settings': settings
-                                }
-
-            families[name] = specs
-
-        return families
-
-#######################################################
-from epm.paths import get_epm_home_dir
 
 
 def parse_scheme_name(name):
@@ -258,7 +38,7 @@ class Profile(object):
     """
 
     def __init__(self, name, epm_dir):
-        self._name = name
+        self.name = name
         self._epm_dir = epm_dir or get_epm_home_dir()
         self._filename = os.path.join(self._epm_dir, 'profiles', name)
         manifest = os.path.join(os.path.dirname(self._filename), 'manifest.yml')
@@ -275,14 +55,14 @@ class Profile(object):
 
         for family, value in self._manifest.items():
             for name, spec in value['profiles'].items():
-                if name == os.path.basename(self._name):
+                if name == os.path.basename(self.name):
                     self._meta = dict(value, **spec)
                     del self._meta['profiles']
                     break
         if self._meta is None:
-            raise EException('No properties defined for profile %s' % self._name)
+            raise EException('No properties defined for profile %s' % self.name)
 
-        name = os.path.basename(self._name)
+        name = os.path.basename(self.name)
         folder = os.path.dirname(self._filename)
         self._profile, _ = read_profile(name, folder, folder)
 

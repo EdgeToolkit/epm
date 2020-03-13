@@ -72,10 +72,6 @@ class Builder(Worker):
 
         options = ['%s=%s' % (k, v) for (k, v) in scheme.options.as_list()]
 
-        print('--------------------------------------')
-        print(options)
-        print('--------------------------------------')
-
         info = conan.install(path=wd,
                              name=project.name,
                              version=project.version,
@@ -125,8 +121,8 @@ class Builder(Worker):
                                   layout=project.layout,
                                   cwd=wd)
         options = ['%s=%s' % (k, v) for k, v in project.scheme.options.as_list(package=True)]
-        tests = []
-        if not project.tests:
+        tests = project.tests
+        if not tests:
             if os.path.exists('tests/conanfile.py'):
                 tests = ['tests']
 

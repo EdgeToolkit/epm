@@ -64,7 +64,7 @@ class DockerRunner(object):
     def _container_name(self):
         import time
         name = '%s_%s_%s' % (self._project.name, self._project.scheme.name, time.time())
-        return name.replace('@', '-')
+        return name.replace('@', '-').replace('/', '-')
 
     def exec(self, commands, config=None):
 
@@ -126,7 +126,7 @@ class DockerRunner(object):
 
         if self._dc:
             try:
-                builder = self._dc['profile'][scheme.profile.family]['docker']['builder']
+                builder = self._dc['profile'][scheme.profile.name]['docker']['builder']
                 if builder.get('image'):
                     config['image'] = builder['image']
 
@@ -140,6 +140,9 @@ class DockerRunner(object):
         WD = self._docker_var_parse(config, self.WD)
         volumes = dict({}, **self.volumes)
         environment = {}
+        EPM_ARCHIVE_URL = os.environ.get('EPM_ARCHIVE_URL')
+        if EPM_ARCHIVE_URL:
+            environment['EPM_ARCHIVE_URL'] = EPM_ARCHIVE_URL
 
         for key, value in volumes.items():
             value['bind'] = self._docker_var_parse(config, value['bind'])

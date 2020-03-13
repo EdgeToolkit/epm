@@ -118,7 +118,6 @@ class Creator(Worker):
 
     def _exec(self, project, clear=False):
 
-
         conan = self.api.conan
         scheme = project.scheme
 
@@ -127,10 +126,6 @@ class Creator(Worker):
         scheme.profile.save(profile_path)
 
         options = ['%s=%s' % (k, v) for (k, v) in scheme.options.as_list()]
-
-#        self._test(project)
-#        self._sandbox(project, '3fb49604f9c2f729b85ba3115852006824e72cab')
-#        return
 
         for i in conan.editable_list():
             conan.editable_remove(i)
@@ -153,12 +148,7 @@ class Creator(Worker):
         result = {'id': id}
         dirs = None
 
-        ######
         self._test(project)
-
-
-        ######
-
 
         if clear:
             for i in glob.glob(project.folder.test):
@@ -193,17 +183,20 @@ class Creator(Worker):
         profile_path = os.path.join(project.folder.out, 'profile')  # already generated in configure step
 
         options = ['%s=%s' % (k, v) for k, v in project.scheme.options.as_list(package=True)]
-        tests = []
-        if not project.tests:
+        tests = project.tests
+        if not tests:
             if os.path.exists('tests/conanfile.py'):
                 tests = ['tests']
 
         for i in tests:
+            print(i, '*'*25)
             conanfile_path = os.path.join(i, 'conanfile.py')
             if not os.path.exists(conanfile_path):
                 raise EException('specified test <%s> miss Makefile.py' % i)
             instd = os.path.join(project.folder.test, i, 'build')
             pkgdir = os.path.join(project.folder.test, i, 'package')
+            print('instd', instd)
+            print('pkgdir', pkgdir)
             info = conan.install(path=conanfile_path,
                                  name='%s-%s' % (project.name, i),
                                  settings=None,  # should be same as profile
