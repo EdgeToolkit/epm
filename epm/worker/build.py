@@ -121,7 +121,7 @@ class Builder(Worker):
                                   layout=project.layout,
                                   cwd=wd)
         options = ['%s=%s' % (k, v) for k, v in project.scheme.options.as_list(package=True)]
-        tests = project.tests
+        tests = project.tests or []
         if not tests:
             if os.path.exists('tests/conanfile.py'):
                 tests = ['tests']

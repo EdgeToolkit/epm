@@ -146,12 +146,21 @@ class Options(object):
         options = {k: v for k, v in options.items() if k[0] != '.'}
         deps = {}
 
-        for pkg, sch in dep_options.items():
-            info = dependencies.get(pkg)  # get dependent package info
-            if not info:
-                raise EException('less information of %s, miss dependencies in package.yml ' % name)
+        print('[%s] BEGIN' % name)
 
-            deps[pkg] = {**info, 'options': sch}
+        for pkg, sch in dep_options.items():
+            print('@', pkg, sch)
+            import pprint
+            pprint.pprint(dependencies)
+            for lib in dependencies:
+                print('lib', lib)
+                for key, info in lib.items():
+                    print('$', key, info)
+                    if key == pkg:
+                        if not info:
+                            raise EException('less information of %s, miss dependencies in package.yml ' % name)
+                        deps[pkg] = {**info, 'options': sch}
+        print('[%s] END' % name)
 
         return options, deps
 
@@ -169,13 +178,12 @@ class Options(object):
 
             conan = self.project.api.conan
             reference = '%s/%s@%s/%s' % (name, version, user, channel)
-            print('===>', reference, '!!!')
+
 
             storage = storage or self.project.api.conan_storage_path
             with environment_append({'CONAN_STORAGE_PATH': storage}):
                 recipe = conan.inspect(reference, [])
-                print('@@@@------')
-                print(recipe)
+
 
             path = os.path.join(storage, name, version, user, channel, 'export', 'package.yml')
 

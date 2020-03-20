@@ -66,7 +66,7 @@ class Program(object):
             self._prefix = m.group('prefix')
             path = m.group('path')
 
-        print(path, '@@@@@@@@@@@@')
+
 
         m = P_PATH.match(path)
 
@@ -143,9 +143,6 @@ class Program(object):
         folders = ['bin'] if self._folder == 'package' else ['bin', '']
         folders = [self._middle] if self._middle else folders
         for m in folders:
-            print('***', m)
-
-
             if where == 'project':
                 path, folder = ppath(m)
                 if self._is_program(path):

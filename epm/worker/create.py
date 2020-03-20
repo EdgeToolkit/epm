@@ -179,24 +179,22 @@ class Creator(Worker):
 
     def _test(self, project):
         conan = self.api.conan
-        wd = '.'
-        profile_path = os.path.join(project.folder.out, 'profile')  # already generated in configure step
+
+        #profile_path = os.path.join(project.folder.out, 'profile')  # already generated in configure step
 
         options = ['%s=%s' % (k, v) for k, v in project.scheme.options.as_list(package=True)]
-        tests = project.tests
+        tests = project.tests or []
         if not tests:
             if os.path.exists('tests/conanfile.py'):
                 tests = ['tests']
 
         for i in tests:
-            print(i, '*'*25)
             conanfile_path = os.path.join(i, 'conanfile.py')
             if not os.path.exists(conanfile_path):
                 raise EException('specified test <%s> miss Makefile.py' % i)
             instd = os.path.join(project.folder.test, i, 'build')
             pkgdir = os.path.join(project.folder.test, i, 'package')
-            print('instd', instd)
-            print('pkgdir', pkgdir)
+
             info = conan.install(path=conanfile_path,
                                  name='%s-%s' % (project.name, i),
                                  settings=None,  # should be same as profile

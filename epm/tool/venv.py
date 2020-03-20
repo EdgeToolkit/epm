@@ -113,7 +113,6 @@ class VirtualEnvironment(object):
             _dict = dict({'channel': 'public',
                           'environment': {}
                           }, **venv)
-            print(_dict, '@@@@@@@@@@@@@@@@@@@@@@')
             tmpl = self._jinja2.get_template(filename + '.j2')
             content = tmpl.render(_dict)
             save(os.path.join(path, filename), content)

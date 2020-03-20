@@ -89,24 +89,14 @@ class ConanMeta(object):
     @property
     def dependencies(self):
         references = []
-        for name, value in self._meta.get('dependencies', {}).items():
-            print(name, '====', value)
-            #self._require_check("dependencies illegal.", name, value)
-            version = value['version']
-            user = value.get('group') or self.group
-            channel = value.get('channel') or get_channel(name)
-            references.append("%s/%s@%s/%s" % (name, version, user, channel))
-        #dependencies = self._meta.get('dependencies', [])
-        #for package in self._meta.get('dependencies', []):
-        #    print('packaginfo', package, type(package), '*', isinstance(package, dict))
-        #    assert isinstance(package, dict)
-        #    assert len(package) == 1
-        #    for name, value in package.items():
-        #        self._require_check("dependencies illegal.", name, value)
-        #        version = value['version']
-        #        user = value.get('group') or self.group
-        #        channel = value.get('channel') or get_channel(name)
-        #        references.append("%s/%s@%s/%s" % (name, version, user, channel))
+        for packages in self._meta.get('dependencies', []):
+            for name, option in packages.items():
+                version = option['version']
+                user = option.get('group') or self.group
+                channel = option.get('channel') or get_channel(name)
+                references.append("%s/%s@%s/%s" % (name, version, user, channel))
+
+        print(self.name, '*****----******', references)
         return references
 
     @property
