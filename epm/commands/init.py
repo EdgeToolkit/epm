@@ -13,7 +13,7 @@ class Init(Command):
     def __init__(self):
             args = [
                 ArgparseArgument("template", default=None, type=str,
-                                 help="The template which used to generate project skeleton.")
+                                 help="The template which used to generate project skeleton."),
                 ArgparseArgument("--name", default=None, type=str,
                                  help="name of the package, if not specified use the folder name."),
 

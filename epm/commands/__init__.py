@@ -50,8 +50,21 @@ class Command:
                                             description=self.__doc__,
                                             help=self.help, epilog=self.epilog,
                                             formatter_class=SmartFormatter)
-        for arg in self.arguments:
-            arg.add_to_parser(self.parser)
+        if self.name in ['sandbox', 'run']:
+            pass
+        elif isinstance(self.arguments, dict):
+            subparsers = self.parser.add_subparsers(help='sub-command help', dest='command')
+            for name, args in self.arguments.items():
+                help = args.get('help')
+                description = args.get('description')
+                args = args.get('args') or []
+                parser = subparsers.add_parser(name, help=help, description=description)
+                for arg in args:
+                    arg.add_to_parser(parser)
+
+        elif isinstance(self.arguments, list):
+            for arg in self.arguments:
+                arg.add_to_parser(self.parser)
 
 
 # dictionary with the list of commands
@@ -81,12 +94,12 @@ def load_commands(subparsers):
         command.add_parser(subparsers)
 
 
-def run(command, config, args):
+def run(command, args):
     # if the command hasn't been registered, load a module by the same name
     if command not in _commands:
         raise FatalError('command not found')
 
-    return _commands[command].run(config, args)
+    return _commands[command].run(args)
 
 
 class ArgparseArgument(object):

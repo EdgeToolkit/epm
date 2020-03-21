@@ -43,8 +43,9 @@ class Build(Command):
                 ]
             Command.__init__(self, args)
 
-    def run(self, config, args):
-        print('YES')
+    def run(self, args):
+        print(args)
+
 
 
 register_command(Build)

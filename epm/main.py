@@ -98,7 +98,14 @@ class Main(object):
         # If no commands, make it show the help by default
         if len(args) == 0:
             args = ["-h"]
-        self.args = self.parser.parse_args(args)
+
+        known, unkown = self.parser.parse_known_args(args)
+        command = known.command
+        if command in ['sandbox', 'run']:
+            self.args = known
+            self.args.argv = unkown
+        else:
+            self.args = self.parser.parse_args(args)
 
 #    def list_variants(self):
 #        if not self.args.list_variants:
@@ -126,7 +133,7 @@ class Main(object):
     def run_command(self):
         command = self.args.command
         try:
-            res = commands.run(command, self.config, self.args)
+            res = commands.run(command, self.args)
 #        except UsageError as exc:
 #            self.log_error(exc, True, command)
 #            sys.exit(1)
