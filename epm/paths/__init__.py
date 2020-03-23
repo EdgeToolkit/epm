@@ -14,6 +14,7 @@ def get_epm_home_dir():
     return os.path.abspath(tmp)
 
 
+
 # Files and Folders
 
 PACKAGEMETAFILE = "package.yml"
@@ -22,7 +23,13 @@ BUILDMETAFILE= "build-meta.yml"
 BUILDFOLDER = 'build'
 TESTBUILDFOLDER = 'test_build'
 PACKAGEFOLDER = 'package'
+PROFILES_FOLDER = 'profiles'
 
+HOME_EPM_DIR = conan_expand_user("~/.epm")
+if not os.path.exists(HOME_EPM_DIR):
+    os.makedirs(HOME_EPM_DIR)
+
+EPM_PROJECT_TEMPLATE_DIR = os.path.join(HOME_EPM_DIR, 'project-templates')
 
 import epm
 DATA_DIR = os.path.join(os.path.dirname(epm.__file__), 'data')

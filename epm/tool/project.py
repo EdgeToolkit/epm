@@ -255,7 +255,6 @@ class Creator(object):
         with open(filename) as f:
             self._manifest = yaml.safe_load(f)
 
-
     @property
     def artifacts(self):
         def _(templ):
@@ -314,3 +313,13 @@ class Creator(object):
                 self.jinja(src, dst)
             else:
                 self.copy(src, dst)
+
+
+class Template(object):
+
+    def __init__(self, name):
+        pass
+
+    @staticmethod
+    def list():
+        pass

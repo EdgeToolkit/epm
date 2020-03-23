@@ -92,6 +92,9 @@ class Project(object):
         return '%s/%s@%s/%s' % (self.name, self.version, self.group, self.channel)
 
     @property
+    def profile(self):
+
+    @property
     def scheme(self):
         if self._scheme_name is None:
             return None

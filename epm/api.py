@@ -57,6 +57,9 @@ class APIv1(object):
 
         self._CONFIG = None
 
+        from epm.model.profile import install_default_profiles
+        install_default_profiles()
+
     @property
     def conan(self):
         cache_folder = os.path.join(self.home_dir, '.conan')
@@ -85,7 +88,6 @@ class APIv1(object):
         from epm.model.project import Project
         name = scheme if isinstance(scheme, str) else scheme['scheme']
         return Project(name, self)
-
 
     @api_method
     def build(self, param):

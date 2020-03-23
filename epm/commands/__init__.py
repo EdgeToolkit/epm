@@ -67,6 +67,7 @@ class Command:
                 arg.add_to_parser(self.parser)
 
 
+
 # dictionary with the list of commands
 # command_name -> command_instance
 _commands = {}

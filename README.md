@@ -143,7 +143,7 @@ nosetests epm.test --with-summary-report --summary-report-on class
 
 ## License
 
-project base on conan, license also adhere to it.
+project base on [conan](conan.io), and some code ported from GStreamer cerbero project, so the license should  adhere to them.
 
 [MIT License](./LICENSE.md)
 
