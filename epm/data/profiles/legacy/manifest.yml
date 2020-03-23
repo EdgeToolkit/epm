@@ -1,0 +1,26 @@
+#
+# All the profiles in this folder, are not recommended.
+#
+#
+gcc5:
+  docker:
+    builder:
+      image: epmkit/gcc5
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: ubuntu:xenial
+      shell: /bin/bash
+      home: /home/conan
+
+  profiles:
+    gcc5:
+      description: |
+        GNU GCC 5 build profile for x86_64 Linux with libstdc++.
+        Almost all the modern compiler supported C++ 11, 
+        We strongly recommend to use stdc++11 profile.
+    gcc5.d:
+      description: |
+        GNU GCC 5 build profile for x86_64 Linux with libstdc++ (DEBUG).
+        Almost all the modern compiler supported C++ 11, 
+        We strongly recommend use stdc++11 profile.
