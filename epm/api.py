@@ -84,10 +84,10 @@ class APIv1(object):
 
         return self._CONFIG
 
-    def project(self, scheme):
+    def project(self, profile, scheme=None):
         from epm.model.project import Project
-        name = scheme if isinstance(scheme, str) else scheme['scheme']
-        return Project(name, self)
+        #name = scheme if isinstance(scheme, str) else scheme['scheme']
+        return Project(profile, scheme, self)
 
     @api_method
     def build(self, param):

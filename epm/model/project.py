@@ -28,14 +28,17 @@ ${out_dir}/build/res
 
 class Project(object):
 
-    def __init__(self, scheme, api=None, directory='.'):
+    def __init__(self, profile, scheme, api=None, directory='.'):
         """Project meta information class
-
+        :param profile: the name of Profile
         :param scheme: the name of Scheme
         :param api:
         """
+        self._profile_name = profile
         self._scheme_name = scheme
         self._scheme = None
+        self._profile = None
+
         self._manifest = None
         self._conan_meta = None
         self._api = api
@@ -93,6 +96,12 @@ class Project(object):
 
     @property
     def profile(self):
+        if self._profile_name is None:
+            return None
+        if self._profile is None:
+            from epm.model.profile import Profile
+            self._profile = Profile(self._profile_name, self)
+        return self._profile
 
     @property
     def scheme(self):
@@ -145,4 +154,7 @@ class Project(object):
         if not os.path.exists(filename):
             self.scheme.profile.save(filename)
         return filename
+
+
+
 

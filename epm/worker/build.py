@@ -63,12 +63,13 @@ class Builder(Worker):
 
     def _configure(self, project):
         scheme = project.scheme
+        profile = project.profile
         conan = self.api.conan
         wd = '.'
         project.initialize()
 
         filename = os.path.join(project.folder.out, 'profile')
-        scheme.profile.save(filename)
+        profile.save(filename)
 
         options = ['%s=%s' % (k, v) for (k, v) in scheme.options.as_list()]
 

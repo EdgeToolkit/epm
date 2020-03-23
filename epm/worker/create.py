@@ -80,13 +80,12 @@ class Creator(Worker):
 
     def exec(self, param):
         project = Project(param['scheme'], self.api)
-        scheme = project.scheme
         runner = param.get('runner') or 'auto'
         clear = param.get('clear', False)
         storage = param.get('storage', None)
 
         if runner == 'auto':
-            runner = 'docker' if scheme.profile.docker.runner else 'shell'
+            runner = 'docker' if project.profile.docker.runner else 'shell'
 
         try:
             if runner == 'shell':
@@ -120,10 +119,11 @@ class Creator(Worker):
 
         conan = self.api.conan
         scheme = project.scheme
+        profile = project.profile
 
         project.initialize()
         profile_path = os.path.join(project.folder.out, 'profile')
-        scheme.profile.save(profile_path)
+        profile.save(profile_path)
 
         options = ['%s=%s' % (k, v) for (k, v) in scheme.options.as_list()]
 
@@ -145,6 +145,7 @@ class Creator(Worker):
                            % (project.name, scheme.name), details={})
 
         id = info.get('installed')[0].get('packages')[0]['id']
+
         result = {'id': id}
         dirs = None
 

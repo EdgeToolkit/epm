@@ -25,15 +25,23 @@ from conans.client.tools import environment_append
 PLATFORM, ARCH = system_info()
 
 
-# if
+
+
 class Profile(object):
     """ Specific profile
 
     """
+    _checked_default_profiles = False
 
     def __init__(self, name, epm_dir):
         self.name = name
         self._epm_dir = epm_dir or get_epm_home_dir()
+
+        if not Profile._checked_default_profiles:
+            Profile.install_default_profiles()
+            Profile._checked_default_profiles = True
+
+
         self._filename = os.path.join(self._epm_dir, 'profiles', name)
         manifest = os.path.join(os.path.dirname(self._filename), 'manifest.yml')
         if not os.path.exists(manifest):
@@ -110,14 +118,22 @@ class Profile(object):
     def is_cross_build(self):
         return PLATFORM != self.settings['os'] or ARCH != self.settings['arch']
 
+    @staticmethod
+    def install_default_profiles():
+        for i in ['.', 'legacy']:
+            pd = os.path.normpath(os.path.join(HOME_EPM_DIR, 'profiles', i)):
+            if not os.path.exists(pd):
+                os.makedirs(pd)
 
-def install_default_profiles(self):
-    pd = os.path.join(HOME_EPM_DIR, 'profiles')
-    if not os.path.exists(pd):
-        os.makedirs(pd)
+            manifest = os.path.join(pd, 'manifest.yml')
+            if not os.path.exists(manifest):
+                buildin = os.path.normpath(os.path.join(DATA_DIR, 'profiles', i))
+                with open(os.path.join(buildin, 'manifest.yml')) as f:
+                    m = yaml.safe_load(f)
+                files = ['manifest.yml']
 
-    manifest = os.path.join(pd, 'manifest.yml')
-    if not os.path.exists(manifest):
-        for i in ['manifest.yml', 'gcc5', 'gcc5.d', 'vs2019', 'vs2019d', 'vs2019MT', 'vs2019MT.d']:
-            shutil.copy(os.path.join(DATA_DIR,'profiles', i), os.path.join(pd, i))
+                for _, family in m.items():
+                    files += family.get('profiles', {}).keys() or []
 
+                for j in files:
+                    shutil.copy(os.path.join(pd, j), os.path.join(buildin, j))
