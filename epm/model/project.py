@@ -46,6 +46,7 @@ class Project(object):
         self.dir = pathlib.PurePath(os.path.abspath(directory)).as_posix()
 
     def initialize(self):
+        print(self.folder.out, '<-----------------~~~~~~~~')
         rmdir(self.folder.out)
         mkdir(self.folder.out)
         self._generate_layout()
@@ -100,14 +101,11 @@ class Project(object):
             return None
         if self._profile is None:
             from epm.model.profile import Profile
-            self._profile = Profile(self._profile_name, self)
+            self._profile = Profile(self._profile_name, self.api.home_dir)
         return self._profile
 
     @property
     def scheme(self):
-        if self._scheme_name is None:
-            return None
-
         if self._scheme is None:
             from epm.model.scheme import Scheme
             self._scheme = Scheme(self._scheme_name, self)
@@ -116,16 +114,22 @@ class Project(object):
 
     @property
     def folder(self):
-        Folder = namedtuple('Folder', ['cache', 'out', 'build', 'package', 'test'])
+        Folder = namedtuple('Folder', ['cache', 'out', 'build', 'package', 'test', 'name'])
         cache = '.epm'
         out = build = package = test = None
+        basename = self._profile_name
         if self._scheme_name:
-            out = '%s/%s' % (cache, self.scheme.name)
+            assert basename
+            if self._scheme_name and self._scheme_name not in ['default', 'None']:
+                basename += '@%s' % self._scheme_name
+
+        if basename:
+            out = '%s/%s' % (cache, basename)
             build = '%s/build' % out
             package = '%s/package' % out
             test = '%s/test' % out
 
-        return Folder(cache, out, build, package, test)
+        return Folder(cache, out, build, package, test, basename)
 
     @property
     def layout(self):

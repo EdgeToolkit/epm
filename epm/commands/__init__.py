@@ -41,7 +41,7 @@ class Command:
     def __init__(self, arguments=[]):
         self.arguments = arguments
 
-    def run(self, config, args):
+    def run(self, args, api):
         """The body of the command"""
         raise NotImplementedError
 
@@ -65,6 +65,16 @@ class Command:
         elif isinstance(self.arguments, list):
             for arg in self.arguments:
                 arg.add_to_parser(self.parser)
+
+    def parameter(self, args):
+        result = {}
+        for i in ['PROFILE', 'RUNNER', 'RUNNER']:
+            value = getattr(args, i, None)
+            if value is not None:
+                result[i] = value
+        return result
+
+
 
 
 
@@ -95,12 +105,18 @@ def load_commands(subparsers):
         command.add_parser(subparsers)
 
 
-def run(command, args):
+def run(command, args, out):
     # if the command hasn't been registered, load a module by the same name
     if command not in _commands:
         raise FatalError('command not found')
 
-    return _commands[command].run(args)
+    # some command not need epm api
+    api = None
+    if command not in ['project', 'venv']:
+        from epm.api import API
+        api = API(output=out)
+
+    return _commands[command].run(args, api)
 
 
 class ArgparseArgument(object):

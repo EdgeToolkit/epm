@@ -43,15 +43,16 @@ class Build(Command):
                 ]
             Command.__init__(self, args)
 
-    def run(self, args):
-        steps = ['configure'] if args.configure else []
+    def run(self, args, api):
+        steps = []
+        steps += ['configure'] if args.configure else []
         steps += ['make'] if args.make else []
         steps += ['package'] if args.package else []
         steps += ['test'] if args.test else []
-        param = {'runner': args.runner,
-                 'scheme': args.scheme,
-                 'step': steps}
-        self._api.build(param)
+        param = self.parameter(args)
+        param['steps'] = steps
+
+        api.build(param)
 
 
 

@@ -79,8 +79,8 @@ class Creator(Worker):
         super(Creator, self).__init__(api)
 
     def exec(self, param):
-        project = Project(param['scheme'], self.api)
-        runner = param.get('runner') or 'auto'
+        project = Project(param['PROFILE'], param.get('SCHEME'), self.api)
+        runner = param.get('RUNNER') or 'auto'
         clear = param.get('clear', False)
         storage = param.get('storage', None)
 
@@ -183,7 +183,7 @@ class Creator(Worker):
 
         #profile_path = os.path.join(project.folder.out, 'profile')  # already generated in configure step
 
-        options = ['%s=%s' % (k, v) for k, v in project.scheme.options.as_list(package=True)]
+        options = ['%s=%s' % (k, v) for k, v in project.scheme.package_options.as_list()]
         tests = project.tests or []
         if not tests:
             if os.path.exists('tests/conanfile.py'):

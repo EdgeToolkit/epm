@@ -23,22 +23,21 @@ class Builder(Worker):
         for i in ['configure', 'make', 'package', 'test']:
             if i in steps:
                 fn = getattr(self, '_%s' % i)
-                self.out.highlight('[building - %s ......]' % i)
+                self.out.highlight('[building - %s ......]\n' % i)
                 #if i == 'test' and not os.path.exists('test_package'):
                 #    self.out.warn('Skip test because of test_package folder not existing')
                 #    continue
                 fn(project)
 
     def exec(self, param):
-        project = Project(param['scheme'], self.api)
-        scheme = project.scheme
-        runner = param.get('runner') or 'auto'
+        project = Project(param['PROFILE'], param.get('SCHEME'), self.api)
+        runner = param.get('RUNNER') or 'auto'
 
         if runner == 'auto':
-            runner = 'docker' if scheme.profile.docker.builder else 'shell'
+            runner = 'docker' if project.profile.docker.builder else 'shell'
 
         if runner == 'shell':
-            steps = param.get('step') or ['configure', 'make', 'package', 'test']
+            steps = param.get('steps') or ['configure', 'make', 'package', 'test']
             if isinstance(steps, str):
                 steps = [steps]
 
@@ -48,7 +47,7 @@ class Builder(Worker):
                 raise
             except BaseException as e:
                 raise APIError('other error ', details={
-                    'info': e
+                    'info': str(e)
                 })
         elif runner == 'docker':
             param['runner'] = 'shell'
@@ -121,7 +120,7 @@ class Builder(Worker):
                                   reference=project.reference,
                                   layout=project.layout,
                                   cwd=wd)
-        options = ['%s=%s' % (k, v) for k, v in project.scheme.options.as_list(package=True)]
+        options = ['%s=%s' % (k, v) for k, v in project.scheme.package_options.as_list()]
         tests = project.tests or []
         if not tests:
             if os.path.exists('tests/conanfile.py'):
@@ -149,10 +148,12 @@ class Builder(Worker):
                                  build_folder=instd,
                                  package_folder=pkgdir,
                                  install_folder=instd)
+            self._sandbox(project, 'test')
 
     def _sandbox(self, project, folder):
         storage = self.api.conan_storage_path
         for name, command in project.manifest.get('sandbox', {}).items():
+            print(name, command, folder, '<~~~~~~~~~~~~~~~~~~~')
             if command.startswith(folder):
                 try:
                     program = Program(project, command, storage)

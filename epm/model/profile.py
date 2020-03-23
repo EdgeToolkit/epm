@@ -41,7 +41,6 @@ class Profile(object):
             Profile.install_default_profiles()
             Profile._checked_default_profiles = True
 
-
         self._filename = os.path.join(self._epm_dir, 'profiles', name)
         manifest = os.path.join(os.path.dirname(self._filename), 'manifest.yml')
         if not os.path.exists(manifest):
@@ -121,7 +120,7 @@ class Profile(object):
     @staticmethod
     def install_default_profiles():
         for i in ['.', 'legacy']:
-            pd = os.path.normpath(os.path.join(HOME_EPM_DIR, 'profiles', i)):
+            pd = os.path.normpath(os.path.join(HOME_EPM_DIR, 'profiles', i))
             if not os.path.exists(pd):
                 os.makedirs(pd)
 
@@ -136,4 +135,4 @@ class Profile(object):
                     files += family.get('profiles', {}).keys() or []
 
                 for j in files:
-                    shutil.copy(os.path.join(pd, j), os.path.join(buildin, j))
+                    shutil.copy(os.path.join(buildin, j), os.path.join(pd, j))

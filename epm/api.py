@@ -57,8 +57,7 @@ class APIv1(object):
 
         self._CONFIG = None
 
-        from epm.model.profile import install_default_profiles
-        install_default_profiles()
+
 
     @property
     def conan(self):

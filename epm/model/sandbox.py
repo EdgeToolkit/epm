@@ -97,11 +97,11 @@ class Program(object):
 
     @property
     def _is_windows(self):
-        return self._project.scheme.profile.settings['os'] == Platform.WINDOWS
+        return self._project.profile.settings['os'] == Platform.WINDOWS
 
     @property
     def _is_linux(self):
-        return self._project.scheme.profile.settings['os'] == Platform.LINUX
+        return self._project.profile.settings['os'] == Platform.LINUX
 
     def _initialize(self):
         if self._is_create and not self._prefix: #self._folder in ['build', 'package']:
@@ -293,14 +293,14 @@ class Program(object):
 
     @property
     def _docker_image(self):
-        docker = self._project.scheme.profile.docker.runner
+        docker = self._project.profile.docker.runner
         if not docker:
             raise EException('{} no docker for runner'.format(self._project.name))
         return docker.get('image')
 
     @property
     def _docker_shell(self):
-        docker = self._project.scheme.profile.docker.runner
+        docker = self._project.profile.docker.runner
         if not docker:
             raise EException('{} no docker for runner'.format(self._project.name))
         return docker.get('shell', '/bin/bash')
@@ -317,7 +317,9 @@ class Program(object):
 
         template = self._template('windows.j2')
         return template.render(libdirs=libdirs, filename=filename, name=name,
-                               scheme=self._project.scheme.name,
+                               folder=self._project.folder,
+                               profile=self._project.profile,
+                               scheme=self._project.scheme,
                                arguments=" ".join(self._argv))
 
     def _linux(self, name):
@@ -338,17 +340,24 @@ class Program(object):
 
         return template.render(libdirs=libdirs, filename=filename, name=name,
                                dylibs=self.dynamic_libs,
+                               docker=docker,
                                image=docker['image'],
                                shell=docker['shell'],
                                home=docker['home'],
-                               scheme=self._project.scheme.name,
+                               folder=self._project.folder,
+                               profile=self._project.profile,
+                               scheme=self._project.scheme,
                                arguments=" ".join(self._argv))
 
     def _linux_windows_docker(self, name):
         def _(path):
-            s = Template(path).substitute(outdir=r'$EPM_SANDBOX_OUTDIR',
-                                          storage=r'$EPM_SANDBOX_STORAGE',
-                                          project=r'$EPM_SANDBOX_PROJECT')
+            s = Template(path).substitute(#outdir=r'$EPM_SANDBOX_OUTDIR',
+                                          #storage=r'$EPM_SANDBOX_STORAGE',
+                                          #project=r'$EPM_SANDBOX_PROJECT',
+                                          folder=self._project.folder,
+                                          profile=self._project.profile,
+                                          scheme=self._project.scheme
+                                          )
             return PurePath(s).as_posix()
 
         filename = _(self._filename)
@@ -370,10 +379,13 @@ class Program(object):
 
         return template.render(libdirs=libdirs, filename=filename, name=name,
                                dylibs=self.dynamic_libs,
+                               docker=docker,
                                image=docker['image'],
                                shell=docker['shell'],
                                home=docker['home'],
-                               scheme=self._project.scheme.name,
+                               folder=self._project.folder,
+                               profile=self._project.profile,
+                               scheme=self._project.scheme,
                                arguments=" ".join(self._argv))
 
 #        return template.render(libdirs=libdirs, filename=filename, name=name,

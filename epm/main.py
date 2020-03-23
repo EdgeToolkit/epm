@@ -24,7 +24,7 @@ from conans.util.files import exception_message_safe
 
 from epm import __version__
 from epm.errors import EException, ECommandError, EInvalidConfiguration
-from epm.api import API
+
 from epm.util.files import load_yaml
 from epm.worker import param_decode
 
@@ -46,9 +46,8 @@ _RUNNER_HELP = 'Runner of the command used to execute/process'
 
 class Main(object):
 
-    def __init__(self, args, api=None):
-        self._api = api or API()
-        self._out = self._api.out or ConanOutput(sys.stdout)
+    def __init__(self, args, out=None):
+        self.out = out or ConanOutput(sys.stdout)
 #        if user_is_root():
 #            m.warning(_("Running as root"))
 
@@ -133,7 +132,7 @@ class Main(object):
     def run_command(self):
         command = self.args.command
         try:
-            res = commands.run(command, self.args)
+            res = commands.run(command, self.args, self.out)
 #        except UsageError as exc:
 #            self.log_error(exc, True, command)
 #            sys.exit(1)
@@ -148,7 +147,7 @@ class Main(object):
 #            self.log_error(exc, False, command)
         except SystemExit as exc:
             if exc.code != 0:
-                self._out.error("Exiting with code: %d" % exc.code)
+                self.out.error("Exiting with code: %d" % exc.code)
             res = exc.code
 
         except KeyboardInterrupt:

@@ -26,9 +26,14 @@ class Create(Command):
                 ]
             Command.__init__(self, args)
 
-    def run(self, args):
-        print(args)
+    def run(self, args, api):
+        param = self.parameter(args)
+        if args.storage:
+            param['storage'] = args.storage
+        if args.clear:
+            param['clear'] = args.clear
 
+        api.create(param)
 
 
 register_command(Create)
