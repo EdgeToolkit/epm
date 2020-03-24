@@ -46,7 +46,6 @@ class Project(object):
         self.dir = pathlib.PurePath(os.path.abspath(directory)).as_posix()
 
     def initialize(self):
-        print(self.folder.out, '<-----------------~~~~~~~~')
         rmdir(self.folder.out)
         mkdir(self.folder.out)
         self._generate_layout()
