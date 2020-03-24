@@ -14,25 +14,28 @@ class Config(object):
 
     @property
     def venv(self):
-        VEnv = namedtuple('VEnv', ['name'])
+        VEnv = namedtuple('VEnv', ['name', 'with_default_profiles'])
         value = self._data.get('venv')
+
         if value is None or value.get('name') is None:
             return None
-        return VEnv(value['name'])
+        with_default_profiles = value.get('with_default_profiles', False)
+        return VEnv(value['name'], with_default_profiles)
 
     @property
     def environment(self):
         return self._data.get('environment', {})
 
     @property
-    def remotes:
-        Remote = namedtuple('Remote', ['url', 'username', 'password'])
+    def remotes(self):
+        Remote = namedtuple('Remote', ['name', 'url', 'username', 'password'])
         remotes = []
-        for r in self._data.get('remotes', []):
-            url = r['url']
-            username = r.get('username', None)
-            password = r.get('password', None)
-            remotes.append(Remote(url, username, password))
+        for item in self._data.get('remotes', []):
+            for name, r in item.items():
+                url = r['url']
+                username = r.get('username', None)
+                password = r.get('password', None)
+                remotes.append(Remote(name, url, username, password))
         return remotes
 
     @property
@@ -45,7 +48,6 @@ class Config(object):
             if val:
                 env[key] = val
         return dict(self.environment, **env)
-
 
     def get(self, section, default=None):
         return self._data.get(section, default)

@@ -3,7 +3,7 @@ from epm.worker import Worker, DockerRunner, param_encode
 from epm.model.project import Project
 from epm.errors import EException, APIError
 from epm.model.sandbox import Program
-
+from conans.tools import environment_append
 
 class Docker(DockerRunner):
 
@@ -27,7 +27,7 @@ class Builder(Worker):
                 #if i == 'test' and not os.path.exists('test_package'):
                 #    self.out.warn('Skip test because of test_package folder not existing')
                 #    continue
-                from conans.tools import environment_append
+
                 with environment_append(self.api.config.env_vars):
                     fn(project)
 
@@ -59,7 +59,7 @@ class Builder(Worker):
             docker.add_volume(project.dir, docker.WD)
             docker.add_volume(self.api.home_dir, '$home/@host/.epm')
             docker.environment['EPM_CACHE_DIR'] = '$home/@host/.epm'
-            docker.environment['CONAN_USER_HOME'] = '$home/@host/.epm'
+            #docker.environment['CONAN_USER_HOME'] = '$home/@host/.epm'
             docker.exec('epm api build %s' % param_encode(param))
 
     def _configure(self, project):
@@ -128,7 +128,10 @@ class Builder(Worker):
             if os.path.exists('tests/conanfile.py'):
                 tests = ['tests']
 
+
+
         for i in tests:
+            print('**************', i)
             conanfile_path = os.path.join(i, 'conanfile.py')
             if not os.path.exists(conanfile_path):
                 raise EException('specified test <%s> miss Makefile.py' % i)

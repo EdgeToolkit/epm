@@ -12,7 +12,7 @@ from conans.tools import RunEnvironment
 from epm.errors import EException
 from epm.paths import DATA_DIR, get_epm_cache_dir
 from epm.util.files import load_yaml
-from epm.util import split_plan_name
+#from epm.util import split_plan_name
 
 from collections import OrderedDict, namedtuple
 
@@ -118,9 +118,10 @@ class Profile(object):
         return PLATFORM != self.settings['os'] or ARCH != self.settings['arch']
 
     @staticmethod
-    def install_default_profiles():
+    def install_default_profiles(cached=None):
+        cached = cached or HOME_EPM_DIR
         for i in ['.', 'legacy']:
-            pd = os.path.normpath(os.path.join(HOME_EPM_DIR, 'profiles', i))
+            pd = os.path.normpath(os.path.join(cached, 'profiles', i))
             if not os.path.exists(pd):
                 os.makedirs(pd)
 

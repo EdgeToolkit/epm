@@ -74,13 +74,13 @@ def banner(name=None):
     instd = get_venv_install_dir(name)
     api = API(instd)
     conan = api.conan
-    storage_path = conan.config_get('storage.path', quiet=True)
+    storage = conan.config_get('storage.path', quiet=True)
 
     return _Banner.format(name=name,
                           channel=get_channel(),
                           instd=instd,
                           conan=conan.cache_folder,  # os.path.join(get_conan_user_home(), '.conan'),
-                          storage_path=storage_path)
+                          storage_path=storage)
 def _cache(path):
     url = urlparse(path)
     folder = path
@@ -100,12 +100,15 @@ def _cache(path):
 
 def install(origin, to=None, out=None):
     from conans.client.tools import ConanOutput
-    out = out or ConanOutput(sys.stdout)
-    folder = _cache(origin)
-    with open(os.path.join(folder, 'config.yml')) as f:
-        config = yaml.safe_load(f)
+    from epm.model.config import Config
 
-    name = config['venv.name']
+    out = out or ConanOutput(sys.stdout, sys.stderr, color=True)
+    folder = _cache(origin)
+#    with open(os.path.join(folder, 'config.yml')) as f:
+#        config = yaml.safe_load(f)
+    config = Config(os.path.join(folder, 'config.yml'))
+
+    name = config.venv.name
     instd = os.path.join(HOME_EPM_DIR, 'venv', name)
     if os.path.exists(instd):
         raise EException('%s virtual environment already installed, please check %s' % (name, instd))
@@ -143,21 +146,21 @@ def install(origin, to=None, out=None):
 
     conan_db = os.path.join(conand, '.conan.db')
 
+    if config.venv.with_default_profiles:
+        from epm.model.profile import Profile
+        Profile.install_default_profiles(folder)
+
 
     # remotes clear
     from conans.client.conan_api import ConanAPIV1 as ConanAPI
     conan = ConanAPI(conand)
     conan.remote_clean()
-    for remote in config.get('remotes',[]):
-        for name, items in remote.items():
-            url = items['url']
-            username = items.get('username')
-            password = items.get('password')
-            conan.remote_add(name, url, verify_ssl=False)
-            if username:
-                conan.user_set(username, name)
+    for remote in config.remotes:
+        conan.remote_add(remote.name, remote.url, verify_ssl=False)
+        if remote.username:
+            conan.user_set(remote.username, remote.name)
 
-    out.info(_SetupHint.format(name=config['venv.name']))
+    out.info(_SetupHint.format(name=config.venv.name))
 
 
 def active(name):
@@ -178,7 +181,6 @@ def active(name):
 
     env = os.environ.copy()
     if PLATFORM == 'Windows':
-        print(filename, '~~~~~~~~~~~~~~~~<<<')
         subprocess.run(['cmd.exe', '/k', filename], env=env)
     else:
         subprocess.run(['/bin/bash', '--rcfile', rcfile], env=env)

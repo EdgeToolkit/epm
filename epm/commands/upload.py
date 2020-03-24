@@ -24,8 +24,13 @@ class Upload(Command):
                 ]
             Command.__init__(self, args)
 
-    def run(self, args):
-        print(args)
+    def run(self, args, api):
+        param = self.parameter(args)
+
+        param['remote'] = args.remote
+        param['storage'] = args.storage
+
+        api.upload(param)
 
 
 register_command(Upload)

@@ -28,7 +28,7 @@ class Runner(object):
         name = name or self._name
         config = self._sandbox.api.load_config()
         runners = config.get('runner', {})
-        profile = self._sandbox.project.scheme.profile
+        profile = self._sandbox.project.profile
         runner = None
 
         if name is None:
@@ -80,7 +80,7 @@ class Runner(object):
             from epm.paths import get_epm_cache_dir
             conan = self._sandbox.api.conan
             home = get_epm_cache_dir()
-            storage = conan.config_get('storage.path', quiet=True)
+            storage = conan.config_get('storage.path')
             with environment_append({'EPM_CACHE_DIR': home, 'CONAN_STORAGE_PATH': storage}):
                 return runner(command)
 

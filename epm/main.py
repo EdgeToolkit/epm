@@ -17,7 +17,7 @@ from conans.client.cmd.uploader import UPLOAD_POLICY_FORCE, \
     UPLOAD_POLICY_NO_OVERWRITE, UPLOAD_POLICY_NO_OVERWRITE_RECIPE, UPLOAD_POLICY_SKIP
 from conans.client.conan_api import (Conan, default_manifest_folder, _make_abs_path)
 from conans.client.conan_command_output import CommandOutputer
-from conans.client.output import Color, ConanOutput
+from conans.client.output import Color, ConanOutput, colorama_initialize
 
 from conans.unicode import get_cwd
 from conans.util.files import exception_message_safe
@@ -47,7 +47,8 @@ _RUNNER_HELP = 'Runner of the command used to execute/process'
 class Main(object):
 
     def __init__(self, args, out=None):
-        self.out = out or ConanOutput(sys.stdout)
+        color = colorama_initialize()
+        self.out = out or ConanOutput(sys.stdout, sys.stderr, color)
 #        if user_is_root():
 #            m.warning(_("Running as root"))
 
@@ -105,7 +106,6 @@ class Main(object):
             self.args.argv = unkown
         else:
             self.args = self.parser.parse_args(args)
-        print(self.args, '<----------------------')
 
 #    def list_variants(self):
 #        if not self.args.list_variants:
@@ -152,7 +152,7 @@ class Main(object):
             res = exc.code
 
         except KeyboardInterrupt:
-            self._out.error('Interrupted')
+            self.out.error('Interrupted')
         except IOError as e:
             if e.errno != errno.EPIPE:
                 raise

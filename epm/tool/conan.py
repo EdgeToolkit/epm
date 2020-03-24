@@ -96,7 +96,6 @@ class ConanMeta(object):
                 channel = option.get('channel') or get_channel(name)
                 references.append("%s/%s@%s/%s" % (name, version, user, channel))
 
-        print(self.name, '*****----******', references)
         return references
 
     @property
@@ -124,3 +123,44 @@ class ConanMeta(object):
     def get(self, key, default=None):
         return self._meta.get(key, default)
 
+
+from conans import ConanFile, CMake, tools
+class Makefile(ConanFile):
+    METADATA = ConanMeta()
+    name = METADATA.name
+    version = METADATA.version
+    url = METADATA.url
+    description = METADATA.description
+    license = METADATA.license
+    author = METADATA.author
+    homepage = METADATA.homepage
+    topics = METADATA.topics
+    ARCHIVE_URL = os.environ.get('EPM_ARCHIVE_URL', None)
+    CONAN_DATA = METADATA.get('conan_data', {})
+    exports = ["conanfile.py", "package.yml"]
+
+    def __init__(self, output, runner, display_name="", user=None, channel=None):
+        super(Makefile, self).__init__(output, runner, display_name, user, channel)
+
+
+class TestMakefile(ConanFile):
+    generators = "cmake"
+
+    def __init__(self, output, runner, display_name="", user=None, channel=None):
+        super(TestMakefile, self).__init__(output, runner, display_name, user, channel)
+
+    @property
+    def target_reference(self):
+        reference = os.environ.get('EPM_TARGET_PACKAGE_REFERENCE')
+        if reference:
+            return reference
+        pkg_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
+        filename = os.path.join(pkg_dir, 'package.yml')
+        filename = 'package.yml'
+        if os.path.exists(filename):
+            meta = ConanMeta(filename)
+            return meta.reference
+        raise Exception('environment var EPM_TARGET_PACKAGE_REFERENCE not set.')
+
+    def requirements(self):
+        self.requires(self.target_reference)

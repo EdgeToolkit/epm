@@ -12,11 +12,15 @@ class PackageInvokerMakefile(ConanFile):
 
     @property
     def target_reference(self):
+        print(os.getcwd()， '**************')
         reference = os.environ.get('EPM_TARGET_PACKAGE_REFERENCE')
         if reference:
             return reference
         pkg_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
         filename = os.path.join(pkg_dir, 'package.yml')
+        print(self)
+        print(self.__file__)
+        filename = 'package.yml'
         if os.path.exists(filename):
             meta = ConanMeta(filename)
             return meta.reference

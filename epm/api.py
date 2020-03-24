@@ -1,7 +1,7 @@
 import sys
 import os
 from conans.client.conan_api import ConanAPIV1 as ConanAPI
-from conans.client.output import ConanOutput as Output, colorama_initialize
+from conans.client.output import ConanOutput , colorama_initialize
 from conans.client.userio import UserIO as UserIO
 from epm.paths import get_epm_cache_dir
 from epm.worker.build import Builder
@@ -46,14 +46,16 @@ class APIv1(object):
 
     def __init__(self, cache_dir=None, output=None, user_io=None):
         color = colorama_initialize()
-        self.out = output or Output(sys.stdout, sys.stderr, color)
+        self.out = output or ConanOutput(sys.stdout, sys.stderr, color)
+
         self.user_io = user_io or UserIO(out=self.out)
         self.cache_dir = cache_dir or get_epm_cache_dir()
 
         self._conan = None
         self._config = None
-        self.env_vars = {'CONAN_USER_HOME': self.cache_dir,
-                         'CONAN_STORAGE_PATH': os.path.join(self.cache_dir, '.conan', 'data')}
+        self.env_vars = {#'CONAN_USER_HOME': self.cache_dir,
+                         #'CONAN_STORAGE_PATH': os.path.join(self.cache_dir, '.conan', 'data')
+                         }
 
         self._CONFIG = None
 
@@ -72,7 +74,7 @@ class APIv1(object):
                 mkdir(cache_folder)
                 shutil.copy(filename, settings_file)
 
-        self._conan = ConanAPI(cache_folder, self.out, self.user_io)
+            self._conan = ConanAPI(cache_folder, self.out, self.user_io)
         return self._conan
 
     @property
@@ -105,11 +107,11 @@ class APIv1(object):
 
     @api_method
     def sandbox(self, param):
-        project = self.project(param['scheme'])
+        project = self.project(param['PROFILE'], param.get('SCHEME'))
         sandbox = Sandbox(project, self)
         command = param['command']
         argv = param.get('args') or []
-        runner = param.get('runner', None)
+        runner = param.get('RUNNER', None)
         return sandbox.exec(command, runner=runner, argv=argv)
 
     @api_method
@@ -123,7 +125,9 @@ class APIv1(object):
 
     @property
     def conan_storage_path(self):
-        return os.getenv('CONAN_STORAGE_PATH', os.path.join(self.cache_dir, '.conan', 'data'))
+        cache_folder = os.path.join(self.cache_dir, '.conan')
+        conan = ConanAPI(cache_folder)
+        return conan.config_get("storage.path", quiet=True)
 
 
 API = APIv1

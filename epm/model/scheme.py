@@ -11,7 +11,7 @@ from conans.tools import RunEnvironment
 from epm.errors import EException
 from epm.paths import DATA_DIR, get_epm_cache_dir
 from epm.util.files import load_yaml
-from epm.util import split_plan_name
+#from epm.util import split_plan_name
 
 from collections import OrderedDict, namedtuple
 
@@ -146,10 +146,8 @@ class Scheme(object):
         options = {k: v for k, v in options.items() if k[0] != '.'}
         deps = {}
 
-        print('[%s] BEGIN' % name)
 
         for pkg, sch in dep_options.items():
-            print('@', pkg, sch)
             import pprint
             pprint.pprint(dependencies)
             for lib in dependencies:
@@ -160,8 +158,6 @@ class Scheme(object):
                         if not info:
                             raise EException('less information of %s, miss dependencies in package.yml ' % name)
                         deps[pkg] = {**info, 'options': sch}
-        print('[%s] END' % name)
-
         return options, deps
 
     def _load_dep_schemes(self, libs, deps, storage=None):
