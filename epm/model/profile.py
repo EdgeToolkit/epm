@@ -10,7 +10,7 @@ from conans.client.profile_loader import read_profile
 from conans.model.options import OptionsValues
 from conans.tools import RunEnvironment
 from epm.errors import EException
-from epm.paths import DATA_DIR, get_epm_home_dir
+from epm.paths import DATA_DIR, get_epm_cache_dir
 from epm.util.files import load_yaml
 from epm.util import split_plan_name
 
@@ -18,7 +18,7 @@ from collections import OrderedDict, namedtuple
 
 from epm.util import is_elf, system_info
 from epm.util.files import remove, rmdir, load_yaml
-from epm.paths import get_epm_home_dir, HOME_EPM_DIR
+from epm.paths import get_epm_cache_dir, HOME_EPM_DIR
 
 from conans.client.tools import environment_append
 
@@ -35,7 +35,7 @@ class Profile(object):
 
     def __init__(self, name, epm_dir):
         self.name = name
-        self._epm_dir = epm_dir or get_epm_home_dir()
+        self._epm_dir = epm_dir or get_epm_cache_dir()
 
         if not Profile._checked_default_profiles:
             Profile.install_default_profiles()

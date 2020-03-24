@@ -1,3 +1,5 @@
+{% set name=config['venv.name'] %}
+{% set environment=config.get('environment', {}) %}
 if [ -e .bashrc ]; then
   source ~/.bashrc
 fi

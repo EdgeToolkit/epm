@@ -77,11 +77,11 @@ class Runner(object):
             runner = ConanRunner(output=self._sandbox.api.out)
             command = [filename] + argv
             from conans.tools import environment_append
-            from epm.paths import get_epm_home_dir
+            from epm.paths import get_epm_cache_dir
             conan = self._sandbox.api.conan
-            home = get_epm_home_dir()
+            home = get_epm_cache_dir()
             storage = conan.config_get('storage.path', quiet=True)
-            with environment_append({'EPM_HOME_DIR': home, 'CONAN_STORAGE_PATH': storage}):
+            with environment_append({'EPM_CACHE_DIR': home, 'CONAN_STORAGE_PATH': storage}):
                 return runner(command)
 
 

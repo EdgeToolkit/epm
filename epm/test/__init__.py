@@ -89,8 +89,8 @@ class TestCase(unittest.TestCase):
             rmdir(self._home)
             mkdir(self._home)
 
-        self._OLD_EPM_HOME_DIR = os.getenv('EPM_HOME_DIR')
-        os.environ['EPM_HOME_DIR'] = self._home
+        self._OLD_EPM_CACHE_DIR = os.getenv('EPM_CACHE_DIR')
+        os.environ['EPM_CACHE_DIR'] = self._home
 
         self._OLD_CD = os.path.abspath('.')
         os.chdir(self._WD)
@@ -109,9 +109,9 @@ class TestCase(unittest.TestCase):
 
     def tearDown(self):
 
-        if self._OLD_EPM_HOME_DIR:
-            os.environ['EPM_HOME_DIR'] = self._OLD_EPM_HOME_DIR
+        if self._OLD_EPM_CACHE_DIR:
+            os.environ['EPM_CACHE_DIR'] = self._OLD_EPM_CACHE_DIR
         else:
-            del os.environ['EPM_HOME_DIR']
+            del os.environ['EPM_CACHE_DIR']
         os.chdir(self._OLD_CD)
 

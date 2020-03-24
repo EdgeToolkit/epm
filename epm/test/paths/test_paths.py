@@ -8,11 +8,11 @@ from pathlib import PurePath
 
 class PathsTest(TestCase):
 
-    def test_get_epm_home_dir(self):
-        from epm.paths import get_epm_home_dir
+    def test_get_EPM_CACHE_DIR(self):
+        from epm.paths import get_epm_cache_dir
 
-        with environment_append({"EPM_HOME_DIR": None}):
-            path = get_epm_home_dir()
+        with environment_append({"EPM_CACHE_DIR": None}):
+            path = get_epm_cache_dir()
             self.assertEqual(PurePath(path).as_posix(),
                              PurePath(conan_expand_user('~/.epm')).as_posix())
 
@@ -21,8 +21,8 @@ class PathsTest(TestCase):
         else:
             HOME = '/epm/test/home'
 
-        with environment_append({"EPM_HOME_DIR": HOME}):
-            path = get_epm_home_dir()
+        with environment_append({"EPM_CACHE_DIR": HOME}):
+            path = get_epm_cache_dir()
             self.assertEqual(PurePath(path).as_posix(),
                              PurePath(HOME).as_posix())
 

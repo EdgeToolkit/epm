@@ -16,8 +16,9 @@ from conans.client.output import ConanOutput as Output
 from epm.util import system_info
 from epm.util.files import load_yaml, save_yaml, save, rmdir, mkdir
 from epm.errors import EException
-from epm.paths import get_epm_home_dir
+from epm.paths import get_epm_cache_dir
 from epm.api import API
+from epm.paths import HOME_EPM_DIR, DATA_DIR
 from conans.tools import environment_append
 
 
@@ -32,7 +33,6 @@ _Banner = '''
    / /___/ ____/ /  / /   Channel: {channel}
   /_____/_/   /_/  /_/    
                                
-
   * directory     : {instd}
   * conan         : {conan}
   * conan storage : {storage_path}
@@ -48,10 +48,140 @@ In Linux
 
 or use epm
    $ epm venv shell {name}
-  
  
 '''
 
+def get_venv_install_dir(name):
+    path = os.path.join(HOME_EPM_DIR, 'venv', name)
+    if not os.path.exists(path):
+        return None
+    if os.path.isdir(path):
+        return path
+    elif os.path.isfile(path):
+        with open(path) as f:
+            m = yaml.safe_load(f)
+            path = m['location']
+            return path
+    else:
+        return None
+
+
+def banner(name=None):
+    from epm.tool.conan import get_channel
+    from epm.api import API
+
+    name = name or os.environ.get('EPM_VENV_NAME')
+    instd = get_venv_install_dir(name)
+    api = API(instd)
+    conan = api.conan
+    storage_path = conan.config_get('storage.path', quiet=True)
+
+    return _Banner.format(name=name,
+                          channel=get_channel(),
+                          instd=instd,
+                          conan=conan.cache_folder,  # os.path.join(get_conan_user_home(), '.conan'),
+                          storage_path=storage_path)
+def _cache(path):
+    url = urlparse(path)
+    folder = path
+
+    if url.scheme in ['http', 'https']:
+        download_dir = tempfile.mkdtemp(suffix='epm.download')
+        filename = os.path.join(download_dir, os.path.basename(path))
+        urllib.request.urlretrieve(path, filename)
+        folder = os.path.join(download_dir, 'venv.config')
+        zfile = zipfile.ZipFile(filename)
+        zfile.extractall(folder)
+
+    if not os.path.exists(folder):
+        raise Exception('Invalid install path {}'.format(path))
+    return folder
+
+
+def install(origin, to=None, out=None):
+    from conans.client.tools import ConanOutput
+    out = out or ConanOutput(sys.stdout)
+    folder = _cache(origin)
+    with open(os.path.join(folder, 'config.yml')) as f:
+        config = yaml.safe_load(f)
+
+    name = config['venv.name']
+    instd = os.path.join(HOME_EPM_DIR, 'venv', name)
+    if os.path.exists(instd):
+        raise EException('%s virtual environment already installed, please check %s' % (name, instd))
+    if to:
+        with open(instd, 'w') as f:
+            f.write(to)
+            f.flush()
+            f.close()
+        instd = to
+
+    from epm.util.files import rmdir, mkdir
+    rmdir(instd)
+
+    # copy files
+    shutil.copytree(folder, dst=instd)
+
+
+    scripts = ['active.bat', 'active.sh', 'bash.rc']
+    for i in scripts:
+        def _render(filename):
+            jinja2 = Environment(loader=PackageLoader('epm', 'data/venv'))
+            tmpl = jinja2.get_template(filename + '.j2')
+            content = tmpl.render(config=config)
+            save(os.path.join(instd, filename), content)
+        if not os.path.exists(os.path.join(instd, i)):
+            _render('active.bat')
+            _render('active.sh')
+            _render('bash.rc')
+    conand = os.path.join(instd, '.conan')
+    mkdir(conand)
+    conan_conf = os.path.join(conand, 'conan.conf')
+    if not os.path.exists(conan_conf):
+        shutil.copy(os.pah.join(DATA_DIR, 'venv', '.conan', 'conan.conf'),
+                    os.path.join(instd, '.conan', 'conan.conf'))
+
+    conan_db = os.path.join(conand, '.conan.db')
+
+
+    # remotes clear
+    from conans.client.conan_api import ConanAPIV1 as ConanAPI
+    conan = ConanAPI(conand)
+    conan.remote_clean()
+    for remote in config.get('remotes',[]):
+        for name, items in remote.items():
+            url = items['url']
+            username = items.get('username')
+            password = items.get('password')
+            conan.remote_add(name, url, verify_ssl=False)
+            if username:
+                conan.user_set(username, name)
+
+    out.info(_SetupHint.format(name=config['venv.name']))
+
+
+def active(name):
+    path = os.path.join(HOME_EPM_DIR, 'venv', name)
+    if not os.path.exists(path):
+        raise EException('Virtual environment %s not installed.' % name)
+    folder = path
+    if os.path.isfile(path):
+        with open(path) as f:
+            folder = f.read().strip()
+            if not os.path.isdir(folder):
+                raise EException('the actual installed folder %s not exists.' % folder)
+    with open(os.path.join(folder, 'config.yml')) as f:
+        config = yaml.safe_load(f)
+
+    filename = os.path.join(folder, 'active.{}'.format('bat' if PLATFORM == 'Windows' else 'sh'))
+    rcfile = os.path.join(folder, 'bash.rc')
+
+    env = os.environ.copy()
+    if PLATFORM == 'Windows':
+        print(filename, '~~~~~~~~~~~~~~~~<<<')
+        subprocess.run(['cmd.exe', '/k', filename], env=env)
+    else:
+        subprocess.run(['/bin/bash', '--rcfile', rcfile], env=env)
 
 class VirtualEnvironment(object):
 
@@ -83,7 +213,7 @@ class VirtualEnvironment(object):
         hconf = hapi.config
         registry = hconf.registry.get('virtual-environment', {})
 
-        path = hapi.home_dir
+        path = hapi.cache_dir
         if name in [None, '~']:
             venv = {'name': '~',
                     'path': path,
@@ -154,7 +284,7 @@ class VirtualEnvironment(object):
 
     @property
     def home_config(self):
-        with environment_append({'EPM_HOME_DIR': None}):
+        with environment_append({'EPM_CACHE_DIR': None}):
             global_api = API(self._api.out)
             return global_api.config
 
@@ -162,7 +292,7 @@ class VirtualEnvironment(object):
     def hapi(self):
         '''HOME API'''
         if self._hapi is None:
-            with environment_append({'EPM_HOME_DIR': None}):
+            with environment_append({'EPM_CACHE_DIR': None}):
                 self._hapi = API()
         return self._hapi
 
@@ -188,7 +318,7 @@ class VirtualEnvironment(object):
         scripts = ['active.bat', 'active.sh', 'bash.rc']
 
         if name == '~':
-            path = hapi.home_dir
+            path = hapi.cache_dir
             for i in scripts:
                 filename = os.path.join(path, i)
                 if not os.path.exists(filename):
@@ -215,7 +345,7 @@ class VirtualEnvironment(object):
 
     @staticmethod
     def banner():
-        from epm.paths import get_epm_home_dir
+        from epm.paths import get_epm_cache_dir
         from conans.paths import get_conan_user_home
         from epm.tool import Dummy
         from epm.api import API
@@ -225,12 +355,6 @@ class VirtualEnvironment(object):
 
         return _Banner.format(name=os.environ.get('EPM_VENV_NAME'),
                               channel=os.environ.get('EPM_CHANNEL'),
-                              instd=get_epm_home_dir(),
-                              conan=conan.cache_folder, #os.path.join(get_conan_user_home(), '.conan'),
+                              instd=get_epm_cache_dir(),
+                              conan=conan.cache_folder,  #os.path.join(get_conan_user_home(), '.conan'),
                               storage_path=storage_path)
-
-
-
-
-
-

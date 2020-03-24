@@ -14,7 +14,7 @@ class ProfileTestCase(TestCase):
     def test_not_init(self):
         home_dir = os.path.join(self._WD, '_not_init')
         os.makedirs(home_dir)
-        with environment_append({'EPM_HOME_DIR': home_dir}):
+        with environment_append({'EPM_CACHE_DIR': home_dir}):
             pm = ProfileManager(init=False)
             self.assertEqual(pm.folder, os.path.join(home_dir, 'profiles'))
             self.assertFalse(os.path.exists(pm.folder))
@@ -22,7 +22,7 @@ class ProfileTestCase(TestCase):
     def test_init(self):
         home_dir = os.path.join(self._WD, '_init')
         os.makedirs(home_dir)
-        with environment_append({'EPM_HOME_DIR': home_dir}):
+        with environment_append({'EPM_CACHE_DIR': home_dir}):
             pm = ProfileManager()
             self.assertEqual(pm.folder, os.path.join(home_dir, 'profiles'))
             self.assertTrue(os.path.exists(pm.folder))

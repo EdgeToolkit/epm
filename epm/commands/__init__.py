@@ -53,7 +53,7 @@ class Command:
         if self.name in ['sandbox', 'run']:
             pass
         elif isinstance(self.arguments, dict):
-            subparsers = self.parser.add_subparsers(help='sub-command help', dest='command')
+            subparsers = self.parser.add_subparsers(help='sub-command help', dest='sub_command')
             for name, args in self.arguments.items():
                 help = args.get('help')
                 description = args.get('description')
@@ -101,12 +101,14 @@ def load_commands(subparsers):
         except ImportError as e:
             #m.warning("Error importing command %s:\n %s" % (name, e))
             print("Error importing command %s:\n %s" % (name, e))
+
     for command in _commands.values():
         command.add_parser(subparsers)
 
 
 def run(command, args, out):
     # if the command hasn't been registered, load a module by the same name
+    print(command, _commands.keys(), '<-------------')
     if command not in _commands:
         raise FatalError('command not found')
 

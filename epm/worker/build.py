@@ -56,7 +56,7 @@ class Builder(Worker):
 
             docker.add_volume(project.dir, docker.WD)
             docker.add_volume(self.api.home_dir, '$home/@host/.epm')
-            docker.environment['EPM_HOME_DIR'] = '$home/@host/.epm'
+            docker.environment['EPM_CACHE_DIR'] = '$home/@host/.epm'
             docker.environment['CONAN_USER_HOME'] = '$home/@host/.epm'
             docker.exec('epm api build %s' % param_encode(param))
 

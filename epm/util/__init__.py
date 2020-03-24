@@ -6,15 +6,15 @@ from epm.enums import Platform, Architecture
 from epm.errors import EException
 
 
-class ArgparseArgument(object):
-
-    def __init__(self, *name, **kwargs):
-        self.name = name
-        self.args = kwargs
-
-    def add_to_parser(self, parser):
-        parser.add_argument(*self.name, **self.args)
-
+#class ArgparseArgument(object):
+#
+#    def __init__(self, *name, **kwargs):
+#        self.name = name
+#        self.args = kwargs
+#
+#    def add_to_parser(self, parser):
+#        parser.add_argument(*self.name, **self.args)
+#
 
 def windows_arch():
     """
@@ -135,29 +135,29 @@ def symbolize(string):
     return symbol
 
 
-def split_plan_name(c):
-    """split the configuration option to profile and scheme
-
-    :param c: configuration string token
-    :return: tuple profile, scheme
-    """
-    tokens = c.split('@', 1)
-    profile = tokens[0]
-    scheme = None
-    if len(tokens) == 2:
-        if tokens[1] not in ['default']:
-            scheme = tokens[1]
-    return profile, scheme
-
-
-def merge_plan_name(profile, scheme=None):
-    """merge the profile and scheme to a configuration string
-
-    :param profile:
-    :param scheme:
-    :return:
-    """
-    return profile + '@%s' % scheme if scheme else ''
+#def split_plan_name(c):
+#    """split the configuration option to profile and scheme
+#
+#    :param c: configuration string token
+#    :return: tuple profile, scheme
+#    """
+#    tokens = c.split('@', 1)
+#    profile = tokens[0]
+#    scheme = None
+#    if len(tokens) == 2:
+#        if tokens[1] not in ['default']:
+#            scheme = tokens[1]
+#    return profile, scheme
+#
+#
+#def merge_plan_name(profile, scheme=None):
+#    """merge the profile and scheme to a configuration string
+#
+#    :param profile:
+#    :param scheme:
+#    :return:
+#    """
+#    return profile + '@%s' % scheme if scheme else ''
 
 
 

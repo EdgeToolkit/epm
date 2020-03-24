@@ -105,6 +105,7 @@ class Main(object):
             self.args.argv = unkown
         else:
             self.args = self.parser.parse_args(args)
+        print(self.args, '<----------------------')
 
 #    def list_variants(self):
 #        if not self.args.list_variants:
