@@ -27,7 +27,9 @@ class Builder(Worker):
                 #if i == 'test' and not os.path.exists('test_package'):
                 #    self.out.warn('Skip test because of test_package folder not existing')
                 #    continue
-                fn(project)
+                from conans.tools import environment_append
+                with environment_append(self.api.config.env_vars):
+                    fn(project)
 
     def exec(self, param):
         project = Project(param['PROFILE'], param.get('SCHEME'), self.api)
@@ -153,7 +155,6 @@ class Builder(Worker):
     def _sandbox(self, project, folder):
         storage = self.api.conan_storage_path
         for name, command in project.manifest.get('sandbox', {}).items():
-            print(name, command, folder, '<~~~~~~~~~~~~~~~~~~~')
             if command.startswith(folder):
                 try:
                     program = Program(project, command, storage)

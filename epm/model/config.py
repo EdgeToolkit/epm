@@ -1,6 +1,6 @@
 import os
 from epm.util.files import save_yaml, load_yaml
-
+from collections import namedtuple
 
 class Config(object):
 
@@ -14,19 +14,41 @@ class Config(object):
 
     @property
     def venv(self):
-        return self._data['venv']
+        VEnv = namedtuple('VEnv', ['name'])
+        value = self._data.get('venv')
+        if value is None or value.get('name') is None:
+            return None
+        return VEnv(value['name'])
 
     @property
-    def registry(self):
-        return self._data['registry']
+    def environment(self):
+        return self._data.get('environment', {})
 
-    def save(self, filename=None):
-        filename = filename or self._filename
-        data = {}
-        for k, v in self._data.items():
-            if v:
-                data[k] = v
-        save_yaml(filename, data)
+    @property
+    def remotes:
+        Remote = namedtuple('Remote', ['url', 'username', 'password'])
+        remotes = []
+        for r in self._data.get('remotes', []):
+            url = r['url']
+            username = r.get('username', None)
+            password = r.get('password', None)
+            remotes.append(Remote(url, username, password))
+        return remotes
+
+    @property
+    def env_vars(self):
+        '''
+        '''
+        env = {}
+        for key, value in self.environment.items():
+            val = os.environ[key]
+            if val:
+                env[key] = val
+        return dict(self.environment, **env)
+
+
+    def get(self, section, default=None):
+        return self._data.get(section, default)
 
 
 

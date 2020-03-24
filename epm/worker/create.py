@@ -90,7 +90,8 @@ class Creator(Worker):
         try:
             if runner == 'shell':
                 storage = os.path.join(project.dir, storage) if storage else self.api.conan_storage_path
-                with environment_append({'CONAN_STORAGE_PATH': storage}):
+                with environment_append(dict(self.api.config.env_vars,
+                                             **{'CONAN_STORAGE_PATH': storage})):
                     self._exec(project, clear)
             elif runner == 'docker':
                 param['runner'] = 'shell'

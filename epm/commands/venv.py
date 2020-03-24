@@ -83,9 +83,7 @@ class VEnv(Command):
             from epm.tool.venv import active
             active(args.name)
         elif args.sub_command == 'banner':
-            print('---------------------XXXXXXXXXXXX', args)
             from epm.tool.venv import banner
-            print(args.name)
             print(banner(args.name))
 
 
