@@ -23,5 +23,5 @@
   
 - name: install artifactory server
   include: artifactory.yml
-  debug: "msg='install artifactory on {{inventory_hostname}}'"
+  #debug: "msg='install artifactory on {{inventory_hostname}}'"
   when:  "'artifactory' in group_names"  
