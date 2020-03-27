@@ -14,13 +14,15 @@ class Config(object):
 
     @property
     def venv(self):
-        VEnv = namedtuple('VEnv', ['name', 'with_default_profiles'])
+        VEnv = namedtuple('VEnv', ['name', 'with_default_profiles', 'buildin_profiles'])
+
         value = self._data.get('venv')
 
         if value is None or value.get('name') is None:
             return None
         with_default_profiles = value.get('with_default_profiles', False)
-        return VEnv(value['name'], with_default_profiles)
+        buildin_profiles = value.get('buildin_profiles')
+        return VEnv(value['name'], with_default_profiles, buildin_profiles)
 
     @property
     def environment(self):

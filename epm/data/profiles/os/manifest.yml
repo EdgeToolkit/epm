@@ -1,0 +1,8 @@
+windows:
+  profiles:
+    win32:
+      description: |
+        Microsoft Windows profile for x86 build tools.
+    win64:
+      description: |
+        Microsoft Windows profile for x86_64 build tools.

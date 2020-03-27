@@ -32,6 +32,7 @@ class Builder(Worker):
                     fn(project)
 
     def exec(self, param):
+        print(param)
         project = Project(param['PROFILE'], param.get('SCHEME'), self.api)
         runner = param.get('RUNNER') or 'auto'
 

@@ -2,7 +2,6 @@ import os
 from epm.worker import Worker, DockerBase, param_encode
 from epm.model.project import Project
 from epm.errors import EException, APIError
-from epm.tool.conan import ConanMeta
 from conans.tools import environment_append
 
 class Uploader(Worker):
@@ -11,6 +10,7 @@ class Uploader(Worker):
         super(Uploader, self).__init__(api)
 
     def exec(self, param):
+        from epm.tool.conan import ConanMeta
         meta = ConanMeta()
         profile = param.get('PROFILE')
         storage = param.get('storage')

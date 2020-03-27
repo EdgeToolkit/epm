@@ -10,8 +10,8 @@ gitlab:
     ssh_port: 8022
 
 artifactory:
-    name: epm.artifactory
-    port: 8030
+    name: epm.artifactory7
+    port: 8060
 
 nexus:
     name: epm.nexus

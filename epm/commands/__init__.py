@@ -66,7 +66,7 @@ class Command:
 
     def parameter(self, args):
         result = {}
-        for i in ['PROFILE', 'RUNNER', 'RUNNER']:
+        for i in ['PROFILE', 'SCHEME', 'RUNNER']:
             value = getattr(args, i, None)
             if value is not None:
                 result[i] = value

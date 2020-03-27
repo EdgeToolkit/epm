@@ -3,7 +3,7 @@ import pathlib
 from collections import namedtuple
 from string import Template
 from epm.util import system_info
-from epm.tool.conan import ConanMeta
+
 from epm.util.files import rmdir, mkdir, save, load_yaml, save_yaml
 
 PLATFORM, ARCH = system_info()

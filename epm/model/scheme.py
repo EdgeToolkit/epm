@@ -137,7 +137,8 @@ class Scheme(object):
         '''
         manifest = manifest or self.project.manifest
         schemes = manifest.get('scheme', {})
-        options = schemes.get('options', {}).get(name, {})
+        options = schemes.get(name, {})
+        print(name, '==========', options)
         dependencies = manifest.get('dependencies', {})
 
         dep_options = options.get('.dependencies', {})
@@ -145,7 +146,6 @@ class Scheme(object):
         # pick up options of this package.yml
         options = {k: v for k, v in options.items() if k[0] != '.'}
         deps = {}
-
 
         for pkg, sch in dep_options.items():
             import pprint

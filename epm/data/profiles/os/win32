@@ -1,0 +1,8 @@
+[settings]
+os=Windows
+os_build=Windows
+arch=x86
+arch_build=x86
+[options]
+[build_requires]
+[env]
