@@ -4,6 +4,8 @@ from epm.model.project import Project
 from epm.errors import EException, APIError
 from epm.model.sandbox import Program
 from conans.tools import environment_append
+from epm.paths import HOME_EPM_DIR
+
 
 class Docker(DockerRunner):
 
@@ -53,14 +55,18 @@ class Builder(Worker):
                     'info': str(e)
                 })
         elif runner == 'docker':
-            param['runner'] = 'shell'
+            param['RUNNER'] = 'shell'
             docker = Docker(self.api, project)
             docker.WD = '$home/.project/%s' % project.name
 
             docker.add_volume(project.dir, docker.WD)
-            docker.add_volume(self.api.home_dir, '$home/@host/.epm')
-            docker.environment['EPM_CACHE_DIR'] = '$home/@host/.epm'
-            #docker.environment['CONAN_USER_HOME'] = '$home/@host/.epm'
+            docker.add_volume(HOME_EPM_DIR, '$home/.epm')
+            docker.environment['EPM_CACHE_DIR'] = '$home/.epm'
+
+            EPM_CACHE_DIR = os.environ.get('EPM_CACHE_DIR')
+            if EPM_CACHE_DIR:
+                docker.add_volume(EPM_CACHE_DIR, '$home/@host/.epm')
+                docker.environment['EPM_CACHE_DIR'] = '$home/@host/.epm'
             docker.exec('epm api build %s' % param_encode(param))
 
     def _configure(self, project):
@@ -132,7 +138,6 @@ class Builder(Worker):
 
 
         for i in tests:
-            print('**************', i)
             conanfile_path = os.path.join(i, 'conanfile.py')
             if not os.path.exists(conanfile_path):
                 raise EException('specified test <%s> miss Makefile.py' % i)

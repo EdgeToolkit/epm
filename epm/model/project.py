@@ -84,11 +84,12 @@ class Project(object):
 
     @property
     def group(self):
-        return self.conan_meta.group
+        return self.manifest['group']
 
     @property
     def channel(self):
-        return self.conan_meta.channel
+        from epm.tool.conan import get_channel
+        return get_channel(self.name)
 
     @property
     def reference(self):
@@ -141,12 +142,6 @@ class Project(object):
             self._manifest = load_yaml(path)
 
         return self._manifest
-
-    @property
-    def conan_meta(self):
-        if not self._conan_meta:
-            self._conan_meta = ConanMeta(self.manifest)
-        return self._conan_meta
 
     @property
     def tests(self):

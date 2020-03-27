@@ -119,14 +119,15 @@ class DockerRunner(object):
 
     def _preprocess(self, config):
         scheme = self._project.scheme
-        scheme.profile.docker.builder
+        profile = self._project.profile
+        #scheme.profile.docker.builder
 
-        config = config or scheme.profile.docker.builder
+        config = config or profile.docker.builder
         config = dict({'shell': '/bin/bash', 'home': '/tmp'}, **config)
 
         if self._dc:
             try:
-                builder = self._dc['profile'][scheme.profile.name]['docker']['builder']
+                builder = self._dc['profile'][profile.name]['docker']['builder']
                 if builder.get('image'):
                     config['image'] = builder['image']
 
@@ -134,7 +135,8 @@ class DockerRunner(object):
                     source = builder['epm']['source']
                     target = builder['epm']['target']
                     self.add_volume(source, target)
-            except:
+            except Exception as e:
+                print(str(e))
                 pass
 
         WD = self._docker_var_parse(config, self.WD)
@@ -149,6 +151,9 @@ class DockerRunner(object):
 
         for key, value in self.environment.items():
             environment[key] = self._docker_var_parse(config, value)
+        print('------------------------------------------------------')
+        print(config, WD, volumes, environment)
+        print('------------------------------------------------------')
 
         return config, WD, volumes, environment
 

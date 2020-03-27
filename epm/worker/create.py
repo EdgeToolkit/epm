@@ -11,7 +11,7 @@ from epm.errors import APIError, EException
 from epm.model.sandbox import Program
 from epm.util import is_elf
 from epm.util.files import remove, rmdir
-
+from epm.paths import HOME_EPM_DIR
 
 def _delete(path):
     if os.path.isfile(path):
@@ -94,16 +94,21 @@ class Creator(Worker):
                                              **{'CONAN_STORAGE_PATH': storage})):
                     self._exec(project, clear)
             elif runner == 'docker':
-                param['runner'] = 'shell'
+                param['RUNNER'] = 'shell'
                 docker = Docker(self.api, project)
                 docker.WD = '$home/project/%s' % project.name
 
                 docker.add_volume(project.dir, docker.WD)
-                docker.add_volume(self.api.home_dir, '$home/host/.epm')
+                docker.add_volume(HOME_EPM_DIR, '$home/.epm')
+                docker.environment['EPM_CACHE_DIR'] = '$home/.epm'
+
+                EPM_CACHE_DIR = os.environ.get('EPM_CACHE_DIR')
+                if EPM_CACHE_DIR:
+                    docker.add_volume(EPM_CACHE_DIR, '$home/@host/.epm')
+                    docker.environment['EPM_CACHE_DIR'] = '$home/@host/.epm'
+
                 if storage:
                     docker.environment['CONAN_STORAGE_PATH'] = '%s/%s' % (docker.WD, storage)
-
-                docker.environment['EPM_CACHE_DIR'] = '$home/host/.epm'
 
                 docker.exec('epm api create %s' % param_encode(param))
 

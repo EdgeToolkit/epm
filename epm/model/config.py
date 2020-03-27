@@ -46,7 +46,7 @@ class Config(object):
         '''
         env = {}
         for key, value in self.environment.items():
-            val = os.environ[key]
+            val = os.environ.get(key)
             if val:
                 env[key] = val
         return dict(self.environment, **env)
