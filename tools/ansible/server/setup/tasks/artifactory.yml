@@ -1,7 +1,7 @@
 ---
 - name: Create docker volume of artifactory
   docker_volume:
-    name: "{{volume_prefix}}artifactory7"
+    name: "{{volume_prefix}}artifactory"
   become: yes
 
 - name: create artifactory container
