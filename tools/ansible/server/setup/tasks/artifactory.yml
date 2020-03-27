@@ -2,6 +2,7 @@
 - name: Create docker volume of artifactory
   docker_volume:
     name: "{{volume_prefix}}artifactory7"
+  become: yes
 
 - name: create artifactory container
   docker_container:
@@ -13,5 +14,6 @@
     - "{{ artifactory.port }}:8081"
     volumes:
     - "{{volume_prefix}}artifactory7:/var/opt/jfrog/artifactory"
+  become: yes
 
         
