@@ -170,6 +170,7 @@ def _get_debug_configuration():
     if _debug_configuration is None:
         _debug_configuration = {}
         filename = os.getenv('EPM_DEBUG_CONFIG_FILE')
+        print('************>', filename)
         if filename:
             if os.path.exists(filename):
                 try:

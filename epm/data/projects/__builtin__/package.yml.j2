@@ -1,3 +1,4 @@
+{% set type = manifest['type'] %}
 name: {{ name }}
 version: {{ version }}
 group: {{ group | default('example')}}
@@ -6,18 +7,14 @@ url: http://{{group}}.com/{{name}}
 description: {{ description | default('%s is %s ....' % (name, type))}}
 
 scheme:
-  profile:
-  - gcc5
-  - vs2019
-  options:
-    dynamic:
-      shared: true
-      # -----------------------------------------------------------------------------
-      # if not use the default options of depend package, you have to specified here
-      # for example we want to use zlib dynamic options scheme.
-      # -----------------------------------------------------------------------------
-      #.dependencies:
-      #  zlib: dynamic
+  dynamic:
+    shared: true
+    # -----------------------------------------------------------------------------
+    # if not use the default options of depend package, you have to specified here
+    # for example we want to use zlib dynamic options scheme.
+    # -----------------------------------------------------------------------------
+    #.dependencies:
+    #  zlib: dynamic
 
 {% if type == 'lib' %}
 test:

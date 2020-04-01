@@ -15,12 +15,12 @@
 #[registry]
 #172.16.0.119
 
-#[nexus]
-#172.16.192.169
+[nexus]
+172.16.192.169
 
 
 [all:vars]
-ansible_ssh_user=vss
+ansible_ssh_user=epm
 ansible_ssh_port=22
-ansible_ssh_pass=vss
-ansible_sudo_pass=vss
+ansible_ssh_pass=epm
+ansible_sudo_pass=epm

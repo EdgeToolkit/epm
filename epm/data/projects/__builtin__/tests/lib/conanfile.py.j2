@@ -3,27 +3,16 @@
 import os
 
 from conans import ConanFile, CMake, tools
-from epm.tool.conan import ConanMeta
+from epm.tool.conan import PackageMetaInfo
 
-
+PMI = PackageMetaInfo('../package.yml')
 class TestPackageConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
+    requires = PMI.reference
 
-    @property
-    def target_reference(self):
-        reference = os.environ.get('EPM_TARGET_PACKAGE_REFERENCE')
-        if reference:
-            return reference
-        pkg_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
-        filename = os.path.join(pkg_dir, 'package.yml')
-        if os.path.exists(filename):
-            meta = ConanMeta(filename)
-            return meta.reference
-        raise Exception('environment var EPM_TARGET_PACKAGE_REFERENCE not set.')
 
     def requirements(self):
-        self.requires(self.target_reference)  # the lib to be linked in this program
 
         self.requires("gtest/1.8.1@epm/public")
 

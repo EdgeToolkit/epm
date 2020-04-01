@@ -1,0 +1,26 @@
+{%- set symbol = name.replace('-','_') -%}
+{%- set SYMBOL = symbol.upper() -%}
+#include<gtest/gtest.h>
+
+#include <{{ name }}/{{ name }}.h>
+
+
+
+class {{ symbol | capitalize }} :public testing::Test
+{
+public:
+    virtual void SetUp()
+    {
+    }
+    virtual void TearDown()
+    {
+    }
+};
+
+
+TEST_F({{ symbol | capitalize }}, version)
+{
+	ASSERT_STREQ("{{ version }}", {{ symbol }}_version());
+}
+
+

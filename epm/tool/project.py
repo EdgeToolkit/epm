@@ -6,6 +6,7 @@ from string import Template
 from conans.tools import ConanOutput as Output
 from epm.util.files import mkdir
 from jinja2 import PackageLoader, Environment, FileSystemLoader
+from epm.paths import HOME_EPM_DIR, DATA_DIR
 
 _DEP_DEMO = '''#
 #dependencies:
@@ -245,15 +246,10 @@ class Generator(object):
 
 class Creator(object):
 
-    def __init__(self, meta, directory):
-        self._meta = meta
-        self._type = meta['type']
-        self._dir = os.path.abspath(directory)
-        filename = os.path.join(self._dir, '.manifest.yml')
-        if not os.path.exists(filename):
-            raise Exception('specify directory %s miss <.manifest.yml>' % directory)
-        with open(filename) as f:
-            self._manifest = yaml.safe_load(f)
+    def __init__(self, manifest, param):
+        self._dir = manifest['dir']
+        self._files = manifest['files']
+        self._meta = dict(param, **{'manifest': manifest})
 
     @property
     def artifacts(self):
@@ -262,7 +258,7 @@ class Creator(object):
             return s.substitute(self._meta)
 
         results = []
-        for item in self._manifest.get('all', []) + self._manifest.get(self._type, []):
+        for item in self._files:
             if isinstance(item, str):
                 item = _(item)
                 filename = os.path.join(self._dir, item)
@@ -315,11 +311,55 @@ class Creator(object):
                 self.copy(src, dst)
 
 
-class Template(object):
+def load_project_templates_manifest():
+    dirs = [os.path.join(DATA_DIR, 'projects', '__builtin__')]
+    folder = os.path.join(os.path.join(HOME_EPM_DIR, 'projects'))
+    if os.path.exists(folder):
+        for d in os.listdir(folder):
+            if os.path.isdir(d) and os.path.exists(os.path.join(d, '.manifest.yml')):
+                dirs.append(d)
 
-    def __init__(self, name):
-        pass
+    results = {}
 
-    @staticmethod
-    def list():
-        pass
+    for d in dirs:
+        filename = os.path.join(d, '.manifest.yml')
+        with open(filename) as f:
+            manifest = yaml.safe_load(f)
+            files = manifest.get('files')
+            description = manifest.get('description')
+            templates = manifest.get('templates')
+            group = manifest['name']
+            if templates:
+                for k, v in templates.items():
+                    name = k if group in ['__builtin__'] else '%s@%s' % (k, group)
+                    description = v['description']
+                    files = v['files']
+                    results[name] = {
+                        'name': name,
+                        'fullname': '%s@%s' % (k, group),
+                        'group': group,
+                        'type': k,
+                        'dir': d,
+                        'files': files,
+                        'description': description
+                    }
+            else:
+                results[group] = {
+                    'name': group,
+                    'fullname': group,
+                    'dir': d,
+                    'files': files,
+                    'description': description
+                }
+    return results
+
+
+def generate_project(manifest, param):
+    if isinstance(manifest, str):
+        templates = load_project_templates_manifest()
+        manifest = templates[manifest]
+    gen = Creator(manifest, param)
+    gen.run()
+
+
+

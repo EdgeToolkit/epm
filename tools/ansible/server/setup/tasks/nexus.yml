@@ -11,6 +11,13 @@
     restart_policy: always
     ports:
     - "{{ nexus.port }}:8081"
+    - "{{ nexus.port+2 }}:8082"
+    - "{{ nexus.port+3 }}:8083"
+    - "{{ nexus.port+4 }}:8084"
+    - "{{ nexus.port+5 }}:8085"
+    - "{{ nexus.port+6 }}:8086"
+
+
     volumes:
     - "{{volume_prefix}}nexus:/nexus-data"
   become: yes

@@ -12,7 +12,7 @@ epm project show <template name>
 from epm.commands import Command, register_command, ArgparseArgument
 
 _generate_args = [
-    ArgparseArgument("template", default=None, type=str,
+    ArgparseArgument("template", type=str,
                      help="The template which used to generate project skeleton."),
 
     ArgparseArgument("--name", default=None, type=str,
@@ -23,14 +23,14 @@ _generate_args = [
 ]
 
 _show_template_args = [
-    ArgparseArgument("template", default=None, type=str,
-                     help="The template to be shown."),
+    ArgparseArgument("name", type=str,
+                     help="The name of the project template to be shown."),
 
 ]
 
 _install_template_args = [
     ArgparseArgument("url", default=None, type=str,
-                     help="The location of the template tarball."),
+                     help="The location of the project template."),
 ]
 
 
@@ -45,28 +45,55 @@ class Project(Command):
     def __init__(self):
 
         args = {
-            'generate': {
-                'help': 'Generate C/C++ project for epm package base on specified template.',
+            'gen': {
+                'help': 'Generate C/C++ project according specified template.',
                 'args': _generate_args
             },
-            'install-template': {
-                'help': 'Install template from specified url (http or local zip file)',
+            'install': {
+                'help': 'Install project (template) from specified url (http or local zip file)',
                 'args': _install_template_args
 
             },
-            'list-template': {
-                'help': 'List all installed templates.'
+            'list': {
+                'help': 'List all installed project (templates).'
             },
-            'show-template': {
-                'help': 'Display the specified template infomation',
+            'show': {
+                'help': 'Show information about the installed project (template)',
                 'args': _show_template_args
 
             }
         }
         Command.__init__(self, args)
 
-    def run(self, args):
+    def run(self, args, api):
+        from epm.tool.project import load_project_templates_manifest, generate_project
+        templates = load_project_templates_manifest()
         print(args)
+
+        if args.sub_command in ['gen', 'generate']:
+            manifest = templates.get(args.template, None)
+            if manifest is None:
+                raise Exception('project template <%s> not exists' % args.name)
+            import os
+            name = args.name or os.path.basename(os.path.abspath('.'))
+
+            generate_project(manifest, {
+                'name': name,
+                'version': args.version
+            })
+        elif args.sub_command == 'install':
+            pass
+        elif args.sub_command == 'list':
+            print('{:20s} {:40s}'.format('name', 'location'))
+            print('-'*20, '-'*40)
+            for name, value in templates.items():
+                print('{:20s} {:40s}'.format(name, value['dir']))
+        elif args.sub_command == 'show':
+            manifest = templates.get(args.name, None)
+            if manifest is None:
+                print('project template <%s> not exists' % args.name)
+            else:
+                print(manifest.get('description'))
 
 
 

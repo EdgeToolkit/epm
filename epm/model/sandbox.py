@@ -335,7 +335,7 @@ class Program(object):
 #           shell=self._docker_shell
 #        except:
 #            pass
-        docker = self._project.scheme.profile.docker.runner or {}
+        docker = self._project.profile.docker.runner or {}
         docker = dict({'image': 'alpine', 'shell': '/bin/bash', 'home': '/tmp'}, **docker)
 
         return template.render(libdirs=libdirs, filename=filename, name=name,
@@ -352,8 +352,8 @@ class Program(object):
     def _linux_windows_docker(self, name):
         def _(path):
             s = Template(path).substitute(#outdir=r'$EPM_SANDBOX_OUTDIR',
-                                          #storage=r'$EPM_SANDBOX_STORAGE',
-                                          #project=r'$EPM_SANDBOX_PROJECT',
+                                          storage=r'$EPM_SANDBOX_STORAGE',
+                                          project=r'$EPM_SANDBOX_PROJECT',
                                           folder=self._project.folder,
                                           profile=self._project.profile,
                                           scheme=self._project.scheme
@@ -374,7 +374,7 @@ class Program(object):
 #        except:
 #            raise
         
-        docker = self._project.scheme.profile.docker.runner or {}
+        docker = self._project.profile.docker.runner or {}
         docker = dict({'image': 'alpine', 'shell': '/bin/bash', 'home': '/tmp'}, **docker)
 
         return template.render(libdirs=libdirs, filename=filename, name=name,

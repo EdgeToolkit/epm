@@ -7,18 +7,12 @@ import shutil
 import yaml
 
 from conans import ConanFile, CMake, tools
-from epm.tool.conan import ConanMeta
+from epm.tool.conan import PackageMetaInfo
 
+PMI = PackageMetaInfo()
 class {{ name | capitalize | replace('-', '_') }}Conan(ConanFile):
-    _meta = ConanMeta()
-    name = _meta.name
-    version = _meta.version
-    url = _meta.url
-    description = _meta.description
-    license = _meta.license
-    author = _meta.author
-    homepage = _meta.homepage
-    topics = _meta.topics
+    name = PMI.name
+    version = PMI.version
 
     exports = ["package.yml", "conanfile.py"]
     exports_sources = ["CMakeLists.txt", "tests/*", "include/*", "source/*", "cmake/*"]
@@ -32,7 +26,7 @@ class {{ name | capitalize | replace('-', '_') }}Conan(ConanFile):
                        }
 
     def requirements(self):
-        for reference in self._meta.dependencies:
+        for reference in PMI.dependencies:
             self.requires(reference)
 
     def configure(self):
@@ -56,6 +50,7 @@ class {{ name | capitalize | replace('-', '_') }}Conan(ConanFile):
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
         self.cpp_info.libs.sort(reverse=True)
+{% set type = manifest.get('type') %}
 {% if type == 'lib' %}
         if self.settings.os == "Windows":
             if self.options.shared:

@@ -53,7 +53,7 @@ C:\>mkdir Hello
 
 C:\>cd Hello
 
-C:\Hello>epm init --name HelloWorld
+C:\Hello>epm project gen --name HelloWorld
 app package <HelloWorld> project created successfully.
 To build project, run command:  epm -c vs2019 build
 ```
@@ -76,7 +76,7 @@ int main( int argc, char** argv )
 
 ```shell
 
-C:\Hello>epm -c vs2019 build
+C:\Hello>epm --profile vs2019 build
 [configure ......]
 Configuration:
 [settings]
@@ -135,7 +135,20 @@ nosetests epm.test --with-summary-report --summary-report-on class
 
 
 
+You set environment EPM_DEBUG_CONFIG_FILE to the path of debug config (with yaml format)
 
+```yaml
+profile:
+  gcc5:
+    docker:
+      builder:
+        image: epmkit/gcc5:debug
+        epm:
+          source: D:\epmkit\epm\epm
+          target: /home/conan/.cache/epm/epm
+```
+
+above config will use epmkit/gcc5:debug instead of the origin images defined in profiles.
 
 ## Contribution
 

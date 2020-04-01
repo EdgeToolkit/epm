@@ -2,7 +2,7 @@
 #  include: init.yml
 
 - name: install nexus server
-#  include: nexus.yml
+  include: nexus.yml
   debug: "msg='install nexus on {{inventory_hostname}}'"
   when:  "'nexus' in group_names"
 
@@ -22,6 +22,6 @@
   when:  "'registry' in group_names"
   
 - name: install artifactory server
-  include: artifactory.yml
-  #debug: "msg='install artifactory on {{inventory_hostname}}'"
+#  include: artifactory.yml
+  debug: "msg='install artifactory on {{inventory_hostname}}'"
   when:  "'artifactory' in group_names"  
