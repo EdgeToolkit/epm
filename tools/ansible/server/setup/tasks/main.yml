@@ -3,7 +3,7 @@
 
 - name: install nexus server
   include: nexus.yml
-  debug: "msg='install nexus on {{inventory_hostname}}'"
+#  debug: "msg='install nexus on {{inventory_hostname}}'"
   when:  "'nexus' in group_names"
 
 - name: install nginx server
