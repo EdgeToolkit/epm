@@ -36,6 +36,8 @@ _Banner = '''
   * directory     : {instd}
   * conan         : {conan}
   * conan storage : {storage_path}
+  
+   {description}
 
 '''
 
@@ -48,7 +50,7 @@ In Linux
 
 or use epm
    $ epm venv shell {name}
- 
+
 '''
 
 def get_venv_install_dir(name):
@@ -66,32 +68,76 @@ def get_venv_install_dir(name):
         return None
 
 
+def get_all_installed_venv_info():
+    path = os.path.join(HOME_EPM_DIR, 'venv')
+    if not os.path.exists(path):
+        return {}
+
+    results = {}
+    for folder in os.listdir(path):
+        name = folder
+        location = os.path.join(path, name)
+        if os.path.isfile(location):
+            with open(path) as f:
+                m = yaml.safe_load(f)
+                location = m['location']
+        assert os.path.isdir(location)
+        with open(os.path.join(location, 'config.yml')) as f:
+            config = yaml.safe_load(f)
+        results[name] = {
+            'name': name,
+            'location': location,
+            'config': config
+        }
+    return results
+
+
+
 def banner(name=None):
     from epm.tool.conan import get_channel
     from epm.api import API
+    infos = get_all_installed_venv_info()
 
     name = name or os.environ.get('EPM_VENV_NAME')
-    instd = get_venv_install_dir(name)
+    info = infos.get(name)
+    if not info:
+        return " ? ? ? ?"
+    instd = info['location']#get_venv_install_dir(name)
     api = API(instd)
     conan = api.conan
     storage = conan.config_get('storage.path', quiet=True)
+    desc = info['config'].get('venv', {}).get('description')
 
     return _Banner.format(name=name,
                           channel=get_channel(),
                           instd=instd,
                           conan=conan.cache_folder,  # os.path.join(get_conan_user_home(), '.conan'),
-                          storage_path=storage)
+                          storage_path=storage,
+                          description=desc)
 def _cache(path):
     url = urlparse(path)
     folder = path
+    download_dir = tempfile.mkdtemp(suffix='epm.venv')
+    print('@', url)
 
     if url.scheme in ['http', 'https']:
-        download_dir = tempfile.mkdtemp(suffix='epm.download')
         filename = os.path.join(download_dir, os.path.basename(path))
         urllib.request.urlretrieve(path, filename)
         folder = os.path.join(download_dir, 'venv.config')
         zfile = zipfile.ZipFile(filename)
         zfile.extractall(folder)
+    elif url.scheme.startswith('git+'):
+        url = path[4:]
+        branch = None
+        fields = url.split('@')
+        options = ['--depth', '1']
+        if len(fields) > 1:
+            url = fields[0]
+            branch = fields[-1]
+            options += ['-b', branch]
+
+        subprocess.run(['git', 'clone', url, download_dir] + options)
+        folder = download_dir
 
     if not os.path.exists(folder):
         raise Exception('Invalid install path {}'.format(path))

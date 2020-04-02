@@ -1,4 +1,4 @@
-
+import os
 from epm.commands import Command, register_command, ArgparseArgument
 
 _install_args = [
@@ -15,9 +15,8 @@ _active_args = [
                      help="The name of install virtual environment."),
 ]
 
-_list_args = [
-    ArgparseArgument("name", default=None, type=str,
-                     help="If the name not specified, all installed will be shown."),
+_show_args = [
+    ArgparseArgument("name", help="The name of the venv to be display."),
 ]
 
 _banner_args = [
@@ -57,10 +56,16 @@ class VEnv(Command):
 
             },
             'list': {
-                'help': 'List installed venv.',
-                'args': _list_args
+                'help': 'List all installed venv.',
+                'args': []
 
             },
+            'show': {
+                'help': 'Show specified venv information.',
+                'args': _show_args
+
+            },
+
             'banner': {
                 'help': 'Print banner of the venv.',
                 'args': _banner_args
@@ -75,7 +80,6 @@ class VEnv(Command):
         Command.__init__(self, args)
 
     def run(self, args, api=None):
-        print(args)
         if args.sub_command == 'install':
             from epm.tool.venv import install
             install(args.location, args.install_dir)
@@ -85,6 +89,22 @@ class VEnv(Command):
         elif args.sub_command == 'banner':
             from epm.tool.venv import banner
             print(banner(args.name))
+        elif args.sub_command == 'list':
+            from epm.tool.venv import get_all_installed_venv_info
+            info = get_all_installed_venv_info()
+            print('{:19s} {:40s}'.format('name', 'location'))
+            print('{:19s} {:40s}'.format('-'*19, '-'*40))
+            for name, value in info.items():
+                print('{:19s} {:40s}'.format(name, os.path.normpath(value['location'])))
+        elif args.sub_command == 'show':
+            from epm.tool.venv import get_all_installed_venv_info
+            info = get_all_installed_venv_info()
+            info = info.get(args.name)
+            if info:
+                print(info['config']['venv'].get('description'))
+            else:
+                print('%s not installed.' % args.name)
+
 
 
 register_command(VEnv)

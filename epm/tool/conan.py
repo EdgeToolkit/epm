@@ -4,16 +4,17 @@ import yaml
 from epm.util import symbolize
 
 
-def get_channel(name=None):
+def get_channel(group=None):
     """ get package channel according environment vars.
 
-    :param name: package name
+    :param group: package group
     :return: channel
     """
     channel = os.environ.get('EPM_CHANNEL', 'public')
-    if name:
-        symbol = symbolize('_'+name)
-        return os.environ.get('EPM_CHANNEL{}'.format(symbol), channel)
+    if group:
+        symbol = symbolize('_'+group.upper())
+        channel = os.environ.get('EPM_CHANNEL{}'.format(symbol), channel)
+    print('$$$$$', channel, '@', os.environ.get('EPM_CHANNEL{}'.format(symbol), channel), symbol)
     return channel
 
 
@@ -57,7 +58,7 @@ class PackageMetaInfo(object):
 
     @property
     def channel(self):
-        return get_channel(self.name)
+        return get_channel(group=self.group)
 
     @property
     def version(self):
@@ -74,7 +75,7 @@ class PackageMetaInfo(object):
             for name, option in packages.items():
                 version = option['version']
                 user = option.get('group') or self.group
-                channel = option.get('channel') or get_channel(name)
+                channel = option.get('channel') or get_channel(group=user)
                 references.append("%s/%s@%s/%s" % (name, version, user, channel))
 
         return references
@@ -86,7 +87,7 @@ class PackageMetaInfo(object):
             #self._require_check("build requirements configuration illegal", name, value)
             version = value['version']
             user = value.get('group') or self.user
-            channel = value.get('channel') or get_channel(name)
+            channel = value.get('channel') or get_channel(group=user)
             references.append("%s/%s@%s/%s" % (name, version, user, channel))
         return references
 

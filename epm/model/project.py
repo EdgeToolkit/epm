@@ -89,7 +89,7 @@ class Project(object):
     @property
     def channel(self):
         from epm.tool.conan import get_channel
-        return get_channel(self.name)
+        return get_channel(group=self.group)
 
     @property
     def reference(self):
