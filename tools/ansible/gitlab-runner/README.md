@@ -2,6 +2,22 @@
 
 
 
+builder.docker GItlab-CI Docker executor for builder (Linux)
+
+builder.VS2019 Visual studio 
+
+
+
+runner.docker
+
+runner.windows
+
+
+
+deployer.conan
+
+deployer.doc
+
 
 
 
@@ -12,7 +28,27 @@ python _scripts/gitlab-runner-register.py -c _script/runner-config.yml -hosts HO
 
 
 
+Class A (Linux)
 
+builder.docker
+
+runner.docker
+
+deployer.conan
+
+
+
+Class B (Windows)
+
+builder.VSxxx
+
+runner.windows
+
+
+
+class C 
+
+deployer.doc
 
 
 

@@ -5,9 +5,10 @@ from collections import namedtuple
 class Config(object):
 
     def __init__(self, filename='~/.epm/config.yml'):
+        self._data = {}
         self._filename = filename
         if os.path.exists(self._filename):
-            self._data = load_yaml(self._filename) or {}
+            self._data = load_yaml(self._filename)
         self._data = dict({'venv': {},
                            'registry': {}
                            }, **self._data)

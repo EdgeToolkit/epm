@@ -120,6 +120,9 @@ class Profile(object):
     @staticmethod
     def install_default_profiles(cached=None):
         cached = cached or HOME_EPM_DIR
+        from epm.paths import is_home_epm_dir
+        if not is_home_epm_dir():
+            return
         for i in ['.', 'legacy']:
             pd = os.path.normpath(os.path.join(cached, 'profiles', i))
             if not os.path.exists(pd):
