@@ -53,19 +53,37 @@ or use epm
 
 '''
 
-def get_venv_install_dir(name):
-    path = os.path.join(HOME_EPM_DIR, 'venv', name)
-    if not os.path.exists(path):
-        return None
-    if os.path.isdir(path):
-        return path
-    elif os.path.isfile(path):
+#def get_venv_install_dir(name):
+#    path = os.path.join(HOME_EPM_DIR, 'venv', name)
+#    if not os.path.exists(path):
+#        return None
+#    if os.path.isdir(path):
+#        return path
+#    elif os.path.isfile(path):
+#        with open(path) as f:
+#            m = yaml.safe_load(f)
+#            path = m['location']
+#            return path
+#    else:
+#        return None
+
+def load_virtual_environment(path):
+    name = None
+    location = path
+    config = {}
+    if os.path.exists(path) and os.path.isfile(path):
         with open(path) as f:
             m = yaml.safe_load(f)
-            path = m['location']
-            return path
-    else:
-        return None
+            location = m['location']
+    assert os.path.isdir(location)
+    with open(os.path.join(location, 'config.yml')) as f:
+        config = yaml.safe_load(f)
+        name = config['venv']['name']
+    return {
+        'name': name,
+        'location': location,
+        'config': config
+    }
 
 
 def get_all_installed_venv_info():
@@ -74,21 +92,23 @@ def get_all_installed_venv_info():
         return {}
 
     results = {}
-    for folder in os.listdir(path):
-        name = folder
-        location = os.path.join(path, name)
-        if os.path.isfile(location):
-            with open(path) as f:
-                m = yaml.safe_load(f)
-                location = m['location']
-        assert os.path.isdir(location)
-        with open(os.path.join(location, 'config.yml')) as f:
-            config = yaml.safe_load(f)
-        results[name] = {
-            'name': name,
-            'location': location,
-            'config': config
-        }
+    for name in os.listdir(path):
+        info = load_virtual_environment(os.path.join(path, name))
+        results[info['name']] = info
+#        name = folder
+#        location = os.path.join(path, name)
+#        if os.path.isfile(location):
+#            with open(path) as f:
+#                m = yaml.safe_load(f)
+#                location = m['location']
+#        assert os.path.isdir(location)
+#        with open(os.path.join(location, 'config.yml')) as f:
+#            config = yaml.safe_load(f)
+#        results[name] = {
+#            'name': name,
+#            'location': location,
+#            'config': config
+#        }
     return results
 
 
@@ -102,7 +122,7 @@ def banner(name=None):
     info = infos.get(name)
     if not info:
         return " ? ? ? ?"
-    instd = info['location']#get_venv_install_dir(name)
+    instd = info['location']
     api = API(instd)
     conan = api.conan
     storage = conan.config_get('storage.path', quiet=True)

@@ -10,6 +10,7 @@ def get_channel(group=None):
     :param group: package group
     :return: channel
     """
+
     channel = os.environ.get('EPM_CHANNEL', 'public')
     if group:
         symbol = symbolize('_'+group.upper())
