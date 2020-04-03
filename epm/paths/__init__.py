@@ -58,14 +58,4 @@ TEST_DATA_DIR = os.path.join(os.path.dirname(epm.__file__), 'test', 'data')
 
 
 def is_home_epm_dir(folder):
-    _MARKERFILE = '.home.epm.marker'
-    marker = os.path.join(HOME_EPM_DIR, _MARKERFILE)
-    if not os.path.exists(marker):
-        localtime = time.asctime(time.localtime(time.time()))
-        save(marker, localtime)
-
-    filename = os.path.join(folder, '_MARKERFILE')
-
-    if not os.path.exists(marker):
-        return False
-    return filecmp.cmp(marker, filename)
+    return os.path.normpath(folder) == os.path.normpath(HOME_EPM_DIR)
