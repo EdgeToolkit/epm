@@ -10,6 +10,10 @@ class Uploader(Worker):
         super(Uploader, self).__init__(api)
 
     def exec(self, param):
+        print('=========================----===================')
+        print(os.environ)
+        print('=========================----===================')
+
         profile = param.get('PROFILE')
         scheme = param.get('SCHEME')
         storage = param.get('storage')
@@ -22,7 +26,7 @@ class Uploader(Worker):
 
         from conans.client.cmd.uploader import UPLOAD_POLICY_FORCE
 
-        with environment_append({'CONAN_STORAGE_PATH': storage}):
+        with environment_append(dict(os.environ, **{'CONAN_STORAGE_PATH': storage})):
             info = self.conan.upload(pattern=reference, package=package_id,
                                      policy=UPLOAD_POLICY_FORCE,
                                      remote_name=remote, all_packages=False)

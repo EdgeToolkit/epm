@@ -15,25 +15,17 @@ from conans.client.tools import environment_append
 
 def api_method(f):
     def wrapper(api, *args, **kwargs):
-#        quiet = kwargs.pop("quiet", False)
         old_curdir = os.getcwd()
-#        old_output = api.user_io.out
         try:
-#            api.create_app(quiet_output=quiet_output)
-#            log_command(f.__name__, kwargs)
             env_vars = api.config.get('environment', {})
             env_vars = dict(api.env_vars, **env_vars)
-            with environment_append(api.env_vars):
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+            print(env_vars)
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+
+            with environment_append(env_vars):
                 return f(api, *args, **kwargs)
         except Exception as exc:
-#            if quiet_output:
-#                old_output.write(quiet_output._stream.getvalue())
-#                old_output.flush()
-#            msg = exception_message_safe(exc)
-#            try:
-#                log_exception(exc, msg)
-#            except BaseException:
-#                pass
             raise
         finally:
             os.chdir(old_curdir)

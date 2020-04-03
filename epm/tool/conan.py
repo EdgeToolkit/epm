@@ -12,9 +12,11 @@ def get_channel(group=None):
     """
 
     channel = os.environ.get('EPM_CHANNEL', 'public')
+    print('-- group:', group, '*', os.environ.get('EPM_CHANNEL_NVR'))
     if group:
         symbol = symbolize('_'+group.upper())
         channel = os.environ.get('EPM_CHANNEL{}'.format(symbol), channel)
+        print('--', symbol, channel)
     return channel
 
 
