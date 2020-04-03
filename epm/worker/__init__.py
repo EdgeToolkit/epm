@@ -142,9 +142,10 @@ class DockerRunner(object):
         WD = self._docker_var_parse(config, self.WD)
         volumes = dict({}, **self.volumes)
         environment = {}
-        EPM_ARCHIVE_URL = os.environ.get('EPM_ARCHIVE_URL')
-        if EPM_ARCHIVE_URL:
-            environment['EPM_ARCHIVE_URL'] = EPM_ARCHIVE_URL
+        for i in ['EPM_VIRTUAL_ENVIRONMENT']:
+            val = os.environ.get(i)
+            if val:
+               environment[i] = val
 
         for key, value in volumes.items():
             value['bind'] = self._docker_var_parse(config, value['bind'])

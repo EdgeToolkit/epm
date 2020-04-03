@@ -11,7 +11,6 @@ def get_epm_cache_dir(name=None):
     ci_venvd = os.getenv('EPM_CI_VIRTUAL_ENVIRONMENT_DIR')
     if ci_venvd:
         return ci_venvd
-    print(os.environ)
     folder = HOME_EPM_DIR
     vname = name or os.getenv('EPM_VIRTUAL_ENVIRONMENT')
     print('VName:', vname)
