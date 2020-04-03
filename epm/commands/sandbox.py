@@ -19,7 +19,6 @@ class Sandbox(Command):
         Command.__init__(self, args)
 
     def run(self, args, api):
-        print(args)
         param = self.parameter(args)
         param['command'] = args.sandbox_command
         param['args'] = args.argv

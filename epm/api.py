@@ -23,7 +23,6 @@ def api_method(f):
 #            log_command(f.__name__, kwargs)
             env_vars = api.config.get('environment', {})
             env_vars = dict(api.env_vars, **env_vars)
-            print(env_vars)
             with environment_append(api.env_vars):
                 return f(api, *args, **kwargs)
         except Exception as exc:

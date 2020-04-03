@@ -130,47 +130,4 @@ class Scheme(object):
 
     @property
     def package_options(self):
-        return self._options(True)
-
-#    def as_list(self, package=False):
-#        return OptionsValues(self._options_items(package)).as_list()
-
-
-#class Scheme(object):
-#
-#    def __init__(self, name, project):
-#
-#        self.name = name[:-8] if name.endswith('@default') else name
-#        self.project = project
-#        self._profile = None
-#        self._options = None
-#
-#    @property
-#    def profile_(self):
-#        if self._profile is None:
-#            name, _ = split_plan_name(self.name)
-#            if not name:
-#                raise EException('Can not load profile with the empty profile name: %s' % name)
-#            self._profile = Profile(name, self.profile.api.home_dir)
-#
-#            #self._profile = ProfileManager().profile(name)
-#        return self._profile
-#
-#    @property
-#    def profile(self):
-#        if self._profile is None:
-#            name, _ = parse_scheme_name(self.name)
-#            if not name:
-#                raise EException('Can not load profile with the empty profile name: %s' % name)
-#
-#            self._profile = Profile(name, self.project.api.home_dir)
-#        return self._profile
-#    @property
-#    def options(self):
-#        if self._options is None:
-#            _, name = split_plan_name(self.name)
-#            self._options = Options(name, self.project)
-#        return self._options
-#
-#
-#
+ 

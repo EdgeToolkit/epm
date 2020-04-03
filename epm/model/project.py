@@ -101,6 +101,8 @@ class Project(object):
             return None
         if self._profile is None:
             from epm.model.profile import Profile
+            print('------------------@', self._profile_name, __file__)
+            print('==================',self.api.cache_dir)
             self._profile = Profile(self._profile_name, self.api.cache_dir)
         return self._profile
 

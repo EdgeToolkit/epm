@@ -25,8 +25,6 @@ from conans.client.tools import environment_append
 PLATFORM, ARCH = system_info()
 
 
-
-
 class Profile(object):
     """ Specific profile
 
