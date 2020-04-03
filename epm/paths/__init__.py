@@ -10,12 +10,14 @@ from conans.paths import conan_expand_user
 def get_epm_cache_dir(name=None):
     folder = HOME_EPM_DIR
     vname = name or os.getenv('EPM_VIRTUAL_ENVIRONMENT')
+    print('VName:', vname)
     if vname:
         from epm.tool.venv import get_all_installed_venv_info
         infos = get_all_installed_venv_info()
         if not infos.get(vname):
             raise Exception('epm virtual environment <%s> not exists' % vname)
         folder = infos['location']
+    print('*', folder)
     return folder
 
 #    home = os.getenv("EPM_CACHE_DIR") or "~/.epm"

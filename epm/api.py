@@ -53,6 +53,7 @@ class APIv1(object):
 
         self.user_io = user_io or UserIO(out=self.out)
         self.cache_dir = cache_dir or get_epm_cache_dir()
+        print('self.cache_dir:', self.cache_dir)
 
         self._conan = None
         self._config = None
@@ -129,6 +130,7 @@ class APIv1(object):
     @property
     def conan_storage_path(self):
         cache_folder = os.path.join(self.cache_dir, '.conan')
+        print('cache_folder:', cache_folder)
         conan = ConanAPI(cache_folder)
         return conan.config_get("storage.path", quiet=True)
 
