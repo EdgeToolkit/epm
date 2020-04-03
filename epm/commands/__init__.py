@@ -113,6 +113,7 @@ def run(command, args, out):
     api = None
     if command not in ['project', 'venv']:
         from epm.api import API
+        import os
         api = API(output=out)
 
     return _commands[command].run(args, api)

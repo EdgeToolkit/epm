@@ -37,7 +37,7 @@ _Banner = '''
   * conan         : {conan}
   * conan storage : {storage_path}
   
-   {description}
+  {description}
 
 '''
 
@@ -98,7 +98,7 @@ def banner(name=None):
     from epm.api import API
     infos = get_all_installed_venv_info()
 
-    name = name or os.environ.get('EPM_VENV_NAME')
+    name = name or os.environ.get('EPM_VIRTUAL_ENVIRONMENT')
     info = infos.get(name)
     if not info:
         return " ? ? ? ?"
@@ -107,6 +107,7 @@ def banner(name=None):
     conan = api.conan
     storage = conan.config_get('storage.path', quiet=True)
     desc = info['config'].get('venv', {}).get('description')
+    desc = "\n  ".join(desc.split("\n"))
 
     return _Banner.format(name=name,
                           channel=get_channel(),
@@ -118,7 +119,7 @@ def _cache(path):
     url = urlparse(path)
     folder = path
     download_dir = tempfile.mkdtemp(suffix='epm.venv')
-    print('@', url)
+
 
     if url.scheme in ['http', 'https']:
         filename = os.path.join(download_dir, os.path.basename(path))
@@ -137,6 +138,7 @@ def _cache(path):
             options += ['-b', branch]
 
         subprocess.run(['git', 'clone', url, download_dir] + options)
+        rmdir(os.path.join(download_dir, '.git'))
         folder = download_dir
 
     if not os.path.exists(folder):

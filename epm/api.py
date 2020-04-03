@@ -53,17 +53,12 @@ class APIv1(object):
 
         self.user_io = user_io or UserIO(out=self.out)
         self.cache_dir = cache_dir or get_epm_cache_dir()
-        print('self.cache_dir:', self.cache_dir)
 
         self._conan = None
         self._config = None
-        self.env_vars = {#'CONAN_USER_HOME': self.cache_dir,
-                         #'CONAN_STORAGE_PATH': os.path.join(self.cache_dir, '.conan', 'data')
-                         }
+        self.env_vars = {}
 
         self._CONFIG = None
-
-
 
     @property
     def conan(self):
@@ -91,7 +86,6 @@ class APIv1(object):
 
     def project(self, profile, scheme=None):
         from epm.model.project import Project
-        #name = scheme if isinstance(scheme, str) else scheme['scheme']
         return Project(profile, scheme, self)
 
     @api_method

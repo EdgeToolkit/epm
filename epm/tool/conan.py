@@ -14,7 +14,6 @@ def get_channel(group=None):
     if group:
         symbol = symbolize('_'+group.upper())
         channel = os.environ.get('EPM_CHANNEL{}'.format(symbol), channel)
-    print('$$$$$', channel, '@', os.environ.get('EPM_CHANNEL{}'.format(symbol), channel), symbol)
     return channel
 
 

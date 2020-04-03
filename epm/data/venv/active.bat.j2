@@ -1,16 +1,13 @@
 {% set name=config.venv.name %}
 {% set environment=config.environment %}
 @ECHO OFF
-if defined EPM_VENV_NAME (
-  echo "Already in virtual environment %EPM_VENV_NAME%, you have to exits this venv, then try again."
+if defined EPM_VIRTUAL_ENVIRONMENT (
+  echo "Already in virtual environment %EPM_VIRTUAL_ENVIRONMENT%, you have to exits this venv, then try again."
   exit/b 1
 )
 
-set EPM_VENV_NAME={{name}}
-set EPM_CACHE_DIR=%~dp0
-{% for key, value in environment.items() %}
-set {{key}}={{value}}
-{% endfor %}
+set EPM_VIRTUAL_ENVIRONMENT={{name}}
+set CONAN_USER_DIR=
 
 epm venv banner
 
