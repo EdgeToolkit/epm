@@ -130,4 +130,4 @@ class Scheme(object):
 
     @property
     def package_options(self):
- 
+        return self._options(True)
