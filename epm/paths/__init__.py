@@ -44,7 +44,8 @@ PROFILES_FOLDER = 'profiles'
 HOME_EPM_DIR = conan_expand_user("~/.epm")
 if not os.path.exists(HOME_EPM_DIR):
     os.makedirs(HOME_EPM_DIR)
-
+print(os.path.exists(HOME_EPM_DIR))
+print(os.listdir(HOME_EPM_DIR))
 EPM_PROJECT_TEMPLATE_DIR = os.path.join(HOME_EPM_DIR, 'project-templates')
 
 import epm
