@@ -10,8 +10,8 @@ class Uploader(Worker):
         super(Uploader, self).__init__(api)
 
     def exec(self, param):
-        from epm.tool.conan import ConanMeta
-        meta = ConanMeta()
+        from epm.tool.conan import PackageMetaInfo
+        meta = PackageMetaInfo()
         profile = param.get('PROFILE')
         storage = param.get('storage')
         remote = param.get('remote') or meta.group
