@@ -17,7 +17,7 @@ def get_epm_cache_dir(name=None):
         infos = get_all_installed_venv_info()
         if not infos.get(vname):
             raise Exception('epm virtual environment <%s> not exists' % vname)
-        folder = infos['location']
+        folder = infos[vname]['location']
     print('*', folder)
     return folder
 
