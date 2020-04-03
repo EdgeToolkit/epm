@@ -31,15 +31,15 @@ class Profile(object):
     """
     _checked_default_profiles = False
 
-    def __init__(self, name, epm_dir):
+    def __init__(self, name, folder):
         self.name = name
-        self._epm_dir = epm_dir or get_epm_cache_dir()
+        folder = folder or get_epm_cache_dir()
 
         if not Profile._checked_default_profiles:
             Profile.install_default_profiles()
             Profile._checked_default_profiles = True
 
-        self._filename = os.path.join(self._epm_dir, 'profiles', name)
+        self._filename = os.path.join(folder, 'profiles', name)
         manifest = os.path.join(os.path.dirname(self._filename), 'manifest.yml')
         if not os.path.exists(manifest):
             raise EException('No %s for %s, you need to install.' % (manifest, name))

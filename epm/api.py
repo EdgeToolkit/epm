@@ -51,6 +51,9 @@ class APIv1(object):
         self.out = output or ConanOutput(sys.stdout, sys.stderr, color)
 
         self.user_io = user_io or UserIO(out=self.out)
+        print('----------------------------------------')
+        print(os.environ.get('EPM_VIRTUAL_ENVIRONMENT'))
+        print('get_epm_cache_dir():', get_epm_cache_dir())
         self.cache_dir = cache_dir or get_epm_cache_dir()
 
         self._conan = None
