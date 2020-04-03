@@ -8,6 +8,7 @@ from epm.util.files import save
 from conans.paths import conan_expand_user
 
 def get_epm_cache_dir(name=None):
+    print(os.environ)
     folder = HOME_EPM_DIR
     vname = name or os.getenv('EPM_VIRTUAL_ENVIRONMENT')
     print('VName:', vname)
