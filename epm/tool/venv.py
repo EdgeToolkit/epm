@@ -235,6 +235,7 @@ def install(origin, to=None, out=None):
 
 
 def active(name):
+
     path = os.path.join(HOME_EPM_DIR, 'venv', name)
     if not os.path.exists(path):
         raise EException('Virtual environment %s not installed.' % name)
