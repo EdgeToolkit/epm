@@ -104,6 +104,7 @@ class Program(object):
         return self._project.profile.settings['os'] == Platform.LINUX
 
     def _initialize(self):
+        print(self._is_create, '--@ @@@@@@@@@@@@@@@@--', self._prefix)
         if self._is_create and not self._prefix: #self._folder in ['build', 'package']:
             self._filename, self._build_dir = self._locate('conan')
         else:
@@ -142,55 +143,6 @@ class Program(object):
             return join(folder, m, self._name), folder
         folders = ['bin'] if self._folder == 'package' else ['bin', '']
         folders = [self._middle] if self._middle else folders
-        for m in folders:
-            if where == 'project':
-                path, folder = ppath(m)
-                if self._is_program(path):
-                    return '${project}/%s' % path, folder
-            else:
-                path, folder = cpath(m)
-                if self._is_program(path):
-                    prefix = sempath(self.storage_path, [('project', os.path.abspath('.'))])
-                    if prefix is None:
-                        return '${storage}/%s' % path, folder
-                    else:
-                        return '%s/%s' % (prefix, path), folder
-
-        raise ENotFoundError('can not locate program <{}> in {}'.format(self._name, where))
-
-    def __locate(self, where='project'):
-        ''' return the program path with ${project} or ${conan}  prefix
-
-        :param where: where to locate the porgram
-        :return:
-        '''
-        project = self._project
-
-        def ppath(m):
-            folder = join(project.folder.out, self._folder)
-            return join(folder, m, self._name), folder
-
-        def cpath(m, storage=None):
-            rpath = project.reference.replace('@', '/')
-            storage = storage or self.storage_path
-            folder = join(storage, rpath, self._folder, self.id)
-            return join(folder, m, self._name), folder
-
-        #folders = []
-        #
-        #if self._folder == 'test':
-        #    print('@@@', self._middle)
-        #    path = os.path.normpath(self._middle.replace('\\', '/'))
-        #    m = path.split('/')
-        #    folders += [os.path.join(path, 'bin')]
-        #    print('##########', m)
-        #    if m[1] != 'package':
-        #        folders += [path]
-        #else:
-
-        folders = ['bin'] if self._folder == 'package' else ['bin', '']
-        folders = [self._middle] if self._middle else folders
-
         for m in folders:
             if where == 'project':
                 path, folder = ppath(m)

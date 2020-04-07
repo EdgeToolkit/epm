@@ -100,12 +100,12 @@ class Creator(Worker):
 
                 docker.add_volume(project.dir, docker.WD)
                 docker.add_volume(HOME_EPM_DIR, '$home/.epm')
-                docker.environment['EPM_CACHE_DIR'] = '$home/.epm'
+#                docker.environment['EPM_CACHE_DIR'] = '$home/.epm'
 
-                EPM_CACHE_DIR = os.environ.get('EPM_CACHE_DIR')
-                if EPM_CACHE_DIR:
-                    docker.add_volume(EPM_CACHE_DIR, '$home/@host/.epm')
-                    docker.environment['EPM_CACHE_DIR'] = '$home/@host/.epm'
+#                EPM_CACHE_DIR = os.environ.get('EPM_CACHE_DIR')
+#                if EPM_CACHE_DIR:
+#                    docker.add_volume(EPM_CACHE_DIR, '$home/@host/.epm')
+#                    docker.environment['EPM_CACHE_DIR'] = '$home/@host/.epm'
 
                 if storage:
                     docker.environment['CONAN_STORAGE_PATH'] = '%s/%s' % (docker.WD, storage)
@@ -145,7 +145,7 @@ class Creator(Worker):
                                  options=options,
                                  profile_names=[profile_path],
                                  test_folder=False)
-#                                 test_build_folder=project.folder.test)
+
         if info['error']:
             raise APIError('failed when create package %s | %s '
                            % (project.name, scheme.name), details={})
@@ -158,7 +158,7 @@ class Creator(Worker):
         self._test(project)
 
         if clear:
-            for i in glob.glob(project.folder.test):
+            for i in glob.glob('%s/*/*' % project.folder.test):
                 _clear_builds(i)
             _clear_storage(self.api.conan_storage_path, project.reference.replace('@', '/'))
 
@@ -224,11 +224,3 @@ class Creator(Worker):
         for name, command in project.manifest.get('sandbox', {}).items():
             program = Program(project, command, storage, is_create=True, id=id)
             program.generate(name)
-
-        #for folder in ['build', 'package', 'test_package']:
-        #    for name, command in project.manifest.get('sandbox', {}).items():
-        #        if command.startswith(folder):
-        #            program = Program(project, command, storage, is_create=True, id=id)
-        #
-        #            program.generate(name)
-        #
