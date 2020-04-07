@@ -101,11 +101,13 @@ def banner(name=None):
     desc = info['config'].get('venv', {}).get('description')
     desc = "\n  ".join(desc.split("\n"))
 
+    from os.path import normpath as _
+
     return _Banner.format(name=name,
                           channel=get_channel(),
-                          instd=instd,
-                          conan=conan.cache_folder,  # os.path.join(get_conan_user_home(), '.conan'),
-                          storage_path=storage,
+                          instd=_(instd),
+                          conan=_(conan.cache_folder),
+                          storage_path=_(storage),
                           description=desc)
 
 
@@ -163,7 +165,6 @@ def install(origin, to=None, out=None):
     # copy files
     shutil.copytree(folder, dst=instd)
 
-
     scripts = ['active.bat', 'active.sh', 'bash.rc']
     for i in scripts:
         def _render(filename):
@@ -219,6 +220,7 @@ def active(name):
         subprocess.run(['cmd.exe', '/k', filename], env=env)
     else:
         subprocess.run(['/bin/bash', '--rcfile', rcfile], env=env)
+
 
 class VirtualEnvironment(object):
 
