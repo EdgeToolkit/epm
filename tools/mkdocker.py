@@ -102,7 +102,9 @@ def main():
     config = Config(args.config or None, args.debug)
     name = args.name[0]
     filename = 'Dockerfile-%s' % name
-    version = args.version or 'debug' if args.debug else epm.__version__
+    version = args.version
+    if not version:
+        version = 'debug' if args.debug else epm.__version__
     docerfile = Dockerfile(name, version, config=config)
     docerfile.write(os.path.join(_DIR, filename))
     if args.build:
