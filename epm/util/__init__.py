@@ -135,33 +135,6 @@ def symbolize(string):
     return symbol
 
 
-#def split_plan_name(c):
-#    """split the configuration option to profile and scheme
-#
-#    :param c: configuration string token
-#    :return: tuple profile, scheme
-#    """
-#    tokens = c.split('@', 1)
-#    profile = tokens[0]
-#    scheme = None
-#    if len(tokens) == 2:
-#        if tokens[1] not in ['default']:
-#            scheme = tokens[1]
-#    return profile, scheme
-#
-#
-#def merge_plan_name(profile, scheme=None):
-#    """merge the profile and scheme to a configuration string
-#
-#    :param profile:
-#    :param scheme:
-#    :return:
-#    """
-#    return profile + '@%s' % scheme if scheme else ''
-
-
-
-##################################
 _debug_configuration = None
 
 
@@ -170,7 +143,6 @@ def _get_debug_configuration():
     if _debug_configuration is None:
         _debug_configuration = {}
         filename = os.getenv('EPM_DEBUG_CONFIG_FILE')
-        print('[debug configuration]', filename)
         if filename:
             if os.path.exists(filename):
                 try:
