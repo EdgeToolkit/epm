@@ -23,13 +23,6 @@ def mirror(origin, name):
     if ARCHIVE_URL is None:
         return origin
     origin_url = origin['url']
-    #url = '%s/%s/conandata.yml' % (self.ARCHIVE_URL, self.name)
-    #name = name or self.name
-    #folder = tempfile.mkdtemp(prefix='%s-%s' % (self.name, self.version))
-    #filename = os.path.join(folder, 'conandata.yml')
-    #tools.download(url, filename)
-    #with open(filename) as f:
-    #    data = yaml.safe_load(f)
     origin['url'] = '{mirror}/{name}/{basename}'.format(
         mirror=ARCHIVE_URL, name=name, basename=os.path.basename(origin_url))
     return origin
