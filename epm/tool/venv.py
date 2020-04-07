@@ -120,6 +120,8 @@ def banner(name=None):
     print('@@', infos)
 
     name = name or os.environ.get('EPM_VIRTUAL_ENVIRONMENT')
+    print(name)
+    print(infos.get(name))
     info = infos.get(name)
     if not info:
         return " ? ? ? ?"
