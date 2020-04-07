@@ -1,0 +1,39 @@
+# Hisilicon v300 - ARM cross build toolchain
+# v0.1
+#
+##- FROM epmkit/gcc48-armv7-hisiv300
+##- 
+##- LABEL maintainer="Mingyi Zhang <mingyi.z@outlooke.com>"
+##- 
+##- COPY conan.zip .
+##- 
+##- RUN    export CC=gcc                     \
+##-     && export CXX=g++                    \
+##-     && export CMAKE_C_COMPILER=gcc       \
+##-     && export CMAKE_CXX_COMPILER=g++     \
+##-     && export STRIP=strip                \
+##-     && export RANLIB=ranlib              \
+##-     && export AS=as                      \
+##-     && export AR=ar                      \
+##-     && export LD=ld                      \
+##-     &&  pip config set global.index-url http://vss.kedacom.com:2200/repository/vss.pypi/simple \
+##-     &&  pip config set install.trusted-host vss.kedacom.com \
+##-     &&  pip uninstall -y conan conan-package-tools \
+##-     &&  pip install git+http://vss.kedacom.com:2000/epmall/epm.git@poc \
+##-     && conan config install ./conan.zip \
+##-     && rm ./conan.zip
+##- 
+##- 
+##- # GCC5 EPM Builder
+##- # Version: {{version}}
+##- #
+FROM epmkit/gcc48-armv7-hisiv300
+
+LABEL maintainer="Mingyi Zhang <mingyi.z@outlooke.com>"
+
+{% include 'copy.j2' %}
+
+RUN echo "HiSilicon v300" \
+{% include 'pre.j2' %}
+    && {{ install_epm }} \
+{% include 'post.j2' %}

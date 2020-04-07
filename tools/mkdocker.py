@@ -29,6 +29,7 @@ class Config(object):
                 self._items = yaml.safe_load(f)
             self.mirror = self._items.get('pip', {}).get('mirror')
             self.http_proxy = self._items.get('pip', {}).get('proxy')
+            self.archive_url = self._items.get('archive_url')
             sourced = self._items.get('epm_source_dir')
             if sourced:
                 self.epm_source_dir = sourced
@@ -69,12 +70,14 @@ class Dockerfile(object):
         install_epm = 'sudo pip install %s %s %s' % (options,
                                                 '-e' if self._config.debug else '',
                                                 self._config.epm_source_dir)
+        print('<%s>' % install_epm)
         vars = dict({'name': self._name,
                      'version': self._version,
                      'debug': self._config.debug,
                      'options': options,
                      'epm_source_dir': self._config.epm_source_dir,
-                     'install_epm': install_epm
+                     'install_epm': install_epm,
+                     'archive_url': self._config.archive_url,
                      },
                     **kwargs)
 

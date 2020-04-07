@@ -1,0 +1,5 @@
+pip:
+   mirror: http://172.16.192.169:8040/repository/pypi/simple
+   http_proxy: http://172.16.0.8888
+archive_url: http://172.16.0.119/archive/
+epm_source_dir: .cache_epm
