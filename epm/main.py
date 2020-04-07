@@ -88,6 +88,7 @@ class Main(object):
 
         self.parser = argparse.ArgumentParser(description=_DESCRIPTION,
                                               formatter_class=commands.SmartFormatter)
+        self.parser.add_argument('-v', '--version', dest='_VERSION', default=False, action="store_true", help="show version of epm.")
 
         self.parser.add_argument('-p', '--profile', dest='PROFILE', type=str, default=None, help=_PROFILE_HELP)
         self.parser.add_argument('-s', '--scheme', dest='SCHEME', type=str, default=None, help=_SCHEME_HELP)

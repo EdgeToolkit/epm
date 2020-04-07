@@ -105,6 +105,10 @@ def load_commands(subparsers):
 
 
 def run(command, args, out):
+    if args._VERSION:
+        from epm import __version__
+        print('epm %s' % __version__)
+        return
     # if the command hasn't been registered, load a module by the same name
     if command not in _commands:
         raise FatalError('command not found')
