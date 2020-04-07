@@ -104,7 +104,6 @@ class Program(object):
         return self._project.profile.settings['os'] == Platform.LINUX
 
     def _initialize(self):
-        print(self._is_create, '--@ @@@@@@@@@@@@@@@@--', self._prefix)
         if self._is_create and not self._prefix: #self._folder in ['build', 'package']:
             self._filename, self._build_dir = self._locate('conan')
         else:

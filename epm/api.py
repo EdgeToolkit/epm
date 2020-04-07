@@ -112,7 +112,6 @@ class APIv1(object):
     @property
     def conan_storage_path(self):
         cache_folder = os.path.join(self.cache_dir, '.conan')
-        print('cache_folder:', cache_folder)
         conan = ConanAPI(cache_folder)
         return conan.config_get("storage.path", quiet=True)
 
