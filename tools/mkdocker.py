@@ -70,7 +70,6 @@ class Dockerfile(object):
         install_epm = 'sudo pip install %s %s %s' % (options,
                                                 '-e' if self._config.debug else '',
                                                 self._config.epm_source_dir)
-        print('<%s>' % install_epm)
         vars = dict({'name': self._name,
                      'version': self._version,
                      'debug': self._config.debug,
