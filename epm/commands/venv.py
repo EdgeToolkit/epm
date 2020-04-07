@@ -85,7 +85,6 @@ class VEnv(Command):
             install(args.location, args.install_dir)
         elif args.sub_command == 'shell':
             from epm.tool.venv import active
-            print('---', args)
             active(args.name)
         elif args.sub_command == 'banner':
             from epm.tool.venv import banner

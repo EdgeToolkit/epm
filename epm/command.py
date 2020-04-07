@@ -198,19 +198,6 @@ class Command(object):
         result = self._api.create({'scheme': args.scheme,
                                    'storage': args.storage,
                                    'clear': args.clear})
-
-#        def _size(n):
-#            for uint in ['', 'K', 'M']:
-#                if n/1000.0 < 1.0:
-#                    break
-#                n /= 1000
-#            return n, uint
-#
-#        for i, name in [('.epm', '.epm'), ('$storage', 'storage')]:
-#            size = result.get('dirs', {}).get(i, {}).get('size')
-#            if size:
-#                print(name, '%d %s' % _size(size))
-
     def build(self, *args):
         """
         Builds the local package.
@@ -628,23 +615,3 @@ def main(args):
     finally:
         os.chdir(current_dir)
     sys.exit(error)
-
-#
-
-#
-#from epm.worker import param_decode
-#
-#def api_main(argv):
-#    print('api main')
-#    parser = argparse.ArgumentParser(description="epm api invoke command",
-#                                     prog="epm.api.call")
-#
-#    parser.add_argument('method', nargs=1, help=_APICALL_METHOD)
-#    parser.add_argument('param', nargs='?', help=_APICALL_PARAM)
-#
-#    args = parser.parse_args(argv)
-#    param = None
-#    if args.param:
-#        param = param_decode(args.param)
-#
-#

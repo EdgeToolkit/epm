@@ -170,7 +170,7 @@ def _get_debug_configuration():
     if _debug_configuration is None:
         _debug_configuration = {}
         filename = os.getenv('EPM_DEBUG_CONFIG_FILE')
-        print('************>', filename)
+        print('[debug configuration]', filename)
         if filename:
             if os.path.exists(filename):
                 try:
@@ -178,7 +178,6 @@ def _get_debug_configuration():
                         _debug_configuration = yaml.safe_load(f)
                 except Exception as e:
                     print('load debug config file %s failed.\n%s' % (filename, e))
-                print('==== EPM_DEBUG_CONFIG_FILE: %s ====' % filename)
                 import pprint
                 pprint.pprint(_debug_configuration, depth=10, indent=2)
             else:

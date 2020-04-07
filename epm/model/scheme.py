@@ -44,7 +44,7 @@ class Scheme(object):
         manifest = manifest or self.project.manifest
         schemes = manifest.get('scheme', {})
         options = schemes.get(name, {})
-        print(name, '==========', options)
+
         dependencies = manifest.get('dependencies', {})
 
         dep_options = options.get('.dependencies', {})
@@ -57,9 +57,7 @@ class Scheme(object):
             import pprint
             pprint.pprint(dependencies)
             for lib in dependencies:
-                print('lib', lib)
                 for key, info in lib.items():
-                    print('$', key, info)
                     if key == pkg:
                         if not info:
                             raise EException('less information of %s, miss dependencies in package.yml ' % name)
@@ -94,9 +92,6 @@ class Scheme(object):
             options, deps = self._parse(scheme, manifest)
 
             libs[name] = {'manifest': manifest, 'recipe': recipe, 'options': options, 'scheme.deps': deps}
-
-#            log.info('scheme of {} reference={} loaded: \n{}'.format(
-#                name, reference, pprint.pformat(libs[name], indent=2)))
 
             self._load_dep_schemes(libs, deps, storage)
 

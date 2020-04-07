@@ -152,10 +152,6 @@ class DockerRunner(object):
 
         for key, value in self.environment.items():
             environment[key] = self._docker_var_parse(config, value)
-        print('------------------------------------------------------')
-        print(config, WD, volumes, environment)
-        print('------------------------------------------------------')
-
         return config, WD, volumes, environment
 
     def _docker_var_parse(self, config, value):

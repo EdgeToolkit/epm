@@ -19,9 +19,6 @@ def api_method(f):
         try:
             env_vars = api.config.get('environment', {})
             env_vars = dict(api.env_vars, **env_vars)
-            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-            print(env_vars)
-            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
             with environment_append(env_vars):
                 return f(api, *args, **kwargs)
