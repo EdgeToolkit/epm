@@ -1,7 +1,7 @@
 {%- if debug %}
     && sudo rm -rf {{epm_source_dir}}/epm \
     && echo debug version epm should mount at [{{epm_source_dir}}/epm]
-{%- else -%}
+{%- else %}
     && sudo rm -rf {{epm_source_dir}} \
     && epm --version
 {% endif %}
