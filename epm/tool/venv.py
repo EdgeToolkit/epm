@@ -117,6 +117,7 @@ def banner(name=None):
     from epm.tool.conan import get_channel
     from epm.api import API
     infos = get_all_installed_venv_info()
+    print('@@', infos)
 
     name = name or os.environ.get('EPM_VIRTUAL_ENVIRONMENT')
     info = infos.get(name)
