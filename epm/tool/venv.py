@@ -53,19 +53,6 @@ or use epm
 
 '''
 
-#def get_venv_install_dir(name):
-#    path = os.path.join(HOME_EPM_DIR, 'venv', name)
-#    if not os.path.exists(path):
-#        return None
-#    if os.path.isdir(path):
-#        return path
-#    elif os.path.isfile(path):
-#        with open(path) as f:
-#            m = yaml.safe_load(f)
-#            path = m['location']
-#            return path
-#    else:
-#        return None
 
 def load_virtual_environment(path):
     name = None
@@ -95,36 +82,18 @@ def get_all_installed_venv_info():
     for name in os.listdir(path):
         info = load_virtual_environment(os.path.join(path, name))
         results[info['name']] = info
-#        name = folder
-#        location = os.path.join(path, name)
-#        if os.path.isfile(location):
-#            with open(path) as f:
-#                m = yaml.safe_load(f)
-#                location = m['location']
-#        assert os.path.isdir(location)
-#        with open(os.path.join(location, 'config.yml')) as f:
-#            config = yaml.safe_load(f)
-#        results[name] = {
-#            'name': name,
-#            'location': location,
-#            'config': config
-#        }
     return results
-
 
 
 def banner(name=None):
     from epm.tool.conan import get_channel
     from epm.api import API
     infos = get_all_installed_venv_info()
-    print('@@', infos)
 
     name = name or os.environ.get('EPM_VIRTUAL_ENVIRONMENT')
-    print(name)
-    print(infos.get(name))
     info = infos.get(name)
     if not info:
-        return " ? ? ? ?"
+        return "Can not find %s in installed virtual environment." % name
     instd = info['location']
     api = API(instd)
     conan = api.conan
@@ -138,11 +107,12 @@ def banner(name=None):
                           conan=conan.cache_folder,  # os.path.join(get_conan_user_home(), '.conan'),
                           storage_path=storage,
                           description=desc)
+
+
 def _cache(path):
     url = urlparse(path)
     folder = path
     download_dir = tempfile.mkdtemp(suffix='epm.venv')
-
 
     if url.scheme in ['http', 'https']:
         filename = os.path.join(download_dir, os.path.basename(path))
@@ -152,7 +122,6 @@ def _cache(path):
         zfile.extractall(folder)
     elif url.scheme.startswith('git+'):
         url = path[4:]
-        branch = None
         fields = url.split('@')
         options = ['--depth', '1']
         if len(fields) > 1:
@@ -175,8 +144,6 @@ def install(origin, to=None, out=None):
 
     out = out or ConanOutput(sys.stdout, sys.stderr, color=True)
     folder = _cache(origin)
-#    with open(os.path.join(folder, 'config.yml')) as f:
-#        config = yaml.safe_load(f)
     config = Config(os.path.join(folder, 'config.yml'))
 
     name = config.venv.name
@@ -215,14 +182,10 @@ def install(origin, to=None, out=None):
         shutil.copy(os.pah.join(DATA_DIR, 'venv', '.conan', 'conan.conf'),
                     os.path.join(instd, '.conan', 'conan.conf'))
 
-    conan_db = os.path.join(conand, '.conan.db')
-
     if config.venv.with_default_profiles:
         from epm.model.profile import Profile
         Profile.install_default_profiles(folder)
 
-
-    # remotes clear
     from conans.client.conan_api import ConanAPIV1 as ConanAPI
     conan = ConanAPI(conand)
     conan.remote_clean()
