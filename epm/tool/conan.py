@@ -84,7 +84,6 @@ class PackageMetaInfo(object):
     def build_requires(self):
         references = []
         for name, value in self._meta.get('build_requires', {}).items():
-            #self._require_check("build requirements configuration illegal", name, value)
             version = value['version']
             user = value.get('group') or self.user
             channel = value.get('channel') or get_channel(group=user)
