@@ -81,7 +81,7 @@ class Runner(object):
             conan = self._sandbox.api.conan
             home = get_epm_cache_dir()
             storage = conan.config_get('storage.path')
-            with environment_append({'EPM_CACHE_DIR': home, 'CONAN_STORAGE_PATH': storage}):
+            with environment_append({'CONAN_STORAGE_PATH': storage}):
                 return runner(command)
 
 

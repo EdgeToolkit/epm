@@ -71,6 +71,7 @@ class DockerRunner(object):
         from conans.client.runner import ConanRunner as Runner
 
         config, WD, volumes, environment = self._preprocess(config)
+        print('*'*40, config, WD, volumes, environment)
 
         command = self._command(commands, config, WD, volumes, environment)
         args = ['docker', 'run', '--name', self._container_name, '--rm']

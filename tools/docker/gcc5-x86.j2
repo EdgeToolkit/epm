@@ -1,14 +1,14 @@
 # GCC5 EPM Builder
 # Version: {{version}}
 #
-FROM conanio/gcc5-x86:1.24.0
+FROM epmkit/conan-gcc5-x86:{{conan_version}}
 
 LABEL maintainer="Mingyi Zhang <mingyi.z@outlooke.com>"
 
 {% include 'copy.j2' %}
 
 RUN echo "GNU GCC5 x86" \
-{% include 'pre.j2' %}
-    && {{ install_epm }} \
-{% include 'post.j2' %}
+{%- include 'pre.j2' %} \
+    && {{ install_epm }}\
+{%- include 'post.j2' %} 
 

@@ -27,13 +27,10 @@
 ##- # GCC5 EPM Builder
 ##- # Version: {{version}}
 ##- #
-FROM epmkit/gcc48-armv7-hisiv300:1.24.0
+FROM epmkit/conan-hisiv300:1.24.0
 
-LABEL maintainer="Mingyi Zhang <mingyi.z@outlooke.com>"
+LABEL maintainer="Mingyi Zhang <mingyi.z@outlook.com>"
 
 {% include 'copy.j2' %}
 
-RUN echo "HiSilicon v300" \
-{% include 'pre.j2' %}
-    && {{ install_epm }} \
-{%- include 'post.j2' %}
+RUN {{ install_epm }}

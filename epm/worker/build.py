@@ -60,12 +60,6 @@ class Builder(Worker):
 
             docker.add_volume(project.dir, docker.WD)
             docker.add_volume(HOME_EPM_DIR, '$home/.epm')
-            docker.environment['EPM_CACHE_DIR'] = '$home/.epm'
-
-            EPM_CACHE_DIR = os.environ.get('EPM_CACHE_DIR')
-            if EPM_CACHE_DIR:
-                docker.add_volume(EPM_CACHE_DIR, '$home/@host/.epm')
-                docker.environment['EPM_CACHE_DIR'] = '$home/@host/.epm'
             docker.exec('epm api build %s' % param_encode(param))
 
     def _configure(self, project):

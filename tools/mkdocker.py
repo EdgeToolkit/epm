@@ -30,6 +30,7 @@ class Config(object):
             self.mirror = self._items.get('pip', {}).get('mirror')
             self.http_proxy = self._items.get('pip', {}).get('proxy')
             self.archive_url = self._items.get('archive_url')
+            self.conan_version = self._items.get('conan_version')
             sourced = self._items.get('epm_source_dir')
             if sourced:
                 self.epm_source_dir = sourced
@@ -77,6 +78,7 @@ class Dockerfile(object):
                      'epm_source_dir': self._config.epm_source_dir,
                      'install_epm': install_epm,
                      'archive_url': self._config.archive_url,
+                     'conan_version': self._config.conan_version
                      },
                     **kwargs)
 

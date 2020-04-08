@@ -1,0 +1,17 @@
+# Base conan image for GNU GCC5
+# We have do this image instead of use conanio/gcc5-x86, only beacuse
+# the official images not work for Windows desktop (related cmake)
+# 
+# Version: {{version}}
+# 
+#
+FROM conanio/gcc5-x86:1.18.0
+
+LABEL maintainer="Mingyi Zhang <mingyi.z@outlooke.com>"
+
+RUN echo "GNU GCC5 x86 (Conan {{conan_version}})" \
+    && sudo pip install  {{options}} --disable-pip-version-check --upgrade pip \
+    && sudo pip uninstall -y conan conan-package-tools \
+    && sudo pip install conan=={{conan_version}}  {{options}}
+
+

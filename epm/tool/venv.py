@@ -321,19 +321,6 @@ class VirtualEnvironment(object):
 
         self._initialize(name)
 
-    @property
-    def home_config(self):
-        with environment_append({'EPM_CACHE_DIR': None}):
-            global_api = API(self._api.out)
-            return global_api.config
-
-    @property
-    def hapi(self):
-        '''HOME API'''
-        if self._hapi is None:
-            with environment_append({'EPM_CACHE_DIR': None}):
-                self._hapi = API()
-        return self._hapi
 
     def clear(self, name, do_clear=False):
         hapi = self.hapi
