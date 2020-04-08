@@ -94,8 +94,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('name', nargs=1, help="name of the docker image to build.")
     parser.add_argument('--version', help="specify version of the image to build instead read from epm module")
-    parser.add_argument('-c', '--config', help="path of configure file.")
-    parser.add_argument('-B', '--build', default=False, action="store_true", help="generate Dockerfile and build image.")
+    parser.add_argument('--config', help="path of configure file.")
+    parser.add_argument('--build', default=False, action="store_true", help="generate Dockerfile and build image.")
     parser.add_argument('--debug', default=False, action="store_true", help="generate a debug Dockerfile.")
     sys.path.insert(0, _DIR)
     import epm
