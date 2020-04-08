@@ -7,7 +7,7 @@ LABEL maintainer="Mingyi Zhang <mingyi.z@outlooke.com>"
 
 {% include 'copy.j2' %}
 
-RUN echo "GNU GCC 5" \
-{% include 'pre.j2' %}
+RUN echo "GNU GCC 5"     \
+{% include 'pre.j2' %}   \
     && {{ install_epm }} \
 {%- include 'post.j2' %}
