@@ -7,7 +7,7 @@
 #
 FROM conanio/gcc5-x86:1.18.0
 
-LABEL maintainer="Mingyi Zhang <mingyi.z@outlooke.com>"
+LABEL maintainer="Mingyi Zhang <mingyi.z@outlook.com>"
 
 RUN echo "GNU GCC5 x86 (Conan {{conan_version}})" \
     && sudo pip install  {{options}} --disable-pip-version-check --upgrade pip \
