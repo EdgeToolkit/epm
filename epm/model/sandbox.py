@@ -317,14 +317,6 @@ class Program(object):
 
         template = self._template('linux.cmd.j2')
         
-#        image = 'None'
-#        shell = '/bin/bash'
-#        try:
-#           image=self._docker_image
-#           shell=self._docker_shell
-#        except:
-#            raise
-        
         docker = self._project.profile.docker.runner or {}
         docker = dict({'image': 'alpine', 'shell': '/bin/bash', 'home': '/tmp'}, **docker)
 
