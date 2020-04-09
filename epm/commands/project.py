@@ -68,7 +68,6 @@ class Project(Command):
     def run(self, args, api):
         from epm.tool.project import load_project_templates_manifest, generate_project
         templates = load_project_templates_manifest()
-        print(args)
 
         if args.sub_command in ['gen', 'generate']:
             manifest = templates.get(args.template, None)
@@ -88,6 +87,11 @@ class Project(Command):
             print('-'*20, '-'*40)
             for name, value in templates.items():
                 print('{:20s} {:40s}'.format(name, value['dir']))
+                desc = value.get('description','')
+                lines = desc.split("\n")
+                indent = ' '*20 + '\n'
+                print('{:20s} {}'.format('', indent.join(lines)))
+
         elif args.sub_command == 'show':
             manifest = templates.get(args.name, None)
             if manifest is None:

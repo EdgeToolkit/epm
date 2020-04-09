@@ -65,7 +65,9 @@ class PackageMetaInfo(object):
     def dependencies(self):
         references = []
         for packages in self._meta.get('dependencies', []):
+            print(packages, '________________________', self._meta)
             for name, option in packages.items():
+                print(name, option, '@--------------------')
                 version = option['version']
                 user = option.get('group') or self.group
                 channel = option.get('channel') or get_channel(group=user)

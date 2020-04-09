@@ -30,16 +30,16 @@
 FROM epmkit/conan-hisiv300:1.24.0
 
 LABEL maintainer="Mingyi Zhang <mingyi.z@outlook.com>"
-
-ENV CC=arm-hisiv300-linux-uclibcgnueabi-gcc \
-    CXX=arm-hisiv300-linux-uclibcgnueabi-g++ \
-    CMAKE_C_COMPILER=arm-hisiv300-linux-uclibcgnueabi-gcc \
-    CMAKE_CXX_COMPILER=arm-hisiv300-linux-uclibcgnueabi-g++ \
-    STRIP=arm-hisiv300-linux-uclibcgnueabi-strip \
-    RANLIB=arm-hisiv300-linux-uclibcgnueabi-ranlib\
-    AS=arm-hisiv300-linux-uclibcgnueabi-as \
-    AR=arm-hisiv300-linux-uclibcgnueabi-ar \
-    LD=arm-hisiv300-linux-uclibcgnueabi-ld
+#
+#ENV CC=arm-hisiv300-linux-uclibcgnueabi-gcc \
+#    CXX=arm-hisiv300-linux-uclibcgnueabi-g++ \
+#    CMAKE_C_COMPILER=arm-hisiv300-linux-uclibcgnueabi-gcc \
+#    CMAKE_CXX_COMPILER=arm-hisiv300-linux-uclibcgnueabi-g++ \
+#    STRIP=arm-hisiv300-linux-uclibcgnueabi-strip \
+#    RANLIB=arm-hisiv300-linux-uclibcgnueabi-ranlib\
+#    AS=arm-hisiv300-linux-uclibcgnueabi-as \
+#    AR=arm-hisiv300-linux-uclibcgnueabi-ar \
+#    LD=arm-hisiv300-linux-uclibcgnueabi-ld
 
 {% include 'copy.j2' %}
 
@@ -52,4 +52,4 @@ RUN    export CC=gcc                     \
     && export AS=as                      \
     && export AR=ar                      \
     && export LD=ld                      \
-    {{ install_epm }}
+    && {{ install_epm }}
