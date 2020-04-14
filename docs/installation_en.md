@@ -1,29 +1,22 @@
-# 安装
+# Install
 
-EPM 可以运行在Windows 和 Linux操作系统 (目前仅Windows10 和 Ubuntu18.04验证).原理上EPM可以运行在所有Conan支持的系统.
+EPM can be installed on Windows and Linux. for now, only Windows 10 and Ubuntu 18.04 had been verified. Ideally, it works on all the conan supported platforms.
 
-EPM 是一个python 开发的工具，所以你可以通过 pip来安装:
+EPM is a python package, so you can easily install with pip:
 
 ```bash
 $ pip install epm
 ```
 
-在 ubuntu 你需要使用管理员权限安装  `sudo pip install epm`
+In ubuntu you may need use sudo  `sudo pip install epm`
 
-**`注意`** epm需要一些软件进行协助，请仔细阅读以下软件安装要求以确保epm工作。
+**`IMPORTANT`** Please read below prerequisite software installation to ensure your building job works
 
-# 预装软件
+# Prerequisite software
 
-## Windows操作系统
+## Windows
 
 * [Python](https://www.python.org/downloads/release) (>=3.6)
-
-  * 安装中选择添加python到路径,建议采用定制化安装，以便设置让所有用户可以使用。
-    ![](./images/installation/python-1.PNG)
-
-  * 请将Python安装在C:根目录请，以便 pip安装包是拥有权限
-
-    ![](./images/installation/python-3.PNG)
 
 * [git-scm](https://www.git-scm.com/download/) 
 
@@ -31,17 +24,13 @@ $ pip install epm
 
 * [CMake](https://cmake.org/download/) (>= 3.10)  
 
-  如果使用GUI安装，注意选择添加路径，以确保命令行运行时可以执行
+* [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop) 
 
-  ![](./images/installation/cmake-1.PNG)
+  Windows docker is only used when doing cross-building.
 
-* [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop) (可选)
+  Please read the installation guide https://docs.docker.com/docker-for-windows/install/
 
-  该工具仅是在你需要在Windows编译Linux版本的软件是需要安装。
-
-  请仔细阅读其官方安装指导 https://docs.docker.com/docker-for-windows/install/
-
-  尤其注意其`系统要求` 段落要求!!!!!!!!!!!!!
+  HINT: read the `system requiurements` carefully.
 
   - Windows 10 64-bit: Pro, Enterprise, or Education (Build 15063 or later).
   - Hyper-V and Containers Windows features must be enabled.

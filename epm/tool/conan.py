@@ -28,6 +28,23 @@ def mirror(origin, name):
     return origin
 
 
+def archive_mirror(conanfile, origin, folder=None):
+    ARCHIVE_URL = os.getenv('EPM_ARCHIVE_URL', None)
+    if ARCHIVE_URL is None:
+        return origin
+    folder = folder or conanfile.name
+    if isinstance(origin, dict):
+        origin_url = origin['url']
+        url = '{mirror}/{folder}/{basename}'.format(
+            mirror=ARCHIVE_URL, folder=folder, basename=os.path.basename(origin_url))
+        return dict(origin, **{'url': url})
+    elif isinstance(origin, str):
+        url = '{mirror}/{folder}/{basename}'.format(
+            mirror=ARCHIVE_URL, folder=folder, basename=os.path.basename(origin))
+        return url
+    return origin
+
+
 class PackageMetaInfo(object):
 
     def __init__(self, filename='package.yml'):
@@ -65,9 +82,7 @@ class PackageMetaInfo(object):
     def dependencies(self):
         references = []
         for packages in self._meta.get('dependencies', []):
-            print(packages, '________________________', self._meta)
             for name, option in packages.items():
-                print(name, option, '@--------------------')
                 version = option['version']
                 user = option.get('group') or self.group
                 channel = option.get('channel') or get_channel(group=user)
