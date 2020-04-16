@@ -28,11 +28,12 @@ def mirror(origin, name):
     return origin
 
 
-def archive_mirror(conanfile, origin, folder=None):
+def archive_mirror(conanfile, origin, folder=None, name=None):
     ARCHIVE_URL = os.getenv('EPM_ARCHIVE_URL', None)
     if ARCHIVE_URL is None:
         return origin
-    folder = folder or conanfile.name
+    name = name or conanfile.name
+    folder = folder or name
     if isinstance(origin, dict):
         origin_url = origin['url']
         url = '{mirror}/{folder}/{basename}'.format(
@@ -102,3 +103,49 @@ class PackageMetaInfo(object):
 
     def get(self, key, default=None):
         return self._meta.get(key, default)
+
+from epm.util import symbolize
+
+_PackagerClassId = 0
+
+
+def _manifest_normalize(manifest):
+    references = []
+    group = manifest['group']
+    from collections import OrderedDict, namedtuple
+    deps = OrderedDict()
+    Pkg = namedtuple('Package', ['name', 'version', 'group', 'channel', 'reference'])
+    for packages in manifest.get('dependencies', []):
+        for name, option in packages.items():
+            version = option['version']
+            user = option.get('group', group)
+            channel = option.get('channel') or get_channel(group=user)
+            reference = "%s/%s@%s/%s" % (name, version, user, channel)
+            deps[name] = Pkg(name, version, user, channel, reference)
+    manifest['dependencies'] = deps
+
+    return manifest
+
+def Packager(manifest='package.yml'):
+    if not os.path.exists(manifest):
+        raise Exception('package manifest file %s not exists' % manifest)
+
+    with open(manifest) as f:
+        _manifest = yaml.safe_load(f)
+        _manifest_normalize(_manifest)
+
+    for i in ['name', 'version', 'group']:
+        if i not in _manifest:
+            raise Exception('`%s` field is required but not defined in %s' % (i, manifest))
+    name = _manifest['name']
+    version = _manifest['version']
+    group = _manifest['group']
+    global _PackagerClassId
+    _PackagerClassId += 1
+    class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, group, name, version))
+    from conans import ConanFile
+    exports = [manifest]
+    klass = type(class_name, (ConanFile,),
+                 dict(name=name, group=group, version=version,
+                 manifest=_manifest, exports=exports))
+    return klass
