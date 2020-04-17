@@ -149,9 +149,6 @@ def Packager(manifest='package.yml'):
     class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, group, name, version))
     from conans import ConanFile
     exports = [manifest]
-    print('--------------------')
-    print(_manifest)
-    print('--------------------')
     klass = type(class_name, (ConanFile,),
                  dict(name=name, group=group, version=version,
                  manifest=_manifest, exports=exports))

@@ -64,35 +64,24 @@ class Scheme(object):
 
     def _load_dep_schemes(self, libs, deps, storage=None):
 
-
         for name, ref in deps.items():
-            assert ref.scheme is None
-            continue
-            if name in libs.keys():
+
+            if not ref.scheme:
                 continue
 
-            scheme = info['options']
-            version = info['version']
-            user = info.get('group', self.project.group) #'['user']
-
-            channel = info.get('channel', self.project.channel)
-
+            if name in libs.keys():
+                continue
             conan = self.project.api.conan
-            reference = '%s/%s@%s/%s' % (name, version, user, channel)
-
 
             storage = storage or self.project.api.conan_storage_path
             with environment_append({'CONAN_STORAGE_PATH': storage}):
-                recipe = conan.inspect(reference, [])
+                conanfile = conan.inspect(str(ref), ['options', 'default_options', 'settings', 'manifest'])
 
+            manifest = conanfile['manifest']
 
-            path = os.path.join(storage, name, version, user, channel, 'export', 'package.yml')
+            options, deps = self._parse(ref.scheme, manifest)
 
-            manifest = load_yaml(path)
-
-            options, deps = self._parse(scheme, manifest)
-
-            libs[name] = {'manifest': manifest, 'recipe': recipe, 'options': options, 'scheme.deps': deps}
+            libs[name] = {'scheme': ref.scheme, 'manifest': manifest, 'options': options, 'deps': deps}
 
             self._load_dep_schemes(libs, deps, storage)
 
@@ -103,9 +92,10 @@ class Scheme(object):
         self._load_dep_schemes(libs, deps)
 
         items = {}
-        for k, v in options.items():
-            key = '%s:%s' % (self.project.name, k) if package else k
-            items[key] = v
+        for key, value in options.items():
+            if package:
+                key = '%s:%s' % (self.project.name, key)
+            items[key] = value
 
         for name, info in libs.items():
             for k, v in info['options'].items():

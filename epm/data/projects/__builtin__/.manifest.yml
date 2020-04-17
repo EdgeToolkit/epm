@@ -13,7 +13,7 @@ templates:
       - CMakeLists.txt
       - .gitignore
 
-      - include/declaration.h: include/declaration.h.j2
+      - include/${name}/declaration.h: include/declaration.h.j2
       - include/${name}/${name}.h: include/lib.h.j2
       - source/${name}.c: source/lib.c.j2
       - cmake/CMakeLists.txt
