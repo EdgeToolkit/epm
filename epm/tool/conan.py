@@ -3,19 +3,39 @@ import os
 import yaml
 from epm.util import symbolize
 
-
 def get_channel(group=None):
-    """ get package channel according environment vars.
-
-    :param group: package group
-    :return: channel
-    """
 
     channel = os.environ.get('EPM_CHANNEL', 'public')
     if group:
         symbol = symbolize('_'+group.upper())
         channel = os.environ.get('EPM_CHANNEL{}'.format(symbol), channel)
     return channel
+
+
+class Reference(object):
+
+    def __init__(self, name, version, group, channel):
+        self.name = name
+        self.version = version
+        self.group = group
+        self.channel = channel
+
+    def __str__(self):
+        return '%s/%s@%s/%s' % (self.name, self.version, self.group, self.channel)
+
+
+def normalize_manifest(manifest):
+    group = manifest['group']
+    from collections import OrderedDict
+    deps = OrderedDict()
+
+    for packages in manifest.get('dependencies', []):
+        for name, option in packages.items():
+            version = option['version']
+            user = option.get('group', group)
+            channel = option.get('channel') or get_channel(group=user)
+            deps[name] = Reference(name, version, user, channel)
+    manifest['dependencies'] = deps
 
 
 def mirror(origin, name):
@@ -109,22 +129,6 @@ from epm.util import symbolize
 _PackagerClassId = 0
 
 
-def _manifest_normalize(manifest):
-    references = []
-    group = manifest['group']
-    from collections import OrderedDict, namedtuple
-    deps = OrderedDict()
-    Pkg = namedtuple('Package', ['name', 'version', 'group', 'channel', 'reference'])
-    for packages in manifest.get('dependencies', []):
-        for name, option in packages.items():
-            version = option['version']
-            user = option.get('group', group)
-            channel = option.get('channel') or get_channel(group=user)
-            reference = "%s/%s@%s/%s" % (name, version, user, channel)
-            deps[name] = Pkg(name, version, user, channel, reference)
-    manifest['dependencies'] = deps
-
-    return manifest
 
 def Packager(manifest='package.yml'):
     if not os.path.exists(manifest):
@@ -132,7 +136,7 @@ def Packager(manifest='package.yml'):
 
     with open(manifest) as f:
         _manifest = yaml.safe_load(f)
-        _manifest_normalize(_manifest)
+        normalize_manifest(_manifest)
 
     for i in ['name', 'version', 'group']:
         if i not in _manifest:
@@ -145,6 +149,9 @@ def Packager(manifest='package.yml'):
     class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, group, name, version))
     from conans import ConanFile
     exports = [manifest]
+    print('--------------------')
+    print(_manifest)
+    print('--------------------')
     klass = type(class_name, (ConanFile,),
                  dict(name=name, group=group, version=version,
                  manifest=_manifest, exports=exports))

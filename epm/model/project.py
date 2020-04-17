@@ -140,6 +140,8 @@ class Project(object):
         if self._manifest is None:
             path = os.path.join(self.dir, 'package.yml')
             self._manifest = load_yaml(path)
+            from epm.tool.conan import normalize_manifest
+            normalize_manifest(self._manifest)
 
         return self._manifest
 

@@ -73,6 +73,9 @@ class Builder(Worker):
         profile.save(filename)
 
         options = ['%s=%s' % (k, v) for (k, v) in scheme.options.as_list()]
+        print('=================================================')
+        print(options)
+        print('=================================================')
 
         info = conan.install(path=wd,
                              name=project.name,

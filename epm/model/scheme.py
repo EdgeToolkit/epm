@@ -4,6 +4,7 @@ import pprint
 import copy
 import glob
 import shutil
+import copy
 
 from conans.client.profile_loader import read_profile
 from conans.model.options import OptionsValues
@@ -41,32 +42,32 @@ class Scheme(object):
         :param manifest: manifest (package.yml)
         :return:
         '''
-        manifest = manifest or self.project.manifest
+        conan = self.project.api.conan
+        conanfile = conan.inspect(self.project.dir, ['settings', 'options', 'default_options', 'manifest'])
+        manifest = manifest or conanfile['manifest'] or self.project.manifest
         schemes = manifest.get('scheme', {})
-        options = schemes.get(name, {})
+        scheme = schemes.get(name, {})
 
-        dependencies = manifest.get('dependencies', {})
+        deps = copy.deepcopy(manifest['dependencies'])
 
-        dep_options = options.get('.dependencies', {})
+        options = scheme.get('options', {})
+        for pkg in deps.values():
+            pkg.scheme = None
+            pkg.options = None
 
-        # pick up options of this package.yml
-        options = {k: v for k, v in options.items() if k[0] != '.'}
-        deps = {}
+        for k, v in scheme.items():
+            if k in deps:
+                deps[k].scheme = v
+                deps[k].options = None
 
-        for pkg, sch in dep_options.items():
-            import pprint
-            pprint.pprint(dependencies)
-            for lib in dependencies:
-                for key, info in lib.items():
-                    if key == pkg:
-                        if not info:
-                            raise EException('less information of %s, miss dependencies in package.yml ' % name)
-                        deps[pkg] = {**info, 'options': sch}
         return options, deps
 
     def _load_dep_schemes(self, libs, deps, storage=None):
 
-        for name, info in deps.items():
+
+        for name, ref in deps.items():
+            assert ref.scheme is None
+            continue
             if name in libs.keys():
                 continue
 
