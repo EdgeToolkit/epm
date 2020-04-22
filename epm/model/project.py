@@ -127,7 +127,7 @@ class Project(object):
             out = '%s/%s' % (cache, basename)
             build = '%s/build' % out
             package = '%s/package' % out
-            test = '%s/test' % out
+            test = '%s' % out
 
         return Folder(cache, out, build, package, test, basename)
 

@@ -179,13 +179,11 @@ class Creator(Worker):
     def _test(self, project):
         conan = self.api.conan
 
-        #profile_path = os.path.join(project.folder.out, 'profile')  # already generated in configure step
-
         options = ['%s=%s' % (k, v) for k, v in project.scheme.package_options.as_list()]
         tests = project.tests or []
         if not tests:
-            if os.path.exists('tests/conanfile.py'):
-                tests = ['tests']
+            if os.path.exists('test_package/conanfile.py'):
+                tests = ['test_package']
 
         for i in tests:
             conanfile_path = os.path.join(i, 'conanfile.py')
@@ -201,15 +199,15 @@ class Creator(Worker):
                                  profile_names=[project.generate_profile()],
                                  install_folder=instd)
 
-            info = conan.build(conanfile_path=conanfile_path,
-                               package_folder=pkgdir,
-                               build_folder=instd,
-                               install_folder=instd)
+            conan.build(conanfile_path=conanfile_path,
+                        package_folder=pkgdir,
+                        build_folder=instd,
+                        install_folder=instd)
 
-            info = conan.package(path=conanfile_path,
-                                 build_folder=instd,
-                                 package_folder=pkgdir,
-                                 install_folder=instd)
+            conan.package(path=conanfile_path,
+                          build_folder=instd,
+                          package_folder=pkgdir,
+                          install_folder=instd)
 
     def _sandbox(self, project, id):
         storage = os.environ.get('CONAN_STORAGE_PATH')

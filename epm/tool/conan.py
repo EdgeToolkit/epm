@@ -38,16 +38,6 @@ def normalize_manifest(manifest):
     manifest['dependencies'] = deps
 
 
-def mirror(origin, name):
-    ARCHIVE_URL = os.getenv('EPM_ARCHIVE_URL', None)
-    if ARCHIVE_URL is None:
-        return origin
-    origin_url = origin['url']
-    origin['url'] = '{mirror}/{name}/{basename}'.format(
-        mirror=ARCHIVE_URL, name=name, basename=os.path.basename(origin_url))
-    return origin
-
-
 def archive_mirror(conanfile, origin, folder=None, name=None):
     ARCHIVE_URL = os.getenv('EPM_ARCHIVE_URL', None)
     if ARCHIVE_URL is None:
@@ -129,6 +119,30 @@ from epm.util import symbolize
 _PackagerClassId = 0
 
 
+def mirror(conanfile, origin, format='{name}/{basename}'):
+    '''
+
+    :param conanfile:
+    :param origin:
+    :param formatter:
+    :return:
+    '''
+    ARCHIVE_URL = os.getenv('EPM_ARCHIVE_URL', None)
+    if ARCHIVE_URL is None:
+        conanfile.output.warning('environement `EPM_ARCHIVE_URL` not set use origin', origin)
+        return origin
+
+    url = origin['url'] if isinstance(origin, dict) else origin
+    m = format.format(name=conanfile.name, basename=os.path.basename(url), version=conanfile.version)
+    m = '%s/%s' % (ARCHIVE_URL, m)
+    conanfile.output.info('mirror %s -> %s' % (url, m))
+
+    if isinstance(origin, dict):
+        return dict(origin, **{'url': m})
+    elif isinstance(origin, str):
+        return url
+    return origin
+
 
 def Packager(manifest='package.yml'):
     if not os.path.exists(manifest):
@@ -152,4 +166,31 @@ def Packager(manifest='package.yml'):
     klass = type(class_name, (ConanFile,),
                  dict(name=name, group=group, version=version,
                  manifest=_manifest, exports=exports))
+    return klass
+
+
+def TestPackager(manifest='../package.yml'):
+    if not os.path.exists(manifest):
+        raise Exception('package manifest file %s not exists' % manifest)
+
+    with open(manifest) as f:
+        _manifest = yaml.safe_load(f)
+        normalize_manifest(_manifest)
+
+    for i in ['name', 'version', 'group']:
+        if i not in _manifest:
+            raise Exception('`%s` field is required but not defined in %s' % (i, manifest))
+    name = _manifest['name']
+    version = _manifest['version']
+    group = _manifest['group']
+    global _PackagerClassId
+    _PackagerClassId += 1
+    class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, group, name, version))
+    from conans import ConanFile
+
+    #requires = ['%s/%s@%s/%s' % (name, version, group, get_channel(group))]
+    #print('-------~~~~~~~~~~~~~~~~~~>', requires)
+    klass = type(class_name, (ConanFile,),
+                 dict(group=group, version=version,
+                      manifest=_manifest))
     return klass

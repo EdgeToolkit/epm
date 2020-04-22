@@ -40,7 +40,8 @@ def conaninfo(folder):
 
 
 P_PATH = re.compile(r'(?P<folder>(build|package))/(?P<relpath>\S+)')
-P_PREFIX = re.compile(r'(?P<prefix>test/[\w\-\.]+)/(?P<path>\S+)')
+P_PREFIX = re.compile(r'(?P<prefix>\.test/[\w\-\.]+)/(?P<path>\S+)')
+P_PATH = re.compile(r'(?P<prefix>[\w\-\.]+)?/(?P<folder>(build|package))/(?P<relpath>\S+)')
 
 # Join two (or more) paths.
 def join(path, *paths):
@@ -61,15 +62,13 @@ class Program(object):
         self._argv = argv[1:]
         self._prefix = ''
         path = self._path
-        m = P_PREFIX.match(path)
-        if m:
-            self._prefix = m.group('prefix')
-            path = m.group('path')
-
-
+#        m = P_PREFIX.match(path)
+#        if m:
+#            self._prefix = m.group('prefix')
+#            path = m.group('path')
 
         m = P_PATH.match(path)
-
+        self._prefix = m.group('prefix')
         self._folder = m.group('folder')
         self._relpath = m.group('relpath')
         self._middle = " ".join(self._relpath.split('/')[:-1])
@@ -80,6 +79,7 @@ class Program(object):
         self._is_create = is_create
         self._id = id
         import pathlib
+        print(self._prefix, '===================================$$$')
 
         self._wd = pathlib.PurePath(os.path.abspath('.')).as_posix()
         self._build_dir = None
@@ -104,13 +104,15 @@ class Program(object):
         return self._project.profile.settings['os'] == Platform.LINUX
 
     def _initialize(self):
-        if self._is_create and not self._prefix: #self._folder in ['build', 'package']:
+
+        if self._is_create and not self._prefix:
             self._filename, self._build_dir = self._locate('conan')
         else:
             self._filename, self._build_dir = self._locate('project')
 
     def _is_program(self, path):
         filename = path + self._ext
+        print('[*----*]', filename)
         if os.path.exists(filename):
             if os.path.isfile(filename):
                 return filename
@@ -145,6 +147,7 @@ class Program(object):
         for m in folders:
             if where == 'project':
                 path, folder = ppath(m)
+                print('------------------->', path, folder, '@@@@@@')
                 if self._is_program(path):
                     return '${project}/%s' % path, folder
             else:
