@@ -15,11 +15,8 @@ ENV CC=arm-hisiv300-linux-uclibcgnueabi-gcc \
     AR=arm-hisiv300-linux-uclibcgnueabi-ar \
     LD=arm-hisiv300-linux-uclibcgnueabi-ld
 
-COPY tools/Dockerfile/data/aliyun-ubuntu-18.04-sources.list {{ccache_dir}}/aliyun-ubuntu-18.04-sources.list
-    
-RUN sudo cp {{ccache_dir}}/aliyun-ubuntu-18.04-sources.list /etc/apt/sources.list \
-    && sudo apt-get update \
-    && cd /opt && sudo wget {{archive_url}}/HiSilicon/arm-hisiv300-linux.tar.gz \
+RUN cd /opt \
+    && sudo wget {{archive_url}}/HiSilicon/arm-hisiv300-linux.tar.gz \
     && sudo tar -xvzf arm-hisiv300-linux.tar.gz \
     && sudo chown -R conan:1001 /opt/arm-hisiv300-linux \
     && sudo rm /opt/arm-hisiv300-linux.tar.gz \

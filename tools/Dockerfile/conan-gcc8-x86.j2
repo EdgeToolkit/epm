@@ -9,7 +9,7 @@ FROM conanio/gcc8-x86:1.18.0
 
 LABEL maintainer="Mingyi Zhang <mingyi.z@outlook.com>"
 
-RUN sudo pip install  {{options}} --disable-pip-version-check --upgrade pip \
+RUN sudo pip install  {{pip_options}} --disable-pip-version-check --upgrade pip \
     && sudo pip uninstall -y conan conan-package-tools \
     && sudo pip install conan=={{conan_version}}  {{pip_options}}
 

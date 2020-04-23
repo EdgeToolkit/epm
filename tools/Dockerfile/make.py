@@ -35,9 +35,6 @@ def render(args):
     loader = jinja2.FileSystemLoader(searchpath=_DIR)
     env = jinja2.Environment(loader=loader)
     template = env.get_template('%s.j2' % name)
-    print('-------------------------------')
-    print(kworkds)
-    print('-------------------------------')
 
     return template.render(kworkds)
 
@@ -54,11 +51,10 @@ def Main():
     parser.add_argument('--clear', default=False, action="store_true", help="clear exist image, if build")
     args = parser.parse_args()
     name = args.name[0]
-    print(args)
     for i in ['epm', 'README.md', 'pylint.cnf', 'setup.cfg', 'setup.py']:
         if not os.path.exists(i):
             raise Exception('You may not run this script in epm root directory.')
-    print('-- Generate dockerfile for %s:%s %s' % (name, args.version, ' and build' if args.build else ''))
+    print('\n-- Generate dockerfile for %s:%s %s' % (name, args.version, ' and build' if args.build else ''))
 
     filename = 'Dockerfile-%s' % name
     txt = render(args)
