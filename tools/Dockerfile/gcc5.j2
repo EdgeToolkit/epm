@@ -1,0 +1,11 @@
+# EPM Dockerfile for Intel x86_64 GNU GCC builder
+# Version: {{version}}
+#
+FROM conanio/gcc5:{{ conan_version }}
+
+LABEL maintainer="Mingyi Zhang <mingyi.z@outlook.com>"
+
+{% include 'inc/copy-epm.j2' %}
+
+RUN {{ install_epm }} \
+    && sudo rm -rf {{ccache_dir}}

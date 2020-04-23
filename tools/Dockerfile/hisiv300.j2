@@ -1,0 +1,22 @@
+# EPM Dockerfile for Hisilicon v300 - ARM cross build toolchain of GNU GCC builder
+# Version: {{version}}
+#
+FROM epmkit/conan-hisiv300:{{conan_version}}
+
+LABEL maintainer="Mingyi Zhang <mingyi.z@outlook.com>"
+
+{% include 'inc/copy-epm.j2' %}
+
+RUN    export CC=gcc                     \
+    && export CXX=g++                    \
+    && export CMAKE_C_COMPILER=gcc       \
+    && export CMAKE_CXX_COMPILER=g++     \
+    && export STRIP=strip                \
+    && export RANLIB=ranlib              \
+    && export AS=as                      \
+    && export AR=ar                      \
+    && export LD=ld                      \
+    && {{ install_epm }} \
+    && sudo rm -rf {{ccache_dir}}
+
+
