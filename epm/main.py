@@ -1,33 +1,10 @@
 import sys
 
-from epm.command import main
-
-#############################
-import inspect
-import json
-import os
 import sys
 import errno
 import argparse
-from argparse import ArgumentError
-from difflib import get_close_matches
 
-
-from conans.client.cmd.uploader import UPLOAD_POLICY_FORCE, \
-    UPLOAD_POLICY_NO_OVERWRITE, UPLOAD_POLICY_NO_OVERWRITE_RECIPE, UPLOAD_POLICY_SKIP
-from conans.client.conan_api import (Conan, default_manifest_folder, _make_abs_path)
-from conans.client.conan_command_output import CommandOutputer
 from conans.client.output import Color, ConanOutput, colorama_initialize
-
-from conans.unicode import get_cwd
-from conans.util.files import exception_message_safe
-
-from epm import __version__
-from epm.errors import EException, ECommandError, EInvalidConfiguration
-
-from epm.util.files import load_yaml
-from epm.worker import param_decode
-
 from epm import commands
 
 # Exit codes for conan command:
@@ -43,6 +20,7 @@ _DESCRIPTION = 'Embedded-system package manager for C/C++ development base on co
 _PROFILE_HELP = 'Profile of the target package, this required in build/create/sandbox/upload command'
 _SCHEME_HELP = 'Scheme of the target package'
 _RUNNER_HELP = 'Runner of the command used to execute/process'
+
 
 class Main(object):
 
@@ -164,7 +142,6 @@ class Main(object):
 
 
 def run():
-    #main(sys.argv[1:])
     Main(sys.argv[1:])
 
 

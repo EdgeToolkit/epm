@@ -43,11 +43,11 @@ set -e
 
 for target in ${CONAN_IMAGES[@]};
 do
-  $_SUDO $_python $__DIR/make.py  $target --version $VERSION $options
+  $_SUDO $_python tools/Dockerfile/make.py  $target --version $VERSION $options
 done
 
 
 for target in ${EPM_IMAGES[@]};
 do
-  $_SUDO $_python $__DIR/make.py  $target --version $VERSION $options
+  $_SUDO $_python tools/Dockerfile/make.py  $target --version $VERSION $options
 done

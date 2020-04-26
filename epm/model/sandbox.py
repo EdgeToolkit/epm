@@ -5,7 +5,7 @@ import re
 import stat
 import fnmatch
 import pathlib
-from  pathlib import PurePath
+from pathlib import PurePath
 from string import Template
 from jinja2 import PackageLoader, Environment, FileSystemLoader
 
@@ -43,6 +43,11 @@ P_PATH = re.compile(r'(?P<folder>(build|package))/(?P<relpath>\S+)')
 P_PREFIX = re.compile(r'(?P<prefix>\.test/[\w\-\.]+)/(?P<path>\S+)')
 P_PATH = re.compile(r'(?P<prefix>[\w\-\.]+)?/(?P<folder>(build|package))/(?P<relpath>\S+)')
 
+HOST_FOLDER = '@host'
+PROJECT_FOLDER = '%s/project' % HOST_FOLDER
+CONAN_STORAGE = '%s/conan.storage' % HOST_FOLDER
+SANDBOX_FOLDER = '%s/.sandbox' % HOST_FOLDER
+
 # Join two (or more) paths.
 def join(path, *paths):
     path = os.path.join(path, *paths)
@@ -62,10 +67,6 @@ class Program(object):
         self._argv = argv[1:]
         self._prefix = ''
         path = self._path
-#        m = P_PREFIX.match(path)
-#        if m:
-#            self._prefix = m.group('prefix')
-#            path = m.group('path')
 
         m = P_PATH.match(path)
         self._prefix = m.group('prefix')
@@ -78,14 +79,12 @@ class Program(object):
         self._storage_path = storage
         self._is_create = is_create
         self._id = id
-        import pathlib
-        print(self._prefix, '===================================$$$')
 
         self._wd = pathlib.PurePath(os.path.abspath('.')).as_posix()
         self._build_dir = None
 
         self._initialize()
-#        log.debug("storage_path: %s\nfilename:%s\n" % (self._storage_path, self._filename))
+
 
     @property
     def storage_path(self):
@@ -147,7 +146,6 @@ class Program(object):
         for m in folders:
             if where == 'project':
                 path, folder = ppath(m)
-                print('------------------->', path, folder, '@@@@@@')
                 if self._is_program(path):
                     return '${project}/%s' % path, folder
             else:
@@ -282,13 +280,6 @@ class Program(object):
         filename = self._filename
 
         template = self._template('linux.j2')
-#        image = 'None'
-#        shell = '/bin/bash'
-#        try:
-#           image=self._docker_image
-#           shell=self._docker_shell
-#        except:
-#            pass
         docker = self._project.profile.docker.runner or {}
         docker = dict({'image': 'alpine', 'shell': '/bin/bash', 'home': '/tmp'}, **docker)
 
@@ -334,13 +325,6 @@ class Program(object):
                                scheme=self._project.scheme,
                                arguments=" ".join(self._argv))
 
-#        return template.render(libdirs=libdirs, filename=filename, name=name,
-#                               image=image,
-##                               shell=shell,
- #                              home=home,
- #                              scheme=self._project.scheme.name,
- #                              arguments=" ".join(self._argv))
-
     def generate(self, name):
 
         if not self._filename:
@@ -366,9 +350,6 @@ class Program(object):
             with open(filename + '.cmd', 'wb') as f:
                 f.write(script)
 
-#        with open(filename + '-dynamic-libs.yaml', 'w') as f:
-
-#            yaml.safe_dump(self.dynamic_libs, f, default_flow_style=False, indent=2)
 
 
 
