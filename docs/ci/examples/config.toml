@@ -1,0 +1,37 @@
+concurrent = 1
+check_interval = 0
+
+[session_server]
+  session_timeout = 1800
+
+
+[[runners]]
+  name = "HiSiv300 runner"
+  url = "http://172.16.0.119:8000/"
+  token = "LfzAxXU5qh4J6zyxz1We"
+  executor = "custom"
+  builds_dir = "/tmp/_ci/__builds"
+  cache_dir = "/tmp/_ci/__cache"
+  [runners.custom_build_dir]
+  [runners.cache]
+    [runners.cache.s3]
+    [runners.cache.gcs]
+  [runners.custom]
+    
+    config_exec = "/home/epm/_ci/config.sh"
+    config_args = ["172.16.192.242"]
+    config_exec_timeout = 200
+
+    prepare_exec = "/home/epm/_ci/prepare.sh"
+    prepare_args = []
+    prepare_exec_timeout = 200
+
+    run_exec = "/home/epm/_ci/run.sh"
+    run_args = ["172.16.192.242", "172.16.192.169"]
+
+    cleanup_exec = "/home/epm/_ci/cleanup.sh"
+    cleanup_args = []
+    cleanup_exec_timeout = 200
+
+    graceful_kill_timeout = 200
+    force_kill_timeout = 200    

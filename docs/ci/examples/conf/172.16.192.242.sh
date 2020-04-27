@@ -1,0 +1,9 @@
+_CI_HOSTNAME="172.16.192.242"
+_CI_BUILDS_DIR="/tmp/_ci/builds_dir"
+_CI_CACHE_DIR="/tmp/_ci/cache_dir"
+_CI_DRIVER_NAME="HUAWEI HiSilicon 3536 test driver"
+_CI_DRIVER_NAME="v0.0.1"
+
+_CI_SSH_PORT=16666
+_CI_SSH_USERNAME=admin
+_CI_SSH_PASSWORD=admin123
