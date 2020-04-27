@@ -188,9 +188,9 @@ def TestPackager(manifest='../package.yml'):
     class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, group, name, version))
     from conans import ConanFile
 
-    #requires = ['%s/%s@%s/%s' % (name, version, group, get_channel(group))]
-    #print('-------~~~~~~~~~~~~~~~~~~>', requires)
+    requires = ('%s/%s@%s/%s' % (name, version, group, get_channel(group)))
     klass = type(class_name, (ConanFile,),
                  dict(group=group, version=version,
-                      manifest=_manifest))
+                      manifest=_manifest,
+                      requires= requires))
     return klass

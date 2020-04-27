@@ -111,7 +111,6 @@ class Program(object):
 
     def _is_program(self, path):
         filename = path + self._ext
-        print('[*----*]', filename)
         if os.path.exists(filename):
             if os.path.isfile(filename):
                 return filename
