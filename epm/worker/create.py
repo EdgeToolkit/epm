@@ -152,7 +152,7 @@ class Creator(Worker):
         if clear:
             for i in glob.glob('%s/*/*' % project.folder.test):
                 _clear_builds(i)
-            _clear_storage(self.api.conan_storage_path, project.reference.replace('@', '/'))
+            _clear_storage(self.api.conan_storage_path, project.reference.dir_repr())
 
             def sizeof(folder):
                 size = 0
