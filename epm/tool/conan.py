@@ -10,20 +10,23 @@ def get_user(group=None):
         symbol = symbolize('_' + group.upper())
         keys.append('EPM_GROUP{}'.format(symbol))
 
-    result = None
-    hit = None  # for debug
     for k in keys:
-        result = os.getenv(k, result)
-        if result:
-            hit = k
-    print('get_user:', keys, hit)
-    return result
+        group = os.getenv(k, group)
+    return group
 
 
 def get_channel(group=None, channel=None):
+
+    if not group and not os.getenv('EPM_GROUP'):
+        if os.getenv('EPM_CHANNEL'):
+            raise Exception('No `group` defined in package.yml or environment var `EPM_GROUP`,'
+            'but you set environment `EPM_CHANNEL` (%s) that is not allowed.' % os.getenv('EPM_CHANNEL'))
+        return None
+
     def _(x):
         return symbolize('_' + x.upper())
     keys = ['EPM_CHANNEL']
+    result = 'public' if os.getenv('EPM_GROUP', group) else None
     if channel:
         keys.append('EPM_GROUP_CHANNEL' + _(channel))
         if group:
@@ -31,26 +34,24 @@ def get_channel(group=None, channel=None):
     else:
         if group:
             keys.append('EPM_GROUP{group}CHANNEL'.format(group=_(group)))
-    result = None
-    hit = None  # for debug
+
     for k in keys:
+        print(result, '@', os.getenv(k), '*', os.getenv(k, result))
         result = os.getenv(k, result)
-        if result:
-            hit = k
-    print('get_channel:', keys, hit)
+        print(k, '--->', result)
     return result
 
 
-class Reference(object):
-
-    def __init__(self, name, version, group, channel):
-        self.name = name
-        self.version = version
-        self.group = get_user(group)
-        self.channel = get_channel(group, channel)
-
-    def __str__(self):
-        return '%s/%s@%s/%s' % (self.name, self.version, self.group, self.channel)
+#class Reference(object):
+#
+#    def __init__(self, name, version, group, channel):
+#        self.name = name
+#        self.version = version
+#        self.group = get_user(group)
+#        self.channel = get_channel(group, channel)
+#
+#    def __str__(self):
+#        return '%s/%s@%s/%s' % (self.name, self.version, self.group, self.channel)
 
 
 def normalize_manifest(manifest):
@@ -181,19 +182,19 @@ def Packager(manifest='package.yml'):
         _manifest = yaml.safe_load(f)
         normalize_manifest(_manifest)
 
-    for i in ['name', 'version', 'group']:
+    for i in ['name', 'version']:
         if i not in _manifest:
             raise Exception('`%s` field is required but not defined in %s' % (i, manifest))
     name = _manifest['name']
     version = _manifest['version']
-    group = _manifest.get('group')
+    group = _manifest.get('group', None)
     global _PackagerClassId
     _PackagerClassId += 1
     class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, str(group), name, version))
     from conans import ConanFile
     exports = [manifest]
     klass = type(class_name, (ConanFile,),
-                 dict(name=name, group=group, version=version,
+                 dict(name=name, version=version,
                  manifest=_manifest, exports=exports))
     return klass
 
@@ -206,20 +207,17 @@ def TestPackager(manifest='../package.yml'):
         _manifest = yaml.safe_load(f)
         normalize_manifest(_manifest)
 
-    for i in ['name', 'version', 'group']:
-        if i not in _manifest:
-            raise Exception('`%s` field is required but not defined in %s' % (i, manifest))
     name = _manifest['name']
     version = _manifest['version']
-    group = _manifest['group']
+    group = _manifest.get('group', None)
     global _PackagerClassId
     _PackagerClassId += 1
     class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, group, name, version))
     from conans import ConanFile
 
-    requires = ('%s/%s@%s/%s' % (name, version, group, get_channel(group)))
+    requires = ('%s/%s@%s/%s' % (name, version, group or '_', get_channel(group) or '_'))
     klass = type(class_name, (ConanFile,),
-                 dict(group=group, version=version,
+                 dict(version=version,
                       manifest=_manifest,
-                      requires= requires))
+                      requires=requires))
     return klass

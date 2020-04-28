@@ -26,10 +26,6 @@ class Builder(Worker):
             if i in steps:
                 fn = getattr(self, '_%s' % i)
                 self.out.highlight('[building - %s ......]\n' % i)
-                #if i == 'test' and not os.path.exists('test_package'):
-                #    self.out.warn('Skip test because of test_package folder not existing')
-                #    continue
-
                 with environment_append(self.api.config.env_vars):
                     fn(project)
 
@@ -119,7 +115,7 @@ class Builder(Worker):
         #profile_path = os.path.join(project.folder.out, 'profile')  # already generated in configure step
 
         info = conan.editable_add(path=project.dir,
-                                  reference=project.reference,
+                                  reference=str(project.reference),
                                   layout=project.layout,
                                   cwd=wd)
         options = ['%s=%s' % (k, v) for k, v in project.scheme.package_options.as_list()]

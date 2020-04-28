@@ -17,8 +17,9 @@ class Uploader(Worker):
 
         project = Project(profile, scheme, self.api)
         package_id = project.buildinfo['package_id']
-        reference = project.reference
-        remote = param.get('remote') or project.group
+        reference = str(project.reference)
+
+        remote = param.get('remote', None)
 
         from conans.client.cmd.uploader import UPLOAD_POLICY_FORCE
 

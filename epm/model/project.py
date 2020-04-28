@@ -97,6 +97,7 @@ class Project(object):
     @property
     def reference(self):
         from conans.model.ref import ConanFileReference
+        return ConanFileReference(self.name, self.version, self.group, self.channel)
         return '%s/%s@%s/%s' % (self.name, self.version, self.group, self.channel)
 
     @property

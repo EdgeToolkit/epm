@@ -215,11 +215,12 @@ def active(name):
     filename = os.path.join(folder, 'active.{}'.format('bat' if PLATFORM == 'Windows' else 'sh'))
     rcfile = os.path.join(folder, 'bash.rc')
 
-    env = os.environ.copy()
-    if PLATFORM == 'Windows':
-        subprocess.run(['cmd.exe', '/k', filename], env=env)
-    else:
-        subprocess.run(['/bin/bash', '--rcfile', rcfile], env=env)
+    from conans.client.tools import environment_append
+    with environment_append({'CONAN_USER_HOME': path}):
+        if PLATFORM == 'Windows':
+            subprocess.run(['cmd.exe', '/k', filename])
+        else:
+            subprocess.run(['/bin/bash', '--rcfile', rcfile])
 
 
 class VirtualEnvironment(object):

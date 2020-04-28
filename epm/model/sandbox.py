@@ -174,8 +174,7 @@ class Program(object):
 
         # build artifacts
         if self._is_create and self._folder in ['build', 'package']:
-            rpath = project.reference.replace('@', '/')
-            # <reference>/package/<id>/<lib|bin>
+            rpath = project.reference.dir_repr()
             path = join(storage, rpath, self.id, sub_folder)
             dirs.append(path)
         else:
