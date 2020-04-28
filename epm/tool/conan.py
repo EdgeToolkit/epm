@@ -3,13 +3,42 @@ import os
 import yaml
 from epm.util import symbolize
 
-def get_channel(group=None):
 
-    channel = os.environ.get('EPM_CHANNEL', 'public')
+def get_user(group=None):
+    keys = ['EPM_GROUP']
     if group:
-        symbol = symbolize('_'+group.upper())
-        channel = os.environ.get('EPM_CHANNEL{}'.format(symbol), channel)
-    return channel
+        symbol = symbolize('_' + group.upper())
+        keys.append('EPM_GROUP{}'.format(symbol))
+
+    result = None
+    hit = None  # for debug
+    for k in keys:
+        result = os.getenv(k, result)
+        if result:
+            hit = k
+    print('get_user:', keys, hit)
+    return result
+
+
+def get_channel(group=None, channel=None):
+    def _(x):
+        return symbolize('_' + x.upper())
+    keys = ['EPM_CHANNEL']
+    if channel:
+        keys.append('EPM_GROUP_CHANNEL' + _(channel))
+        if group:
+            keys.append('EPM_GROUP{group}CHANNEL{channel}'.format(group=_(group), channel=_(channel)))
+    else:
+        if group:
+            keys.append('EPM_GROUP{group}CHANNEL'.format(group=_(group)))
+    result = None
+    hit = None  # for debug
+    for k in keys:
+        result = os.getenv(k, result)
+        if result:
+            hit = k
+    print('get_channel:', keys, hit)
+    return result
 
 
 class Reference(object):
@@ -17,15 +46,15 @@ class Reference(object):
     def __init__(self, name, version, group, channel):
         self.name = name
         self.version = version
-        self.group = group
-        self.channel = channel
+        self.group = get_user(group)
+        self.channel = get_channel(group, channel)
 
     def __str__(self):
         return '%s/%s@%s/%s' % (self.name, self.version, self.group, self.channel)
 
 
 def normalize_manifest(manifest):
-    group = manifest['group']
+    group = manifest.get('group',None)
     from collections import OrderedDict
     deps = OrderedDict()
 
@@ -157,10 +186,10 @@ def Packager(manifest='package.yml'):
             raise Exception('`%s` field is required but not defined in %s' % (i, manifest))
     name = _manifest['name']
     version = _manifest['version']
-    group = _manifest['group']
+    group = _manifest.get('group')
     global _PackagerClassId
     _PackagerClassId += 1
-    class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, group, name, version))
+    class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, str(group), name, version))
     from conans import ConanFile
     exports = [manifest]
     klass = type(class_name, (ConanFile,),
