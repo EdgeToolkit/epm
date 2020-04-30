@@ -280,7 +280,7 @@ class Program(object):
     def _linux(self, name):
         #libdirs = []
 
-        filename = self._filename
+        filename = self._sempath(self._filename)
 
         template = self._template('linux.j2')
         docker = self._project.profile.docker.runner or {}
