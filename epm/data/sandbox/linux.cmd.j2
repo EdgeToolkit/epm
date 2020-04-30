@@ -28,9 +28,9 @@ SETLOCAL
 set _SHELL=%EPM_SANDBOX_SHELL%
 set _IMAGE=%EPM_SANDBOX_IMAGE%
 set _HOME=%EPM_SANDBOX_HOME%
-if not defined EPM_SANDBOX_IMAGE set _IMAGE={{ image }}
-if not defined EPM_SANDBOX_SHELL set _SHELL={{ shell }}
-if not defined EPM_SANDBOX_HOME set _HOME={{ home }}
+if not defined EPM_SANDBOX_IMAGE set _IMAGE={{ docker['image'] }}
+if not defined EPM_SANDBOX_SHELL set _SHELL={{ docker['shell'] }}
+if not defined EPM_SANDBOX_HOME set _HOME={{ docker['home'] }}
 if not defined EPM_SANDBOX_PROJECT set EPM_SANDBOX_PROJECT=%CD%
 if not defined EPM_SANDBOX_STORAGE (
     if defined CONAN_STORAGE_PATH (

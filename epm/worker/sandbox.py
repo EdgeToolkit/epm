@@ -54,58 +54,6 @@ class Remoter(SSH):
         self.call(cmd, check=True)
 
 
-class ____Runner(object):
-
-    def __init__(self, sandbox, name=None):
-        self._name = name
-        self._sandbox = sandbox
-
-    def _load_config(self, name=None):
-        name = name or self._name
-        config = self._sandbox.api.load_config()
-        runners = config.get('machines', {})
-        profile = self._sandbox.project.profile
-        runner = None
-
-        if name is None:
-            if profile.is_running_native:
-                runner = {'shell': 'dos'}
-            elif profile.docker.runner:
-                runner = {'docker': {
-                    'image': profile.docker.runner['image'],
-                    'shell': profile.docker.runner['shell'],
-                    'WD': profile.docker.runner['home']
-                }}
-            else:
-                raise EException('Profile <%s> can not run in local machine, please specified runner.' % profile.name)
-        else:
-            runner = runners.get(name)
-            if not runner:
-                raise EException('specified runner %s not configured!' % name)
-            runner = {'remote': runner}
-        return config.get('localhost'), runner
-
-    def exec(self, command, argv):
-        project = self._sandbox.project
-        manifest = project.manifest
-        if not manifest.get('sandbox', {}).get(command):
-            raise EException('No sandbox command %s defined' % command)
-
-        filename = os.path.normpath(os.path.join(project.folder.out, 'sandbox', command))
-
-        localhost, runner_config = self._load_config()
-        if runner_config.get('remote'):
-            raise NotImplemented('sandbox remote')
-        else:  # local
-            from conans.client.tools import ConanRunner
-            runner = ConanRunner(output=self._sandbox.api.out)
-            command = [filename] + argv
-            from conans.tools import environment_append
-            storage = self._sandbox.api.conan_storage_path
-            with environment_append({'CONAN_STORAGE_PATH': storage}):
-                return runner(command)
-
-
 class Runner(object):
 
     def __init__(self, sandbox, name=None):
@@ -120,14 +68,13 @@ class Runner(object):
             self._runner = self._profile.docker.runner
             name = 'docker' if self._runner else 'shell'
         else:
-            self._runner = self._config.get('runner', {}).get(name)
-            if not self._runner:
-                raise Exception('<%s> not defined in config file runner section.' % name)
+            if name not in ['shell', 'docker']:
+                self._runner = self._config.get('runner', {}).get(name)
+                if not self._runner:
+                    raise Exception('<%s> not defined in config file runner section.' % name)
         self._name = name
 
         # TODO: add validation of being runnable for this profile
-        print('name:', name)
-        print('runner config:', self._runner)
 
     def exec(self, command, argv):
         filename = os.path.normpath(os.path.join(self._project.folder.out, 'sandbox', command))
@@ -181,6 +128,7 @@ class Runner(object):
 
             command = [pathlib.PurePath(filename).as_posix()] + argv
             return ssh.call(command, cwd=PROJECT_FOLDER)
+
 
 class Sandbox(Worker):
 

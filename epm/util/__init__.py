@@ -99,14 +99,14 @@ def XSym(filename):
             return line if line else None
     return None
 
-def sempath(path, kwords, format='${%s}'):
-    """ semantic path, replace path prefix with folders value and return the met one
 
-    :param path: <string> to semantic
-    :param prefixs: ordered dict name: directory
-    :return:
+def sempath(path, prefixes, format='${%s}'):
+    """ semantic path, replace path prefix with folders value and return the met one
     """
-    for i in kwords:
+    if isinstance(prefixes, str):
+        prefixes = [prefixes]
+
+    for i in prefixes:
         if isinstance(i, str):
             name, prefix = i.split('=', 1)
         elif isinstance(i, tuple):
