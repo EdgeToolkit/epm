@@ -170,7 +170,7 @@ def mirror(conanfile, origin, format='{name}/{basename}'):
     if isinstance(origin, dict):
         return dict(origin, **{'url': m})
     elif isinstance(origin, str):
-        return url
+        return m
     return origin
 
 

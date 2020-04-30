@@ -30,12 +30,12 @@ EPM_IMAGES=(gcc5-x86 gcc5 hisiv300)
 
 for target in ${CONAN_IMAGES[@]};
 do
-  $_SUDO docker rmi $target:$CONAN_VERSION
+  $_SUDO docker rmi epmkit/$target:$CONAN_VERSION
 done
 
 for target in ${EPM_IMAGES[@]};
 do
-  $_SUDO docker rmi $target:$VERSION
+  $_SUDO docker rmi epmkit/$target:$VERSION
   
 done
 

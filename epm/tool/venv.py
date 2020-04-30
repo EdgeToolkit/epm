@@ -216,7 +216,7 @@ def active(name):
     rcfile = os.path.join(folder, 'bash.rc')
 
     from conans.client.tools import environment_append
-    with environment_append({'CONAN_USER_HOME': path}):
+    with environment_append({}): #{'CONAN_USER_HOME': path}):
         if PLATFORM == 'Windows':
             subprocess.run(['cmd.exe', '/k', filename])
         else:
