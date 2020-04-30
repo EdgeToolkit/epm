@@ -1,0 +1,88 @@
+{%- set type = manifest.get('type') -%}
+# Minimum CMake required
+cmake_minimum_required(VERSION 3.10.0)
+
+if({{ name }}_VERBOSE)
+  message(STATUS "{{ name }} Configuring...")
+endif()
+
+# CMake policies
+cmake_policy(SET CMP0022 NEW)
+# On MacOS use @rpath/ for target's install name prefix path
+if (POLICY CMP0042)
+  cmake_policy(SET CMP0042 NEW)
+endif ()
+# Clear VERSION variables when no VERSION is given to project()
+if(POLICY CMP0048)
+  cmake_policy(SET CMP0048 NEW)
+endif()
+
+# Project
+project({{ name }})
+
+
+# Options
+
+option({{ name }}_CXX11_ENABLE "enable C++ 11 compile feature." {{ "ON" if cxx11 else "OFF" }})
+option({{ name }}_MSVC_STATIC_RUNTIME "MSVC Link static runtime libraries." OFF)
+if({{ name }}_CXX11_ENABLE)
+
+    if (CYGWIN)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+    else()
+      set(CMAKE_CXX_STANDARD 11)
+      set(CMAKE_CXX_STANDARD_REQUIRED ON)
+      set(CMAKE_CXX_EXTENSIONS OFF)
+    endif()
+endif({{ name }}_CXX11_ENABLE)
+
+
+if (MSVC)
+  # Build with multiple processes
+  add_definitions(/MP)
+  # MSVC warning suppressions
+  add_definitions(
+    /wd4018 # 'expression' : signed/unsigned mismatch
+    /wd4065 # switch statement contains 'default' but no 'case' labels
+    /wd4146 # unary minus operator applied to unsigned type, result still unsigned
+    /wd4244 # 'conversion' conversion from 'type1' to 'type2', possible loss of data
+    /wd4251 # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
+    /wd4267 # 'var' : conversion from 'size_t' to 'type', possible loss of data
+    /wd4305 # 'identifier' : truncation from 'type1' to 'type2'
+    /wd4307 # 'operator' : integral constant overflow
+    /wd4309 # 'conversion' : truncation of constant value
+    /wd4334 # 'operator' : result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
+    /wd4355 # 'this' : used in base member initializer list
+    /wd4506 # no definition for inline function 'function'
+    /wd4800 # 'type' : forcing value to bool 'true' or 'false' (performance warning)
+    /wd4996 # The compiler encountered a deprecated declaration.
+  )
+
+# Suppress linker warnings about files with no symbols defined.
+#  set(CMAKE_STATIC_LINKER_FLAGS /ignore:4221)
+endif (MSVC)
+
+if (CMAKE_COMPILER_IS_GNUCC) # GNU GCC
+    # refer 30-CBB|40-CBB  /common.mk
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wshadow -Wpointer-arith")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer -rdynamic -funwind-tables")
+
+    string(REGEX REPLACE "-O3" "-O2" CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
+    string(REGEX REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+    
+    # add sanitize by default.
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
+
+endif ()
+
+
+{% if type == 'lib' %}
+{% include 'CMakeLists/lib.j2' %}
+{% else %}
+{% include 'CMakeLists/app.j2' %}
+{% endif %}
+
+if({{ name }}_VERBOSE)
+    message(STATUS "{{ name }} Configuring done")
+endif()

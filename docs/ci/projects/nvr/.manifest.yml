@@ -1,0 +1,39 @@
+name: nvr
+# descritpion
+# files
+templates:
+  lib:
+    description: |
+      EPM C/C++ libaray project template for NVR
+
+    files:
+
+      - package.yml
+      - conanfile.py
+      - CMakeLists.txt
+      - .gitignore
+
+      - include/declaration.h: include/declaration.h.j2
+      - include/${name}/${name}.h: include/lib.h.j2
+      - source/${name}.c: source/lib.c.j2
+      - cmake/CMakeLists.txt
+      - cmake/${name}-config.cmake.in: cmake/config.cmake.in.j2
+      - tests/src/main.cpp: tests/lib/main.cpp
+      - tests/src/test.cpp: tests/lib/test.cpp.j2
+      - tests/conanfile.py: tests/lib/conanfile.py.j2
+      - tests/CMakeLists.txt: tests/lib/CMakeLists.txt.j2
+
+  app:
+    description: |
+      EPM C/C++ executable project template  for NVR
+
+    files:
+      - package.yml
+      - conanfile.py
+      - CMakeLists.txt
+      - .gitignore
+
+      - cmake/CMakeLists.txt
+      - source/main.c
+      - tests/main.py: tests/app/main.py
+      - tests/test_version.py: tests/app/test_version.py.j2

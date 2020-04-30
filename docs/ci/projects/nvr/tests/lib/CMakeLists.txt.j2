@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 3.1.0)
+project({{ name }}_test CXX)
+
+set(CMAKE_VERBOSE_MAKEFILE TRUE)
+
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+
+
+
+
+if(MSVC)
+  set(CMAKE_EXE_LINKER_FLAGS /ignore:4099)
+endif()
+
+#get_filename_component(test_source_dir {{ '${%s_TEST_SOURCE_DIR} ' % name }} PATH)
+set(test_source_dir ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories( ${test_source_dir}/src )
+
+set(_SRCs)
+set(_PATTERN_SRC *.c *.cpp *.cc *.h *.hpp *.hxx)
+
+foreach(i in ${_PATTERN_SRC})
+   file(GLOB_RECURSE _SRCs  ${_SRCs} ${test_source_dir}/src/${i})
+endforeach()
+
+
+source_group(TREE ${test_source_dir} FILES ${_SRCs} )
+
+if(WITH_MAIN)
+    add_executable(${PROJECT_NAME} ${_SRCs})
+else()
+    add_executable(${PROJECT_NAME} main.cpp ${_SRCs})
+endif()
+
+
+target_link_libraries(${PROJECT_NAME} ${CONAN_LIBS} {{ name}})
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
+if(WITH_GMOCK)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE WITH_GMOCK)
+endif()
+
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
