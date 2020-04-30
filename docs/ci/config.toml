@@ -1,0 +1,44 @@
+concurrent = 1
+check_interval = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "Windows builder (MSVC) vs2019"
+  url = "http://172.16.0.119:8000/"
+  token = "x-wt7fReGCeUxa-9VQtb"
+  executor = "shell"
+  builds_dir = "d:/_ci/builds"
+  environment = ["EPM_CI_VIRTUAL_ENVIRONMENT_DIR=d:/_ci/venv/epm-oss", "LC_ALL=en_US.UTF-8"]
+  shell = "powershell"
+  [runners.custom_build_dir]
+  [runners.cache]
+    [runners.cache.s3]
+    [runners.cache.gcs]
+
+[[runners]]
+  name = "Microsoft Windows for application test"
+  url = "http://172.16.0.119:8000/"
+  token = "KdSFg3ZV9jrhrxRiwCbm"
+  executor = "shell"
+  builds_dir = "d:/_ci/builds"
+  environment = ["EPM_CI_VIRTUAL_ENVIRONMENT_DIR=d:/_ci/venv/epm-oss", "LC_ALL=en_US.UTF-8"]
+  shell = "powershell"
+  [runners.custom_build_dir]
+  [runners.cache]
+    [runners.cache.s3]
+    [runners.cache.gcs]
+
+[[runners]]
+  name = "Windows Tools Builder and Deployer all in one runner."
+  url = "http://172.16.0.119:8000/"
+  token = "Th5myyuZbYes6Go3HSBt"
+  executor = "shell"
+  shell = "powershell"
+  builds_dir = "d:/_ci/builds"
+  environment = ["EPM_CI_VIRTUAL_ENVIRONMENT_DIR=d:/_ci/venv/epm-oss.deployer", "LC_ALL=en_US.UTF-8"]  
+  [runners.custom_build_dir]
+  [runners.cache]
+    [runners.cache.s3]
+    [runners.cache.gcs]
