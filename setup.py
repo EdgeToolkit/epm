@@ -32,9 +32,9 @@ if platform.system() == "Darwin":
 dev_requirements = get_requires("epm/requirements_dev.txt")
 
 # The tests utils are used by conan-package-tools
-exclude_test_packages = ["epm.test.{}*".format(d)
-                         for d in os.listdir(os.path.join(here, "epm/test"))
-                         if os.path.isdir(os.path.join(here, "epm/test", d)) and d != "utils"]
+#exclude_test_packages = ["epm.test.{}*".format(d)
+#                         for d in os.listdir(os.path.join(here, "epm/test"))
+#                         if os.path.isdir(os.path.join(here, "epm/test", d)) and d != "utils"]
 
 
 def load_version():
