@@ -1,0 +1,12 @@
+{% set name=config.wenv.name %}
+
+if [ -e .bashrc ]; then
+  source ~/.bashrc
+fi
+export EPM_WORK_ENVIRONMENT='{{name}}'
+
+epm wenv banner
+export PS1='\[\033[01;32m\]\u@\h - {{name}}@epm.wenv\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\n\$ '
+
+
+

@@ -2,5 +2,5 @@
 # to allow refactors
 
 
-__version__ = '0.1.0-103'
+__version__ = '0.1.0-106'
 

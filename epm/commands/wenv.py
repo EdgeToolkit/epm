@@ -7,7 +7,7 @@ _install_args = [
                      help="location of the install source, support local directory or http/hppts zip url."),
 
     ArgparseArgument("--install-dir", type=str, default=None,
-                     help="where to installed, by default it will be installed on ~/.epm/venv/{name}"),
+                     help="where to installed, by default it will be installed on ~/.epm/wenv/{name}"),
 ]
 
 _active_args = [
@@ -16,12 +16,12 @@ _active_args = [
 ]
 
 _show_args = [
-    ArgparseArgument("name", help="The name of the venv to be display."),
+    ArgparseArgument("name", help="The name of the wenv to be display."),
 ]
 
 _banner_args = [
     ArgparseArgument("name", nargs='?', default=None, type=str,
-                     help="The name venv."),
+                     help="The name wenv."),
 ]
 
 _uninstall_args = [
@@ -29,50 +29,44 @@ _uninstall_args = [
                      help="The name to be uninstalled."),
 ]
 
-# epm venv install url --install-dir --conan-storage
-# epm venv active name
-# epm venv uinstall name --force
-# epm venv list name
 
-class VEnv(Command):
+class WorkEnvironment(Command):
     """
-    EPM virtual environment manage command
+    EPM work environment manage command
     """
-    name = 'venv'
-    help = 'Virtual environment.'
-
-    #prog = 'epm [-p PROFILE] [-s SCHEME] [-r RUNNER] %s' % name
+    name = 'wenv'
+    help = 'Work environment.'
 
     def __init__(self):
 
         args = {
             'install': {
-                'help': 'Unstall epm virtual environment.',
+                'help': 'Install epm work environment.',
                 'args': _install_args
             },
             'shell': {
-                'help': 'Startup an install virtual environment shell.',
+                'help': 'Startup an installed work environment shell.',
                 'args': _active_args
 
             },
             'list': {
-                'help': 'List all installed venv.',
+                'help': 'List all installed work environment.',
                 'args': []
 
             },
             'show': {
-                'help': 'Show specified venv information.',
+                'help': 'Show specified work environment information.',
                 'args': _show_args
 
             },
 
             'banner': {
-                'help': 'Print banner of the venv.',
+                'help': 'Print banner of the work environment.',
                 'args': _banner_args
 
             },
             'uninstall': {
-                'help': 'Uninstall specified environment',
+                'help': 'Uninstall specified work environment',
                 'args': _uninstall_args
 
             }
@@ -81,30 +75,29 @@ class VEnv(Command):
 
     def run(self, args, api=None):
         if args.sub_command == 'install':
-            from epm.tool.venv import install
+            from epm.tool.wenv import install
             install(args.location, args.install_dir)
         elif args.sub_command == 'shell':
-            from epm.tool.venv import active
+            from epm.tool.wenv import active
             active(args.name)
         elif args.sub_command == 'banner':
-            from epm.tool.venv import banner
+            from epm.tool.wenv import banner
             print(banner(args.name))
         elif args.sub_command == 'list':
-            from epm.tool.venv import get_all_installed_venv_info
+            from epm.tool.wenv import get_all_installed_venv_info
             info = get_all_installed_venv_info()
             print('{:19s} {:40s}'.format('name', 'location'))
             print('{:19s} {:40s}'.format('-'*19, '-'*40))
             for name, value in info.items():
                 print('{:19s} {:40s}'.format(name, os.path.normpath(value['location'])))
         elif args.sub_command == 'show':
-            from epm.tool.venv import get_all_installed_venv_info
+            from epm.tool.wenv import get_all_installed_venv_info
             info = get_all_installed_venv_info()
             info = info.get(args.name)
             if info:
-                print(info['config']['venv'].get('description'))
+                print(info['config']['wenv'].get('description'))
             else:
                 print('%s not installed.' % args.name)
 
 
-
-register_command(VEnv)
+register_command(WorkEnvironment)

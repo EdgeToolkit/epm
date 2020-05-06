@@ -7,26 +7,29 @@ class Config(object):
     def __init__(self, filename='~/.epm/config.yml'):
         self._data = {}
         self._filename = filename
+        print(self._filename, '[=========================')
         if os.path.exists(self._filename):
+            print(self._filename, '[=========================>>>')
             self._data = load_yaml(self._filename)
-        self._data = dict({'venv': {},
+        self._data = dict({'wenv': {},
                            'registry': {}
                            }, **self._data)
 
     @property
-    def venv(self):
-        VEnv = namedtuple('VEnv', ['name', 'with_default_profiles', 'buildin_profiles'])
+    def wenv(self):
+        WEnv = namedtuple('WEnv', ['name', 'with_default_profiles', 'buildin_profiles'])
 
-        value = self._data.get('venv')
+        value = self._data.get('wenv')
 
         if value is None or value.get('name') is None:
             return None
         with_default_profiles = value.get('with_default_profiles', False)
         buildin_profiles = value.get('buildin_profiles')
-        return VEnv(value['name'], with_default_profiles, buildin_profiles)
+        return WEnv(value['name'], with_default_profiles, buildin_profiles)
 
     @property
     def environment(self):
+        print(self._data, '!!!!!!!!!!!!!!!!')
         return self._data.get('environment', {})
 
     @property

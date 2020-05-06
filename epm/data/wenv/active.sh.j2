@@ -1,0 +1,12 @@
+{%- set name=config.wenv.name %}
+#!/bin/bash
+__dir__=$(cd $(dirname ${BASH_SOURCE:-$0});pwd)
+if [[ -n $EPM_WORK_ENVIRONMENT ]] ;; then
+  echo "Already in work environment <$EPM_WORK_ENVIRONMENT>, you have to exits this wenv, then try again."
+  exit/b 1
+fi
+
+
+source ${__dir__}/bash.rc
+
+epm wenv banner
