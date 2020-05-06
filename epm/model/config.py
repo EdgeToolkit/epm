@@ -7,9 +7,7 @@ class Config(object):
     def __init__(self, filename='~/.epm/config.yml'):
         self._data = {}
         self._filename = filename
-        print(self._filename, '[=========================')
         if os.path.exists(self._filename):
-            print(self._filename, '[=========================>>>')
             self._data = load_yaml(self._filename)
         self._data = dict({'wenv': {},
                            'registry': {}
@@ -29,7 +27,6 @@ class Config(object):
 
     @property
     def environment(self):
-        print(self._data, '!!!!!!!!!!!!!!!!')
         return self._data.get('environment', {})
 
     @property

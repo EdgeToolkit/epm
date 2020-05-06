@@ -74,25 +74,22 @@ class WorkEnvironment(Command):
         Command.__init__(self, args)
 
     def run(self, args, api=None):
+        from epm.tool import wenv
         if args.sub_command == 'install':
-            from epm.tool.wenv import install
-            install(args.location, args.install_dir)
+            wenv.install(args.location, args.install_dir)
         elif args.sub_command == 'shell':
-            from epm.tool.wenv import active
-            active(args.name)
+            wenv.active(args.name)
         elif args.sub_command == 'banner':
             from epm.tool.wenv import banner
             print(banner(args.name))
         elif args.sub_command == 'list':
-            from epm.tool.wenv import get_all_installed_venv_info
-            info = get_all_installed_venv_info()
+            info = wenv.get_all_installed_wenv_info()
             print('{:19s} {:40s}'.format('name', 'location'))
             print('{:19s} {:40s}'.format('-'*19, '-'*40))
             for name, value in info.items():
                 print('{:19s} {:40s}'.format(name, os.path.normpath(value['location'])))
         elif args.sub_command == 'show':
-            from epm.tool.wenv import get_all_installed_venv_info
-            info = get_all_installed_venv_info()
+            info = wenv.get_all_installed_wenv_info()
             info = info.get(args.name)
             if info:
                 print(info['config']['wenv'].get('description'))
