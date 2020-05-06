@@ -229,6 +229,7 @@ class Program(object):
                 elif self._is_linux and (fnmatch.fnmatch(name, '*.so')
                                          or fnmatch.fnmatch(name, '*.so.*')):
 
+                    path = filename
                     if os.path.islink(filename):
                         symbol = True
                         path = os.readlink(filename)
