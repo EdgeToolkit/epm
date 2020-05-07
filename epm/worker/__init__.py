@@ -143,7 +143,7 @@ class DockerRunner(object):
         WD = self._docker_var_parse(config, self.WD)
         volumes = dict({}, **self.volumes)
         environment = {}
-        for i in ['EPM_VIRTUAL_ENVIRONMENT']:
+        for i in ['EPM_WORK_ENVIRONMENT']:
             val = os.environ.get(i)
             if val:
                environment[i] = val
