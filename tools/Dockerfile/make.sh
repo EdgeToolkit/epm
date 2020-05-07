@@ -22,15 +22,20 @@ options="--archive_url http://172.16.0.119/archive/ $options"
 options="--build $options"
 #options="--clear $options"
 
-#CONAN_IMAGES=(conan-gcc5-x86 conan-gcc8-x86 conan-hisiv300)
+CONAN_IMAGES=(conan-gcc5-x86 conan-gcc8-x86 conan-hisiv300)
 EPM_IMAGES=(gcc5-x86 gcc5 hisiv300)
+_mkconan=$1
+if [ "$_mkconan" != "with-conan" ]; then
+  CONAN_IMAGES=()
 
+fi
 
 
 
 for target in ${CONAN_IMAGES[@]};
 do
   $_SUDO docker rmi epmkit/$target:$CONAN_VERSION
+  $_SUDO docker rmi epmkit/$target:latest
 done
 
 for target in ${EPM_IMAGES[@]};
