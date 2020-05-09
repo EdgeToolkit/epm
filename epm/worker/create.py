@@ -211,6 +211,7 @@ class Creator(Worker):
 
     def _sandbox(self, project, id):
         storage = os.environ.get('CONAN_STORAGE_PATH')
-        for name, command in project.manifest.get('sandbox', {}).items():
+        m = project.manifest.as_dict()
+        for name, command in m.get('sandbox', {}).items():
             program = Program(project, command, storage, is_create=True, id=id)
             program.generate(name)

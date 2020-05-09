@@ -46,12 +46,14 @@ class Scheme(object):
         conan = self.project.api.conan
         conanfile = conan.inspect(self.project.dir, ['settings', 'options', 'default_options', 'manifest'])
         manifest = manifest or conanfile['manifest'] or self.project.manifest
-        schemes = manifest.get('scheme', {})
-        scheme = schemes.get(name or 'default', {})
+        m = manifest.as_dict()
+        schemes = m.get('scheme', {})
+        realname = name or 'default'
+        scheme = schemes.get(realname, {})
         if name and schemes.get(name, None) is None:
             raise Exception('the specified scheme name `%s` not set in package.yml.' % name)
 
-        deps = copy.deepcopy(manifest['dependencies'])
+        deps = copy.deepcopy(manifest.dependencies)
 
         options = scheme.get('options', {})
         for pkg in deps.values():
@@ -62,6 +64,7 @@ class Scheme(object):
             if k in deps:
                 deps[k].scheme = v
                 deps[k].options = None
+
         return options, deps
 
     def _load_dep_schemes(self, libs, deps, storage=None):

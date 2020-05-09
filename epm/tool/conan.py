@@ -1,6 +1,6 @@
 import os
 import yaml
-from conans.model.ref import ConanFileReference
+from conans.model.ref import ConanFileReference, get_reference_fields
 
 
 def get_channel(user=None, channel=None):
@@ -28,26 +28,44 @@ def get_channel(user=None, channel=None):
     return result
 
 
-def archive_mirror(conanfile, origin, folder=None, name=None):
-    ARCHIVE_URL = os.getenv('EPM_ARCHIVE_URL', None)
-    if ARCHIVE_URL is None:
-        return origin
-    name = name or conanfile.name
-    folder = folder or name
-    if isinstance(origin, dict):
-        origin_url = origin['url']
-        url = '{mirror}/{folder}/{basename}'.format(
-            mirror=ARCHIVE_URL, folder=folder, basename=os.path.basename(origin_url))
-        return dict(origin, **{'url': url})
-    elif isinstance(origin, str):
-        url = '{mirror}/{folder}/{basename}'.format(
-            mirror=ARCHIVE_URL, folder=folder, basename=os.path.basename(origin))
-        return url
-    return origin
-
-
 from collections import namedtuple, OrderedDict
 from conans.model.version import Version
+
+
+def dependencies_to_reference(data, text=None):
+    dependencies = data.get('dependencies', [])
+    if not isinstance(dependencies, list):
+        raise Exception('package.yml `dependencies` field should be list')
+    deps = OrderedDict()
+    for packages in dependencies:
+        if isinstance(packages, str):
+            name, version, user, channel, revision = get_reference_fields(packages)
+            if user:
+                channel = channel or get_channel(user=user)
+            deps[name] = ConanFileReference(name, version, user, channel, revision)
+
+        elif isinstance(packages, dict):
+            if len(packages) > 1:
+                text = yaml.dump({'dependencies': [packages]})
+                reason = 'package.yml dependencies item wrong format, you may miss indent.'
+                reason += '\n{}'.format(text)
+                print(reason)
+                raise Exception(reason)
+
+            for name, option in packages.items():
+                if 'version' not in option:
+                    raise Exception('package.yml `dependencies` %s `version` not set' % name)
+
+                version = option['version']
+                user = option.get('user', None)
+                channel = get_channel(user=user)
+                channel = option.get('channel', channel)
+                revision= option.get('revision', None)
+                deps[name] = ConanFileReference(name, version, user, channel, revision)
+        else:
+            raise Exception('package.yml `dependencies` item should be dict or reference str ')
+
+    return deps
 
 
 class Manifest(namedtuple("Manifest", "name version user dependencies")):
@@ -55,7 +73,7 @@ class Manifest(namedtuple("Manifest", "name version user dependencies")):
     opencv/2.4.10@lasote/testing
     """
 
-    def __new__(cls, data, name, version, user, dependencies):
+    def __new__(cls, name, version, user, dependencies):
         """Simple name creation.
         @param name:        string containing the desired name
         @param version:     string containing the desired version
@@ -76,28 +94,12 @@ class Manifest(namedtuple("Manifest", "name version user dependencies")):
 
         with open(filename) as f:
             text = f.read()
-            data = yaml.safe_load(f)
 
+        data = yaml.safe_load(text)
         name = data['name']
         version = data['version']
         user = data.get('user', None)
-        dependencies = data.get('dependencies', [])
-        if not isinstance(dependencies, list):
-            raise Exception('package.yml `dependencies` field should be list')
-        deps = OrderedDict()
-        for packages in dependencies:
-            if not isinstance(dependencies, dict):
-                raise Exception('package.yml `dependencies` item should be dict')
-
-            for name, option in packages.items():
-                if 'version' not in option:
-                    raise Exception('package.yml `dependencies` %s `version` not set' % name)
-
-                version = option['version']
-                user = option.get('user', None)
-                channel = get_channel(user=user)
-                channel = option.get('channel', channel)
-                deps[name] = ConanFileReference(name, version, user, channel)
+        deps = dependencies_to_reference(data, text)
 
         manifest = Manifest(name, version, user, deps)
         manifest._data = data
@@ -107,6 +109,23 @@ class Manifest(namedtuple("Manifest", "name version user dependencies")):
     def as_dict(self):
         return self._data
 
+
+def archive_mirror(conanfile, origin, folder=None, name=None):
+    ARCHIVE_URL = os.getenv('EPM_ARCHIVE_URL', None)
+    if ARCHIVE_URL is None:
+        return origin
+    name = name or conanfile.name
+    folder = folder or name
+    if isinstance(origin, dict):
+        origin_url = origin['url']
+        url = '{mirror}/{folder}/{basename}'.format(
+            mirror=ARCHIVE_URL, folder=folder, basename=os.path.basename(origin_url))
+        return dict(origin, **{'url': url})
+    elif isinstance(origin, str):
+        url = '{mirror}/{folder}/{basename}'.format(
+            mirror=ARCHIVE_URL, folder=folder, basename=os.path.basename(origin))
+        return url
+    return origin
 
 from epm.util import symbolize
 
@@ -139,7 +158,7 @@ def mirror(conanfile, origin, format='{name}/{basename}'):
 
 
 def Packager(manifest='package.yml'):
-    m = Manifest(manifest)
+    m = Manifest.loads(manifest)
     name = m.name
     version = m.version
     user = m.user
@@ -155,7 +174,7 @@ def Packager(manifest='package.yml'):
 
 
 def TestPackager(manifest='../package.yml'):
-    m = Manifest(manifest)
+    m = Manifest.loads(manifest)
     name = m.name
     version = m.version
     user = m.user
@@ -164,7 +183,6 @@ def TestPackager(manifest='../package.yml'):
     _PackagerClassId += 1
     class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, user, name, version))
     from conans import ConanFile
-    m = Manifest(manifest)
 
     requires = ('%s/%s@%s/%s' % (name, version,
                                  user or '_',

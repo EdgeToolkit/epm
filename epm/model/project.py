@@ -51,7 +51,7 @@ class Project(object):
         self._generate_layout()
 
     def _generate_layout(self):
-        manifest = self.manifest
+        manifest = self.manifest.as_dict()
         template = manifest.get('conan.layout', DEFALT_CONAN_LAYOUT)
         layout = Template(template)
 
@@ -76,15 +76,15 @@ class Project(object):
 
     @property
     def name(self):
-        return self.manifest['name']
+        return self.manifest.name
 
     @property
     def version(self):
-        return str(self.manifest['version'])
+        return self.manifest.version
 
     @property
     def user(self):
-        return self.manifest.get('user', None)
+        return self.manifest.user
 
     @property
     def channel(self):
@@ -141,14 +141,15 @@ class Project(object):
         if self._manifest is None:
             path = os.path.join(self.dir, 'package.yml')
             self._manifest = load_yaml(path)
-            from epm.tool.conan import normalize_manifest
-            normalize_manifest(self._manifest)
+            from epm.tool.conan import Manifest
+            self._manifest = Manifest.loads(path)
 
         return self._manifest
 
     @property
     def tests(self):
-        return self.manifest.get('tests', None)
+        m = self.manifest.as_dict()
+        return m.get('tests', None)
 
     def generate_profile(self, force=False):
         filename = os.path.join(self.folder.out, 'profile')
