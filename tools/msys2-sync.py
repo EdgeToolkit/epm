@@ -2,6 +2,11 @@ import os
 import time
 import re
 from download import download
+import re
+_P_MSYS2_PKG = r'(?P<name>(\w[\w\-]*))\-(?P<version>\d+(\.\d+)*\w*(\-\d+)?)(\-any)?\.pkg\.tar\.xz(\.sig)?'
+_P_MINGW_PKG = r'mingw\-w64\-(?P<arch>(i686|x86_64))\-(?P<name>(\w[\w\-]*))\-(?P<version>\d+(\.\d+)*\w*(\-\d+)?)(\-any)?\.pkg\.tar\.xz(\.sig)?'
+_P_MSYS2_PKG = re.compile(_P_MSYS2_PKG)
+_P_MINGW_PKG = re.compile(_P_MINGW_PKG)
 
 _ORIGIN = r'http://repo.msys2.org'
 _BASE = r'https://mirrors.tuna.tsinghua.edu.cn/msys2'
@@ -9,7 +14,10 @@ _REPO = ['msys', 'mingw', 'distrib']
 _ARCH = ['x86_64', 'i686']
 
 
-
+_EXCLUDES = [
+    'qt5', 'qt5-debug', 'qt5-static', 'qtbinpatcher', 'qtwebkit', 'qtwebkit-tp5',
+    'quantlib'
+]
 
 
 def mkdir(path):
@@ -59,30 +67,32 @@ def sync(repo, arch):
     for name in archives(index):
         filename = os.path.join(folder, name)
         if os.path.exists(filename):
-            print('[exists]', filename)
+            #print('[exists]', filename)
             continue
         url = '%s/%s/%s/%s' % (_Package, repo, arch, name)
 
+        #if repo == 'msys':
+        #    m = _P_MSYS2_PKG.match(name)
+        #    assert m
+        #    if m.group('name') in _EXCLUDES:
+        #        print('skip ', name)
+        #        continue
+        if repo == 'mingw':
+            m = _P_MINGW_PKG.match(name)
+            if not m or m.group('name') in _EXCLUDES:
+                print('skip ', name)
+                continue
+        else:
+            pass
+
         download(url, filename, progressbar=True, replace=False)
 
-
-_RETRY = 180
-#for i in range(0, _TIMES):
-for arch in _ARCH:
+def main():
     for repo in _REPO:
-        for i in range(0, _RETRY):
-            try:
-                sync(repo, arch)
-                break
-            except:
-                _RETRY -= 1
-                if _RETRY <= 0:
-                    print('Retry failed.')
-                    import sys
-                    sys.exit(1)
-                else:
-                    print('Download failed, retry .... 1S later.')
-                import time
-                time.sleep(1)
+        for arch in _ARCH:
+            sync(repo, arch)
 
-print('Done !!!!')
+
+if __name__ == '__main__':
+    main()
+    print('Done !!!!')

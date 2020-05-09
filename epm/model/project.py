@@ -80,25 +80,21 @@ class Project(object):
 
     @property
     def version(self):
-        return self.manifest['version']
+        return str(self.manifest['version'])
 
     @property
-    def group(self):
-        value = self.manifest.get('group', None)
-        from epm.tool.conan import get_user
-        return get_user(value)
+    def user(self):
+        return self.manifest.get('user', None)
 
     @property
     def channel(self):
         from epm.tool.conan import get_channel
-        value = self.manifest.get('group', None)
-        return get_channel(group=value)
+        return get_channel(user=self.user)
 
     @property
     def reference(self):
         from conans.model.ref import ConanFileReference
-        return ConanFileReference(self.name, self.version, self.group, self.channel)
-        return '%s/%s@%s/%s' % (self.name, self.version, self.group, self.channel)
+        return ConanFileReference(self.name, self.version, self.user, self.channel)
 
     @property
     def profile(self):

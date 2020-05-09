@@ -73,7 +73,7 @@ class Builder(Worker):
         info = conan.install(path=wd,
                              name=project.name,
                              version=project.version,
-                             user=project.group,
+                             user=project.user,
                              channel=project.channel,
                              settings=None,  # should be same as profile
                              options=options,
@@ -112,7 +112,6 @@ class Builder(Worker):
     def _test(self, project):
         conan = self.api.conan
         wd = '.'
-        #profile_path = os.path.join(project.folder.out, 'profile')  # already generated in configure step
 
         info = conan.editable_add(path=project.dir,
                                   reference=str(project.reference),
@@ -132,7 +131,7 @@ class Builder(Worker):
             pkgdir = os.path.join(project.folder.test, i, 'package')
             info = conan.install(path=conanfile_path,
                                  name='%s-%s' % (project.name, i),
-                                 settings=None,  # should be same as profile
+                                 settings=None,
                                  options=options,
                                  profile_names=[project.generate_profile()],
                                  install_folder=instd)

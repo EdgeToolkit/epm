@@ -131,7 +131,7 @@ class Creator(Worker):
         info = self.conan.create('.',
                                  name=project.name,
                                  version=project.version,
-                                 user=project.group,
+                                 user=project.user,
                                  channel=project.channel,
                                  settings=None,
                                  options=options,

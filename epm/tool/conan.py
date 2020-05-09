@@ -1,71 +1,31 @@
-
 import os
 import yaml
-from epm.util import symbolize
+from conans.model.ref import ConanFileReference
 
 
-def get_user(group=None):
-    keys = ['EPM_GROUP']
-    if group:
-        symbol = symbolize('_' + group.upper())
-        keys.append('EPM_GROUP{}'.format(symbol))
+def get_channel(user=None, channel=None):
 
-    for k in keys:
-        group = os.getenv(k, group)
-    return group
-
-
-def get_channel(group=None, channel=None):
-
-    if not group and not os.getenv('EPM_GROUP'):
-        if os.getenv('EPM_CHANNEL'):
-            raise Exception('No `group` defined in package.yml or environment var `EPM_GROUP`,'
-            'but you set environment `EPM_CHANNEL` (%s) that is not allowed.' % os.getenv('EPM_CHANNEL'))
-        return None
+    if not user:
+        if channel is None:
+            return None
+        raise Exception('No `user` defined with channel defined (%s) not allowed.' % channel)
 
     def _(x):
+        from epm.util import symbolize
         return symbolize('_' + x.upper())
     keys = ['EPM_CHANNEL']
-    result = 'public' if os.getenv('EPM_GROUP', group) else None
+    result = 'public' if os.getenv('EPM_USER', user) else None
     if channel:
-        keys.append('EPM_GROUP_CHANNEL' + _(channel))
-        if group:
-            keys.append('EPM_GROUP{group}CHANNEL{channel}'.format(group=_(group), channel=_(channel)))
+        keys.append('EPM_USER_CHANNEL' + _(channel))
+        if user:
+            keys.append('EPM_USER{user}CHANNEL{channel}'.format(user=_(user), channel=_(channel)))
     else:
-        if group:
-            keys.append('EPM_GROUP{group}CHANNEL'.format(group=_(group)))
+        if user:
+            keys.append('EPM_USER{user}CHANNEL'.format(user=_(user)))
 
     for k in keys:
-        print(result, '@', os.getenv(k), '*', os.getenv(k, result))
         result = os.getenv(k, result)
-        print(k, '--->', result)
     return result
-
-
-#class Reference(object):
-#
-#    def __init__(self, name, version, group, channel):
-#        self.name = name
-#        self.version = version
-#        self.group = get_user(group)
-#        self.channel = get_channel(group, channel)
-#
-#    def __str__(self):
-#        return '%s/%s@%s/%s' % (self.name, self.version, self.group, self.channel)
-
-
-def normalize_manifest(manifest):
-    group = manifest.get('group',None)
-    from collections import OrderedDict
-    deps = OrderedDict()
-
-    for packages in manifest.get('dependencies', []):
-        for name, option in packages.items():
-            version = option['version']
-            user = option.get('group', group)
-            channel = option.get('channel') or get_channel(group=user)
-            deps[name] = Reference(name, version, user, channel)
-    manifest['dependencies'] = deps
 
 
 def archive_mirror(conanfile, origin, folder=None, name=None):
@@ -86,63 +46,67 @@ def archive_mirror(conanfile, origin, folder=None, name=None):
     return origin
 
 
-class PackageMetaInfo(object):
+from collections import namedtuple, OrderedDict
+from conans.model.version import Version
 
-    def __init__(self, filename='package.yml'):
+
+class Manifest(namedtuple("Manifest", "name version user dependencies")):
+    """ Full reference of a package recipes, e.g.:
+    opencv/2.4.10@lasote/testing
+    """
+
+    def __new__(cls, data, name, version, user, dependencies):
+        """Simple name creation.
+        @param name:        string containing the desired name
+        @param version:     string containing the desired version
+        @param user:        string containing the user name
+        @param dependencies: OrderDict of ConanFileReference for this package dependencies
+        """
+        version = Version(version) if version is not None else None
+
+        obj = super(cls, Manifest).__new__(cls, name, version, user, dependencies)
+        return obj
+
+    @staticmethod
+    def loads(filename='package.yml'):
+        """
+        """
         if not os.path.exists(filename):
             raise Exception('Package manifest %s not exits!' % filename)
 
         with open(filename) as f:
-            self._meta = yaml.safe_load(f)
+            text = f.read()
+            data = yaml.safe_load(f)
 
-    @property
-    def name(self):
-        return self._meta['name']
+        name = data['name']
+        version = data['version']
+        user = data.get('user', None)
+        dependencies = data.get('dependencies', [])
+        if not isinstance(dependencies, list):
+            raise Exception('package.yml `dependencies` field should be list')
+        deps = OrderedDict()
+        for packages in dependencies:
+            if not isinstance(dependencies, dict):
+                raise Exception('package.yml `dependencies` item should be dict')
 
-    @property
-    def user(self):
-        return self.group
-
-    @property
-    def group(self):
-        return self._meta['group']
-
-    @property
-    def channel(self):
-        return get_channel(group=self.group)
-
-    @property
-    def version(self):
-        return self._meta['version']
-
-    @property
-    def reference(self):
-        return '{}/{}@{}/{}'.format(self.name, self.version, self.group, self.channel)
-
-    @property
-    def dependencies(self):
-        references = []
-        for packages in self._meta.get('dependencies', []):
             for name, option in packages.items():
+                if 'version' not in option:
+                    raise Exception('package.yml `dependencies` %s `version` not set' % name)
+
                 version = option['version']
-                user = option.get('group') or self.group
-                channel = option.get('channel') or get_channel(group=user)
-                references.append("%s/%s@%s/%s" % (name, version, user, channel))
+                user = option.get('user', None)
+                channel = get_channel(user=user)
+                channel = option.get('channel', channel)
+                deps[name] = ConanFileReference(name, version, user, channel)
 
-        return references
+        manifest = Manifest(name, version, user, deps)
+        manifest._data = data
+        manifest._text = text
+        return manifest
 
-    @property
-    def build_requires(self):
-        references = []
-        for name, value in self._meta.get('build_requires', {}).items():
-            version = value['version']
-            user = value.get('group') or self.user
-            channel = value.get('channel') or get_channel(group=user)
-            references.append("%s/%s@%s/%s" % (name, version, user, channel))
-        return references
+    def as_dict(self):
+        return self._data
 
-    def get(self, key, default=None):
-        return self._meta.get(key, default)
 
 from epm.util import symbolize
 
@@ -175,49 +139,38 @@ def mirror(conanfile, origin, format='{name}/{basename}'):
 
 
 def Packager(manifest='package.yml'):
-    if not os.path.exists(manifest):
-        raise Exception('package manifest file %s not exists' % manifest)
+    m = Manifest(manifest)
+    name = m.name
+    version = m.version
+    user = m.user
 
-    with open(manifest) as f:
-        _manifest = yaml.safe_load(f)
-        normalize_manifest(_manifest)
-
-    for i in ['name', 'version']:
-        if i not in _manifest:
-            raise Exception('`%s` field is required but not defined in %s' % (i, manifest))
-    name = _manifest['name']
-    version = _manifest['version']
-    group = _manifest.get('group', None)
     global _PackagerClassId
     _PackagerClassId += 1
-    class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, str(group), name, version))
+    class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, str(user), name, version))
     from conans import ConanFile
     exports = [manifest]
     klass = type(class_name, (ConanFile,),
-                 dict(name=name, version=version,
-                 manifest=_manifest, exports=exports))
+                 dict(name=name, version=version, manifest=m, exports=exports))
     return klass
 
 
 def TestPackager(manifest='../package.yml'):
-    if not os.path.exists(manifest):
-        raise Exception('package manifest file %s not exists' % manifest)
+    m = Manifest(manifest)
+    name = m.name
+    version = m.version
+    user = m.user
 
-    with open(manifest) as f:
-        _manifest = yaml.safe_load(f)
-        normalize_manifest(_manifest)
-
-    name = _manifest['name']
-    version = _manifest['version']
-    group = _manifest.get('group', None)
     global _PackagerClassId
     _PackagerClassId += 1
-    class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, group, name, version))
+    class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, user, name, version))
     from conans import ConanFile
+    m = Manifest(manifest)
 
-    requires = ('%s/%s@%s/%s' % (name, version, group or '_', get_channel(group) or '_'))
+    requires = ('%s/%s@%s/%s' % (name, version,
+                                 user or '_',
+                                 get_channel(user) or '_'))
     klass = type(class_name, (ConanFile,),
                  dict(version=version,
-                      manifest=_manifest,
+                      manifest=m,
                       requires=requires))
     return klass

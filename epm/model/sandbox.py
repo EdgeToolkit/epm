@@ -197,8 +197,6 @@ class Program(object):
             for i in info.full_requires:
                 from conans.model.ref import ConanFileReference
                 ref = ConanFileReference.loads(i.full_str(), False)
-                print('--- ref:', ref)
-                print('--- ref.dir_repr():', ref.dir_repr())
                 dirs.append(ref.dir_repr())
         else:
             cpp = conanbuildinfo(self._build_dir)
