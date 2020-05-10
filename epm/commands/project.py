@@ -1,14 +1,4 @@
-"""
-epm project create lib --name xxx --version 0.1.2
-
-epm project install-template http://kedacom.com/xxx.zip
-
-epm project list-templates
-
-epm project show <template name>
-"""
-
-
+import os
 from epm.commands import Command, register_command, ArgparseArgument
 
 _generate_args = [
@@ -31,6 +21,8 @@ _show_template_args = [
 _install_template_args = [
     ArgparseArgument("url", default=None, type=str,
                      help="The location of the project template."),
+    ArgparseArgument("-e", "--editable", default=False, action='store_true',
+                     help='Install a project template in editable mode from a local path.'),
 ]
 
 
@@ -81,13 +73,13 @@ class Project(Command):
                 'version': args.version
             })
         elif args.sub_command == 'install':
-            pass
+            self._install(args.url, args.editable)
         elif args.sub_command == 'list':
             print('{:20s} {:40s}'.format('name', 'location'))
             print('-'*20, '-'*40)
             for name, value in templates.items():
                 print('{:20s} {:40s}'.format(name, value['dir']))
-                desc = value.get('description','')
+                desc = value.get('description', '')
                 lines = desc.split("\n")
                 indent = ' '*20 + '\n'
                 print('{:20s} {}'.format('', indent.join(lines)))
@@ -98,6 +90,35 @@ class Project(Command):
                 print('project template <%s> not exists' % args.name)
             else:
                 print(manifest.get('description'))
+
+    def _install(self, url, editable):
+        editable = bool(editable)
+        folder = url
+        if os.path.isdir(url):
+            url = os.path.abspath(url)
+        else:
+            editable = False
+
+        import yaml
+        from epm.paths import HOME_EPM_DIR
+
+        with open(os.path.join(folder, '.manifest.yml')) as f:
+            manifest = yaml.safe_load(f)
+        name = manifest['name']
+
+        prjd = os.path.join(HOME_EPM_DIR, 'projects')
+        if not os.path.exists(prjd):
+            os.makedirs(prjd)
+
+        path = os.path.join(prjd, name)
+        if os.path.exists(path):
+            raise Exception('%s already installed' % name)
+
+        if editable:
+            with open(path, 'w', encoding='utf-8') as f:
+                yaml.safe_dump({'location': folder}, f)
+
+
 
 
 

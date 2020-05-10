@@ -12,10 +12,44 @@ gcc5:
   profiles:
     gcc5:
       description: |
-        GNU GCC 5 build profile for x86_64 Linux with libstdc++.
+        GNU GCC 5 build profile for x86_64 Linux with libstdc++11.
     gcc5.d:
       description: |
-        GNU GCC 5 build profile for x86_64 Linux with libstdc++ (DEBUG).
+        GNU GCC 5 build profile for x86_64 Linux with libstdc++11 (DEBUG).
+
+gcc5-x86:
+  docker:
+    builder:
+      image: epmkit/gcc5-x86
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: i386/ubuntu:xenial
+      shell: /bin/bash
+      home: /home/conan
+
+  profiles:
+    gcc5-x86:
+      description: |
+        GNU GCC 5 build profile for x86 Linux with libstdc++11.
+    gcc5-x86.d:
+      description: |
+        GNU GCC 5 build profile for x86 Linux with libstdc++11 (DEBUG).
+
+hisiv300:
+  docker:
+    builder:
+      image: epmkit/hisiv300
+      shell: /bin/bash
+      home: /home/conan
+
+  profiles:
+    hisiv300:
+      description: |
+        HUAWEI HiSilicon GCC 4.8 build profile for ARMv7 Linux with uCLib.
+    hisiv300.d:
+      description: |
+        HUAWEI HiSilicon GCC 4.8 build profile for ARMv7 Linux with uCLib (DEBUG).
 
 # =========================================================
 # Microsoft Visual Studio 2019 profile.
@@ -25,19 +59,37 @@ gcc5:
 # =========================================================
 vs2019:
   profiles:
+    # x86_64
     vs2019:
       description: |
-        Microsoft Visual Studio 2019profile for x86_64.
+        Microsoft Visual Studio 2019 profile for x86_64.
         use the multithread-specific and DLL-specific version of the run-time library.
     vs2019.d:
       description: |
-        Microsoft Visual Studio 2019profile for x86_64 (DEBUG).
+        Microsoft Visual Studio 2019 profile for x86_64 (DEBUG).
         use the debug multithread-specific and DLL-specific version of the run-time library
     vs2019mt:
       description: |
-        Microsoft Visual Studio 2019profile for x86_64.
+        Microsoft Visual Studio 2019 profile for x86_64.
         use the multithread, static version of the run-time library.
     vs2019mt.d:
       description: |
-        Microsoft Visual Studio 2019profile for x86_64 (DEBUG).
+        Microsoft Visual Studio 2019 profile for x86_64 (DEBUG).
+        use the debug multithread, static version of the run-time library.
+    # x86
+    vs2019-x86:
+      description: |
+        Microsoft Visual Studio 2019 profile for x86.
+        use the multithread-specific and DLL-specific version of the run-time library.
+    vs2019-x86.d:
+      description: |
+        Microsoft Visual Studio 2019 profile for x86 (DEBUG).
+        use the debug multithread-specific and DLL-specific version of the run-time library
+    vs2019mt-x86:
+      description: |
+        Microsoft Visual Studio 2019 profile for x86.
+        use the multithread, static version of the run-time library.
+    vs2019mt-x86.d:
+      description: |
+        Microsoft Visual Studio 2019 profile for x86 (DEBUG).
         use the debug multithread, static version of the run-time library.

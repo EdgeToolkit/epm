@@ -68,7 +68,8 @@ class Creator(object):
 
     def run(self):
         for src, dst, type in self.artifacts:
-            print(src, dst, bool(type))
+            #print(src, dst, bool(type))
+            print('-- %s' % dst)
             if type == 'jinja':
                 self.jinja(src, dst)
             else:
@@ -78,9 +79,15 @@ class Creator(object):
 def load_project_templates_manifest():
     dirs = [os.path.join(DATA_DIR, 'projects', '__builtin__')]
     folder = os.path.join(os.path.join(HOME_EPM_DIR, 'projects'))
-    if os.path.exists(folder):
+    if os.path.isdir(folder):
         for d in os.listdir(folder):
             path = os.path.join(folder, d)
+            if os.path.isfile(path):
+                with open(path) as f:
+                    data = yaml.safe_load(f)
+                    path = data['location']
+                    assert os.path.isdir(path)
+
             if os.path.isdir(path) and os.path.exists(os.path.join(path, '.manifest.yml')):
                 dirs.append(path)
 

@@ -5,7 +5,7 @@ arch=x86
 arch_build=x86
 compiler=Visual Studio
 compiler.version=16
-compiler.runtime=MD
+compiler.runtime=MDd
 build_type=Debug
 [options]
 [build_requires]
