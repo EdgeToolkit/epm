@@ -7,14 +7,10 @@ import shutil
 import yaml
 
 from conans import ConanFile, CMake, tools
-from epm.tool.conan import PackageMetaInfo
+from epm.tool.conan import Packager
+ConanFile = Packager()
 
-PMI = PackageMetaInfo()
 class {{ name | capitalize | replace('-', '_') }}Conan(ConanFile):
-    name = PMI.name
-    version = PMI.version
-
-    exports = ["package.yml", "conanfile.py"]
     exports_sources = ["CMakeLists.txt", "tests/*", "include/*", "source/*", "cmake/*"]
     generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
@@ -26,8 +22,8 @@ class {{ name | capitalize | replace('-', '_') }}Conan(ConanFile):
                        }
 
     def requirements(self):
-        for reference in PMI.dependencies:
-            self.requires(reference)
+        for name, ref in self.manifest.dependencies.items():
+            self.requires.add_ref(ref)
 
     def configure(self):
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":

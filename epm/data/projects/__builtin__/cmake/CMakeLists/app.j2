@@ -6,13 +6,11 @@ get_filename_component(app_source_dir {{ '${%s_SOURCE_DIR} ' % name }} PATH)
 ##############################################################
 set(_SRCs)
 set(_HDRs)
-set(_PATTERN_SRC *.c *.cpp *.cc)
-set(_PATTERN_HDR *.h *.hpp *.hxx)
 
-foreach(i ${_PATTERN_HDR})
+foreach(i ${CXX_HEADER_FILE_EXTENSION})
    file(GLOB_RECURSE _HDRs ${_HDRs} ${app_source_dir}/source/${i})
 endforeach()
-foreach(i ${_PATTERN_SRC} ${_PATTERN_HDR})
+foreach(i ${CXX_SOURCE_FILE_EXTENSION} ${CXX_HEADER_FILE_EXTENSION})
    file(GLOB_RECURSE _SRCs ${_SRCs} ${app_source_dir}/source/${i})
 endforeach()
 

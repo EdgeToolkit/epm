@@ -16,12 +16,12 @@ templates:
       - include/${name}/declaration.h: include/declaration.h.j2
       - include/${name}/${name}.h: include/lib.h.j2
       - source/${name}.c: source/lib.c.j2
-      - cmake/CMakeLists.txt
+      - cmake/CMakeLists.txt: cmake/CMakeLists.txt.j2
       - cmake/${name}-config.cmake.in: cmake/config.cmake.in.j2
-      - tests/src/main.cpp: tests/lib/main.cpp
-      - tests/src/test.cpp: tests/lib/test.cpp.j2
-      - tests/conanfile.py: tests/lib/conanfile.py.j2
-      - tests/CMakeLists.txt: tests/lib/CMakeLists.txt.j2
+      - test_package/src/main.cpp: tests/lib/main.cpp
+      - test_package/src/test.cpp: tests/lib/test.cpp.j2
+      - test_package/conanfile.py: tests/lib/conanfile.py.j2
+      - test_package/CMakeLists.txt: tests/lib/CMakeLists.txt.j2
 
   app:
     description: |

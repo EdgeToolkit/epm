@@ -30,11 +30,11 @@
 
 
 /* C API  interface declaration macro */
-#ifndef {{ SYMBOL }}_CAPI
+#ifndef {{ SYMBOL }}_C_EXPORT
 	#ifdef __cplusplus
-        #define  {{ SYMBOL }}_CAPI extern "C" {{ SYMBOL }}_EXPORT_ATTRIBUTE
+        #define  {{ SYMBOL }}_C_EXPORT extern "C" {{ SYMBOL }}_EXPORT_ATTRIBUTE
 	#else
-	    #define  {{ SYMBOL }}_CAPI {{ SYMBOL }}_EXPORT_ATTRIBUTE
+	    #define  {{ SYMBOL }}_C_EXPORT {{ SYMBOL }}_EXPORT_ATTRIBUTE
 	#endif
 #endif
 

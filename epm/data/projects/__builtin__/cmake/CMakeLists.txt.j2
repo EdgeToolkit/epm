@@ -1,6 +1,6 @@
 {%- set type = manifest.get('type') -%}
 # Minimum CMake required
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.10)
 
 if({{ name }}_VERBOSE)
   message(STATUS "{{ name }} Configuring...")
@@ -23,10 +23,9 @@ project({{ name }})
 
 # Options
 
-option({{ name }}_CXX11_ENABLE "enable C++ 11 compile feature." {{ "ON" if cxx11 else "OFF" }})
+option({{ name }}_CXX11_ENABLE "enable C++ 11 compile feature." ON)
 option({{ name }}_MSVC_STATIC_RUNTIME "MSVC Link static runtime libraries." OFF)
 if({{ name }}_CXX11_ENABLE)
-
     if (CYGWIN)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
     else()
@@ -61,6 +60,13 @@ if (MSVC)
 # Suppress linker warnings about files with no symbols defined.
 #  set(CMAKE_STATIC_LINKER_FLAGS /ignore:4221)
 endif (MSVC)
+
+# C/C++ file extension
+set(C_SOURCE_FILE_EXTENSION *.c)
+set(C_HEADER_FILE_EXTENSION *.c)
+set(CXX_SOURCE_FILE_EXTENSION ${C_SOURCE_FILE_EXTENSION} *.cxx *cpp *.cc)
+set(CXX_HEADER_FILE_EXTENSION ${C_HEADER_FILE_EXTENSION} *.hpp *.hxx)
+
 {% if type == 'lib' %}
 {% include 'CMakeLists/lib.j2' %}
 {% else %}

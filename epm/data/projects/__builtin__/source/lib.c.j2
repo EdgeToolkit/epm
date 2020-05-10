@@ -2,7 +2,7 @@
 {%- set SYMBOL = symbol.upper() -%}
 #include <{{ name }}/{{ name }}.h>
 
-{{ SYMBOL }}_CAPI const char* {{ symbol }}_version()
+{{ SYMBOL }}_C_EXPORT const char* {{ symbol }}_version()
 {
     return "{{ version }}";
 }
