@@ -12,6 +12,8 @@ from epm.model.sandbox import Program
 from epm.util import is_elf
 from epm.util.files import remove, rmdir
 from epm.paths import HOME_EPM_DIR
+from epm.model import sandbox_builds_filter
+
 
 def _delete(path):
     if os.path.isfile(path):
@@ -92,7 +94,7 @@ class Creator(Worker):
                 storage = os.path.join(project.dir, storage) if storage else self.api.conan_storage_path
                 with environment_append(dict(self.api.config.env_vars,
                                              **{'CONAN_STORAGE_PATH': storage})):
-                    self._exec(project, clear)
+                    self._exec(project, clear, param.get('sandbox'))
             elif runner == 'docker':
                 param['RUNNER'] = 'shell'
                 docker = Docker(self.api, project)
@@ -113,7 +115,7 @@ class Creator(Worker):
                 'info': e
             })
 
-    def _exec(self, project, clear=False):
+    def _exec(self, project, clear=False, sandbox=None):
 
         conan = self.api.conan
         scheme = project.scheme
@@ -147,71 +149,67 @@ class Creator(Worker):
         result = {'id': id}
         dirs = None
 
-        self._test(project)
+        if sandbox in ['no', 'disable']:
+            self.api.out.info('Do not build sandbox programs!')
+        else:
+            builds = sandbox_builds_filter(sandbox, project.manifest.sandbox.values())
+            self._build_sandbox(project, builds)
 
         if clear:
-            for i in glob.glob('%s/*/*' % project.folder.test):
-                _clear_builds(i)
-            _clear_storage(self.api.conan_storage_path, project.reference.dir_repr())
+            self._clear(project)
 
-            def sizeof(folder):
-                size = 0
-                for root, dirs, files in os.walk(folder):
-                    for name in files:
-                        path = os.path.join(root, name)
-                        if os.path.isfile(path):
-                            try:
-                                size += os.path.getsize(path)
-                            except:
-                                pass
-                return size
-            dirs = {'.epm': {'size': sizeof('.epm')},
-                    '$storage': {'size': sizeof(self.api.conan_storage_path)}
-                    }
-
-        self._sandbox(project, id=id)
         project.save({'package_id': id})
         if dirs:
             result['dirs'] = dirs
 
         return result
 
-    def _test(self, project):
+    def _clear(self, project):
+        for i in glob.glob('%s/*/*' % project.folder.test):
+            _clear_builds(i)
+        _clear_storage(self.api.conan_storage_path, project.reference.dir_repr())
+
+        def sizeof(folder):
+            size = 0
+            for root, dirs, files in os.walk(folder):
+                for name in files:
+                    path = os.path.join(root, name)
+                    if os.path.isfile(path):
+                        try:
+                            size += os.path.getsize(path)
+                        except:
+                            pass
+            return size
+
+        dirs = {'.epm': {'size': sizeof('.epm')},
+                '$storage': {'size': sizeof(self.api.conan_storage_path)}
+                }
+
+    def _build_sandbox(self, project, builds):
         conan = self.api.conan
-
         options = ['%s=%s' % (k, v) for k, v in project.scheme.package_options.as_list()]
-        tests = project.tests or []
-        if not tests:
-            if os.path.exists('test_package/conanfile.py'):
-                tests = ['test_package']
 
-        for i in tests:
-            conanfile_path = os.path.join(i, 'conanfile.py')
-            if not os.path.exists(conanfile_path):
-                raise EException('specified test <%s> miss Makefile.py' % i)
-            instd = os.path.join(project.folder.test, i, 'build')
-            pkgdir = os.path.join(project.folder.test, i, 'package')
+        for folder, sbs in builds.items():
+
+            self.api.out.highlight('[build sandbox program] %s. project folder  %s'
+                                   % (",".join([x.name for x in sbs]), folder))
+
+            conanfile_path = os.path.join(folder, 'conanfile.py')
+
+            instd = os.path.join(project.folder.out, folder, 'build')
+            #pkgdir = os.path.join(project.folder.out, folder, 'package')
 
             info = conan.install(path=conanfile_path,
-                                 name='%s-%s' % (project.name, i),
+                                 name='%s-%s' % (project.name, folder.replace('-', '_')),
                                  settings=None,  # should be same as profile
                                  options=options,
                                  profile_names=[project.generate_profile()],
                                  install_folder=instd)
 
             conan.build(conanfile_path=conanfile_path,
-                        package_folder=pkgdir,
+                        #package_folder=pkgdir,
                         build_folder=instd,
                         install_folder=instd)
-
-            conan.package(path=conanfile_path,
-                          build_folder=instd,
-                          package_folder=pkgdir,
-                          install_folder=instd)
-
-    def _sandbox(self, project, id):
-        storage = os.environ.get('CONAN_STORAGE_PATH')
-        m = project.manifest.as_dict()
-        for name, command in m.get('sandbox', {}).items():
-            program = Program(project, command, storage, is_create=True, id=id)
-            program.generate(name)
+            for sb in sbs:
+                program = Program(project, sb, instd)
+                program.generate(sb.name)

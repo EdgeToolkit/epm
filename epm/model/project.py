@@ -147,9 +147,8 @@ class Project(object):
         return self._manifest
 
     @property
-    def tests(self):
-        m = self.manifest.as_dict()
-        return m.get('tests', None)
+    def sandbox(self):
+        return self.manifest.sandbox
 
     def generate_profile(self, force=False):
         filename = os.path.join(self.folder.out, 'profile')

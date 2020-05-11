@@ -20,8 +20,10 @@ from epm.util import is_elf, system_info
 from epm.util.files import remove, rmdir, load_yaml
 
 from conans.client.tools import environment_append
+from epm.tool.conan import Manifest
 
 PLATFORM, ARCH = system_info()
+
 
 class Scheme(object):
 
@@ -44,14 +46,17 @@ class Scheme(object):
         '''
 
         conan = self.project.api.conan
-        conanfile = conan.inspect(self.project.dir, ['settings', 'options', 'default_options', 'manifest'])
-        manifest = manifest or conanfile['manifest'] or self.project.manifest
-        m = manifest.as_dict()
+        if manifest is None:
+            conanfile = conan.inspect(self.project.dir, ['settings', 'options', 'default_options', 'manifest'])
+            manifest = conanfile['manifest']
+
+        m = manifest.as_dict() if isinstance(manifest, Manifest) else {}
         schemes = m.get('scheme', {})
-        realname = name or 'default'
-        scheme = schemes.get(realname, {})
         if name and schemes.get(name, None) is None:
             raise Exception('the specified scheme name `%s` not set in package.yml.' % name)
+
+        name = name or 'default'
+        scheme = schemes.get(name, {})
 
         deps = copy.deepcopy(manifest.dependencies)
 
@@ -71,11 +76,9 @@ class Scheme(object):
 
         for name, ref in deps.items():
 
-            if not ref.scheme:
-                continue
-
             if name in libs.keys():
                 continue
+
             conan = self.project.api.conan
 
             storage = storage or self.project.api.conan_storage_path
@@ -83,10 +86,17 @@ class Scheme(object):
                 conanfile = conan.inspect(str(ref), ['options', 'default_options', 'settings', 'manifest'])
 
             manifest = conanfile['manifest']
+            scheme_name = ref.scheme or 'default'
+            # TODO: support ref.schme as dict to handle options definitions
+            if manifest is None:
+                if not ref.scheme:
+                    raise Exception('request scheme `%s` of %s, It may not an epm package(missing package.yml)' %
+                                    (ref.scheme, name))
+                continue
 
-            options, deps = self._parse(ref.scheme, manifest)
+            options, deps = self._parse(scheme_name, manifest)
 
-            libs[name] = {'scheme': ref.scheme, 'manifest': manifest, 'options': options, 'deps': deps}
+            libs[name] = {'scheme': scheme_name, 'manifest': manifest, 'options': options, 'deps': deps}
 
             self._load_dep_schemes(libs, deps, storage)
 
@@ -95,7 +105,6 @@ class Scheme(object):
         options, deps = self._parse(self.name)
         libs = {}
         self._load_dep_schemes(libs, deps)
-
         items = {}
         for key, value in options.items():
             if package:

@@ -75,6 +75,9 @@ class Profile(object):
         return Docker(builder, runner)
 
     def save(self, filename):
+        folder = os.path.dirname(filename)
+        if not os.path.exists(folder):
+            os.makedirs(folder)
         shutil.copyfile(self._filename, filename)
 
     @property

@@ -4,7 +4,7 @@ from conans.client.conan_api import ConanAPIV1 as ConanAPI
 from conans.client.output import ConanOutput , colorama_initialize
 from conans.client.userio import UserIO as UserIO
 from epm.paths import get_epm_cache_dir
-from epm.worker.build import Builder
+from epm.worker.build import Builder, SandboxBuilder
 from epm.worker.create import Creator
 from epm.worker.sandbox import Sandbox
 from epm.worker.upload import Uploader
@@ -79,6 +79,12 @@ class APIv1(object):
     def build(self, param):
         worker = Builder(self)
         worker.exec(param)
+
+    @api_method
+    def sandbox_build(self, param):
+        worker = SandboxBuilder(self)
+        worker.exec(param)
+
 
     @api_method
     def create(self, param):

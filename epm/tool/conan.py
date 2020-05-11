@@ -1,7 +1,8 @@
 import os
 import yaml
 from conans.model.ref import ConanFileReference, get_reference_fields
-
+import re
+import pathlib
 
 def get_channel(user=None, channel=None):
 
@@ -68,12 +69,95 @@ def dependencies_to_reference(data, text=None):
     return deps
 
 
-class Manifest(namedtuple("Manifest", "name version user dependencies")):
+#
+# sandbox:
+#   <name>: '<project>/<type>/<folder>/<archive>
+# project: directory of sandbox program where placed conanfile.py
+#          build, package, bin, not permitted
+# type   :  `package` or `build` which depend on make script
+# folder : None or 'bin'
+# archive: program (without suffix) of the built
+#
+
+_P_PROJECT = r'(?P<project>\w[\w\-]+)/'
+_P_TYPE = r'(?P<type>(build|package))/'
+_P_FOLDER = r'(?P<folder>bin)?'
+_P_PROGRAM = r'/(?P<program>\w[\w\-]+)'
+_SANDBOX_PATTERN = re.compile(_P_PROJECT + _P_TYPE + _P_FOLDER + _P_PROGRAM + r'$')
+
+
+class ManifestParser(object):
+
+    def __init__(self, filename):
+        if not os.path.exists(filename):
+            raise Exception('Package manifest %s not exits!' % filename)
+
+        self._filename = os.path.abspath(filename)
+
+        with open(self._filename) as f:
+            self.text = f.read()
+
+        self.data = yaml.safe_load(self.text)
+
+    def sandbox(self):
+        Sandbox = namedtuple('Sandbox', 'content name directory type folder program param argv')
+        result = {}
+        for name, item in self.data.get('sandbox', {}).items():
+            parts = item.split(' ', 1)
+            command = parts[0]
+            command = pathlib.PurePath(command).as_posix()
+            param = None if len(parts) < 2 else parts[1].strip()
+            argv = param.split() if param else []
+            m = _SANDBOX_PATTERN.match(command)
+            if not m:
+                raise Exception('the sandbox `%s` format invalid' % name)
+            result[name] = Sandbox(item, name,
+                                   m.group('project'), m.group('type'), m.group('folder'), m.group('program'),
+                                   param, argv)
+        return result
+
+    def dependencies(self):
+        dependencies = self.data.get('dependencies', [])
+        if not isinstance(dependencies, list):
+            raise Exception('package.yml `dependencies` field should be list')
+        deps = OrderedDict()
+        for packages in dependencies:
+            if isinstance(packages, str):
+                name, version, user, channel, revision = get_reference_fields(packages)
+                if user:
+                    channel = channel or get_channel(user=user)
+                deps[name] = ConanFileReference(name, version, user, channel, revision)
+
+            elif isinstance(packages, dict):
+                if len(packages) > 1:
+                    text = yaml.dump({'dependencies': [packages]})
+                    reason = 'package.yml dependencies item wrong format, you may miss indent.'
+                    reason += '\n{}'.format(text)
+                    print(reason)
+                    raise Exception(reason)
+
+                for name, option in packages.items():
+                    if 'version' not in option:
+                        raise Exception('package.yml `dependencies` %s `version` not set' % name)
+
+                    version = option['version']
+                    user = option.get('user', None)
+                    channel = get_channel(user=user)
+                    channel = option.get('channel', channel)
+                    revision = option.get('revision', None)
+                    deps[name] = ConanFileReference(name, version, user, channel, revision)
+            else:
+                raise Exception('package.yml `dependencies` item should be dict or reference str ')
+
+        return deps
+
+
+class Manifest(namedtuple("Manifest", "name version user dependencies sandbox")):
     """ Full reference of a package recipes, e.g.:
     opencv/2.4.10@lasote/testing
     """
 
-    def __new__(cls, name, version, user, dependencies):
+    def __new__(cls, name, version, user, dependencies, sandbox=None):
         """Simple name creation.
         @param name:        string containing the desired name
         @param version:     string containing the desired version
@@ -82,28 +166,25 @@ class Manifest(namedtuple("Manifest", "name version user dependencies")):
         """
         version = Version(version) if version is not None else None
 
-        obj = super(cls, Manifest).__new__(cls, name, version, user, dependencies)
+        obj = super(cls, Manifest).__new__(cls, name, version, user, dependencies, sandbox)
         return obj
 
     @staticmethod
     def loads(filename='package.yml'):
         """
         """
-        if not os.path.exists(filename):
-            raise Exception('Package manifest %s not exits!' % filename)
-
-        with open(filename) as f:
-            text = f.read()
-
-        data = yaml.safe_load(text)
+        parser = ManifestParser(filename)
+        data = parser.data
         name = data['name']
         version = data['version']
         user = data.get('user', None)
-        deps = dependencies_to_reference(data, text)
+        deps = parser.dependencies()
+        sandbox = parser.sandbox()
 
-        manifest = Manifest(name, version, user, deps)
+        manifest = Manifest(name, version, user, deps, sandbox)
+        manifest._parser = parser
         manifest._data = data
-        manifest._text = text
+        manifest._text = parser.text
         return manifest
 
     def as_dict(self):

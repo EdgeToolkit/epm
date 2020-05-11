@@ -48,42 +48,24 @@ PROJECT_FOLDER = '%s/project' % HOST_FOLDER
 CONAN_STORAGE = '%s/conan.storage' % HOST_FOLDER
 SANDBOX_FOLDER = '%s/.sandbox' % HOST_FOLDER
 
-# Join two (or more) paths.
-def join(path, *paths):
-    path = os.path.join(path, *paths)
-    path = os.path.normpath(path)
-    path = path.replace('\\', '/')
-    return path
-
 
 class Program(object):
 
-    def __init__(self, project, commandline, storage, is_create=False, id=None):
+    def __init__(self, project, sandbox, build_folder,storage=None):
         self._project = project
+        self._sandbox = sandbox
+        self._build_folder = build_folder
+        filename = os.path.join(self._build_folder,
+                                self._sandbox.folder or '',
+                                self._sandbox.program)
 
-        self._commandline = commandline
-        argv = commandline.split(' ')
-        self._path = argv[0]
-        self._argv = argv[1:]
-        self._prefix = ''
-        path = self._path
-
-        m = P_PATH.match(path)
-        self._prefix = m.group('prefix')
-        self._folder = m.group('folder')
-        self._relpath = m.group('relpath')
-        self._middle = " ".join(self._relpath.split('/')[:-1])
-        self._name = os.path.basename(self._path)
-        self._fullname = self._name + self._ext
-
-        self._storage_path = pathlib.PurePath(os.path.abspath(storage)).as_posix()
-        self._is_create = is_create
-        self._id = id
-
+        if not self._is_program(filename):
+            raise Exception('Can not find sandbox program %s in %s' %
+                            (self._sandbox.program, self._build_dir))
+        self._filename = pathlib.PurePath(os.path.abspath(filename)).as_posix()
+        self._argv = sandbox.argv
         self._wd = pathlib.PurePath(os.path.abspath('.')).as_posix()
-        self._build_dir = None
-
-        self._initialize()
+        self._storage_path = storage or os.getenv('CONAN_STORAGE_PATH')
 
     def _sempath(self, path, prefixes=None, check=False):
         prefixes = prefixes or ['project={}'.format(self._wd), 'storage={}'.format(self._storage_path)]
@@ -91,9 +73,6 @@ class Program(object):
         if check and not result:
             raise Exception('{} can not located in {}'.format(path, str(prefixes)))
         return result
-
-
-
 
     @property
     def storage_path(self):
@@ -110,13 +89,6 @@ class Program(object):
     @property
     def _is_linux(self):
         return self._project.profile.settings['os'] == Platform.LINUX
-
-    def _initialize(self):
-
-        if self._is_create and not self._prefix:
-            self._filename, self._build_dir = self._locate('conan')
-        else:
-            self._filename, self._build_dir = self._locate('project')
 
     def _is_program(self, path):
         filename = path + self._ext
@@ -137,79 +109,20 @@ class Program(object):
         template = env.get_template(template_file)
         return template
 
-    def _locate(self, where='project'):
-        project = self._project
-
-        def ppath(m):
-            folder = join(project.folder.out, self._prefix, self._folder)
-            return join(folder, m, self._name), folder
-
-        def cpath(m, storage=None):
-            rpath = project.reference.dir_repr()
-            storage = storage or self.storage_path
-            folder = join(storage, rpath, self._folder, self.id)
-            return join(folder, m, self._name), folder
-        folders = ['bin'] if self._folder == 'package' else ['bin', '']
-        folders = [self._middle] if self._middle else folders
-        for m in folders:
-            if where == 'project':
-                path, folder = ppath(m)
-                if self._is_program(path):
-                    return os.path.abspath(path), folder
-            else:
-                path, folder = cpath(m)
-                if self._is_program(path):
-                    return os.path.abspath(path), folder
-
-        raise ENotFoundError('can not locate program <{}> in {}'.format(self._name, where))
-
     @property
-    def id(self):
-        return self._id
-
-    @property
-    def libpath(self):
+    def libdirs(self):
         dirs = []
-        project = self._project
-        storage = self.storage_path
-        outdir = os.path.abspath(project.folder.out)
-        sub_folder = 'bin' if self._is_windows else 'lib'
-
-        # build artifacts
-        if self._is_create:
-            rpath = project.reference.dir_repr()
-            path = join(storage, rpath, self._folder , self.id, sub_folder)
-            dirs.append(path)
-        else:
-            root = os.path.join(outdir, self._folder)
-            libd = os.path.join(root, sub_folder)
-            for i in [libd, root]:
-                dirs.append(i)
-
-
-        # dependencies
-        # build command will use editable info which saved in conanbuildinfo.txt
-        # create command use conaninfo.txt
-
-        if self._is_create and self._folder in ['package']:
-            info = conaninfo(self._build_dir)
-
-            for i in info.full_requires:
-                from conans.model.ref import ConanFileReference
-                ref = ConanFileReference.loads(i.full_str(), False)
-                dirs.append(ref.dir_repr())
-        else:
-            cpp = conanbuildinfo(self._build_dir)
-            libdirs = cpp.bindirs if self._is_windows else cpp.libdirs
-            for i in libdirs:
-                dirs.append(i)
+        cpp = conanbuildinfo(self._build_folder)
+        libdirs = cpp.bindirs if self._is_windows else cpp.libdirs
+        for i in libdirs:
+            dirs.append(i)
 
         return [PurePath(x).as_posix() for x in dirs]
 
     @property
     def dynamic_libs(self):
         libs = {}
-        for libd in self.libpath:
+        for libd in self.libdirs:
             if not os.path.exists(libd):
                 continue
 
@@ -260,12 +173,12 @@ class Program(object):
         def _(path):
             spath = self._sempath(path, check=True)
             s = Template(spath).substitute(storage=r'%EPM_SANDBOX_STORAGE%',
-                                          project=r'%EPM_SANDBOX_PROJECT%')
+                                           project=r'%EPM_SANDBOX_PROJECT%')
             return str(pathlib.PureWindowsPath(s))
 
         filename = _(self._filename)
 
-        libdirs = [_(x) for x in self.libpath]
+        libdirs = [_(x) for x in self.libdirs]
 
         template = self._template('windows.j2')
         return template.render(name=name,
@@ -277,7 +190,7 @@ class Program(object):
                                arguments=" ".join(self._argv))
 
     def _linux(self, name):
-        #libdirs = []
+        # libdirs = []
 
         filename = self._sempath(self._filename)
 
@@ -286,10 +199,10 @@ class Program(object):
         docker = dict({'image': 'alpine', 'shell': '/bin/bash', 'home': '/tmp'}, **docker)
 
         return template.render(name=name,
-                               #libdirs=libdirs,
+                               # libdirs=libdirs,
                                filename=filename,
                                dylibs=self.dynamic_libs,
-                               #docker=docker,
+                               # docker=docker,
                                image=docker['image'],
                                shell=docker['shell'],
                                home=docker['home'],
@@ -308,23 +221,19 @@ class Program(object):
                                           )
             return PurePath(s).as_posix()
 
-#        filename = _(self._filename)
-
-#        libdirs = [_(x) for x in self.libpath]
-
         template = self._template('linux.cmd.j2')
-        
+
         docker = self._project.profile.docker.runner or {}
         docker = dict({'image': 'alpine', 'shell': '/bin/bash', 'home': '/tmp'}, **docker)
 
         return template.render(name=name,
-                               #filename=filename,
-                               #libdirs=libdirs,
-                               #dylibs=self.dynamic_libs,
+                               # filename=filename,
+                               # libdirs=libdirs,
+                               # dylibs=self.dynamic_libs,
                                docker=docker,
-                               #image=docker['image'],
-                               #shell=docker['shell'],
-                               #home=docker['home'],
+                               # image=docker['image'],
+                               # shell=docker['shell'],
+                               # home=docker['home'],
                                folder=self._project.folder,
                                profile=self._project.profile,
                                scheme=self._project.scheme,
@@ -354,14 +263,3 @@ class Program(object):
             script = self._linux_windows_docker(name).encode('utf-8')
             with open(filename + '.cmd', 'wb') as f:
                 f.write(script)
-
-
-
-
-
-
-
-
-
-
-

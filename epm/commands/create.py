@@ -21,17 +21,24 @@ class Create(Command):
                                          "that is conan storage path will be set at .conan folder in project."),
 
                 ArgparseArgument("--clear", default=False, action="store_true",
-                                    help="clear local cache of .conan in project")
+                                    help="clear local cache of .conan in project"),
 
-                ]
+                ArgparseArgument("-s", "--sandbox", default=None, type=str,
+                                 help="build specified sandbox only, if not set all sandbox will be built, or 'no' build none")
+
+            ]
             Command.__init__(self, args)
 
     def run(self, args, api):
         param = self.parameter(args)
         if args.storage:
             param['storage'] = args.storage
+
         if args.clear:
             param['clear'] = args.clear
+
+        if args.sandbox:
+            param['sandbox'] = args.sandbox
 
         api.create(param)
 

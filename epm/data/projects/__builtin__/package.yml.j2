@@ -11,7 +11,12 @@ scheme:
     # if not use the default scheme of depend package, you have to specified here
     # for example we want to use zlib dynamic options scheme.
     # -----------------------------------------------------------------------------
-    # zlib: shared
+    # options:
+    #   shared: xxxx
+    #   ............
+    #
+    # zlib: static
+    # xxx:  xxxx
 
 {% if type == 'lib' %}
 sandbox:
