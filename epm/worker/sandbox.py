@@ -204,7 +204,7 @@ class Builder(object):
 
             if 'configure' in steps:
                 _('configure')
-                info = conan.install(path=conanfile_path,
+                info = conan.install(conanfile_path,
                                      name=name,
                                      settings=None,  # should be same as profile
                                      options=options,
@@ -215,9 +215,11 @@ class Builder(object):
 
             if 'make' in steps:
                 _('make')
-                conan.build(conanfile_path=conanfile_path,
+                conan.build(conanfile_path,
                             build_folder=build_folder,
-                            install_folder=build_folder)
+                            install_folder=build_folder
+                            )
+
                 for sb in sbs:
                     program = Program(self._project, sb, build_folder)
                     program.generate(sb.name)

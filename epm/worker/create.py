@@ -122,8 +122,9 @@ class Creator(Worker):
         profile = project.profile
 
         project.initialize()
-        profile_path = os.path.join(project.folder.out, 'profile')
-        profile.save(profile_path)
+
+        filename = os.path.join(project.dir, project.folder.out, 'profile')
+        profile.save(filename)
 
         options = ['%s=%s' % (k, v) for (k, v) in scheme.options.as_list()]
 
@@ -137,7 +138,7 @@ class Creator(Worker):
                                  channel=project.channel,
                                  settings=None,
                                  options=options,
-                                 profile_names=[profile_path],
+                                 profile_names=[filename],
                                  test_folder=False)
 
         if info['error']:

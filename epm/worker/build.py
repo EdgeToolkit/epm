@@ -53,12 +53,10 @@ class Builder(Worker):
 
                 from epm.worker.sandbox import Builder as SB
                 conan = self.api.conan
-                print('--------------------------------->>>>', project.reference)
-
-                info = conan.editable_add(path=project.dir,
-                                          reference=str(project.reference),
-                                          layout=project.layout,
-                                          cwd='.')
+                conan.editable_add(path=project.dir,
+                                   reference=str(project.reference),
+                                   layout=project.layout,
+                                   cwd=project.dir)
 
                 sb = SB(project)
                 sb.exec(program)
@@ -108,15 +106,15 @@ class Builder(Worker):
         scheme = project.scheme
         profile = project.profile
         conan = self.api.conan
-        wd = '.'
+        folder = os.path.join(project.dir, project.folder.build)
         project.initialize()
 
-        filename = os.path.join(project.folder.out, 'profile')
+        filename = os.path.join(project.dir, project.folder.out, 'profile')
         profile.save(filename)
 
         options = ['%s=%s' % (k, v) for (k, v) in scheme.options.as_list()]
 
-        info = conan.install(path=wd,
+        info = conan.install(path=project.dir,
                              name=project.name,
                              version=project.version,
                              user=project.user,
@@ -124,7 +122,8 @@ class Builder(Worker):
                              settings=None,  # should be same as profile
                              options=options,
                              profile_names=[filename],
-                             install_folder=project.folder.build)
+                             install_folder=folder,
+                             cwd=project.dir)
 
         if info['error']:
             raise APIError('failed when building project %s | %s in configure step'
@@ -132,28 +131,32 @@ class Builder(Worker):
 
                            })
 
-        conan.source(wd)
+        conan.source(project.dir, source_folder=folder, info_folder=folder)
 
     def _make(self, project):
         conan = self.api.conan
-        wd = '.'
+        folder = os.path.join(project.dir, project.folder.build)
+        package_folder = os.path.join(project.dir, project.folder.package)
 
-        info = conan.build(conanfile_path=wd,
-                           package_folder=project.folder.package,
-                           build_folder=project.folder.build,
-                           install_folder=project.folder.build)
-        #self._sandbox(project, 'build')
+        conan.build(project.dir,
+                    package_folder=package_folder,
+                    build_folder=folder,
+                    install_folder=folder,
+                    source_folder=folder,
+                    cwd=project.dir)
 
     def _package(self, project):
 
         conan = self.api.conan
-        wd = '.'
+        folder = os.path.join(project.dir, project.folder.build)
+        package_folder = os.path.join(project.dir, project.folder.package)
 
-        info = conan.package(path=wd,
-                             build_folder=project.folder.build,
-                             package_folder=project.folder.package,
-                             install_folder=project.folder.build)
-        #self._sandbox(project, 'package')
+        conan.package(project.dir,
+                      build_folder=folder,
+                      package_folder=package_folder,
+                      install_folder=folder,
+                      source_folder=folder,
+                      cwd=project.dir)
 
     #def _test(self, project):
     #    conan = self.api.conan

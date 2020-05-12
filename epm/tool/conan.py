@@ -164,7 +164,7 @@ class Manifest(namedtuple("Manifest", "name version user dependencies sandbox"))
         @param user:        string containing the user name
         @param dependencies: OrderDict of ConanFileReference for this package dependencies
         """
-        version = Version(version) if version is not None else None
+        version = Version(str(version)) if version is not None else None
 
         obj = super(cls, Manifest).__new__(cls, name, version, user, dependencies, sandbox)
         return obj
