@@ -66,7 +66,7 @@ class Project(object):
     @property
     def buildinfo(self):
         return load_yaml(os.path.join(self.folder.out, 'buildinfo.yml'))
-
+    
     @property
     def api(self):
         if not self._api:

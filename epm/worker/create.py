@@ -144,7 +144,7 @@ class Creator(Worker):
             raise APIError('failed when create package %s | %s '
                            % (project.name, scheme.name), details={})
 
-        #id = info.get('installed')[0].get('packages')[0]['id']
+        id = info.get('installed')[0].get('packages')[0]['id']
 
         result = {'id': id}
         dirs = None
@@ -157,7 +157,7 @@ class Creator(Worker):
         if clear:
             self._clear(project)
 
-        #project.save({'package_id': id})
+        project.save({'package_id': id})
         if dirs:
             result['dirs'] = dirs
 
