@@ -52,6 +52,14 @@ class Builder(Worker):
                 program = None if program == '*' else program
 
                 from epm.worker.sandbox import Builder as SB
+                conan = self.api.conan
+                print('--------------------------------->>>>', project.reference)
+
+                info = conan.editable_add(path=project.dir,
+                                          reference=str(project.reference),
+                                          layout=project.layout,
+                                          cwd='.')
+
                 sb = SB(project)
                 sb.exec(program)
 

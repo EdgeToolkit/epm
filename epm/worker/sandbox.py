@@ -101,17 +101,25 @@ class Runner(object):
 
         elif 'ssh' in self._runner:
             from epm.model.sandbox import HOST_FOLDER, PROJECT_FOLDER, CONAN_STORAGE, SANDBOX_FOLDER
-            runner = dict(self._runner, home='/tmp', shell='/bin/bash')
+            runner = {'home': '/tmp', 'shell': '/bin/bash'}
+            runner = dict(runner, **self._runner)
+
             localhost = self._config['localhost']
             ssh = SSH(runner['hostname'], runner['ssh']['username'], runner['ssh']['password'], runner['ssh']['port'])
             ssh.open()
-            ssh.WD = runner['home']
 
-            # mkdir HOST_FOLDER
-            cmd = '[ ! -d {0} ] && mkdir {0}'.format(HOST_FOLDER)
-            ssh.call(cmd)
 
-            cmd = '[ -d {0} ] && rm -rf {0}'.format(SANDBOX_FOLDER)
+
+            home = runner['home']
+            project = '{}/{}'.format(home, PROJECT_FOLDER)
+            storage = '{}/{}'.format(home, CONAN_STORAGE)
+            sandbox = '{}/{}'.format(home, SANDBOX_FOLDER)
+            home = '{}/{}'.format(runner['home'], HOST_FOLDER)
+
+            cmd = 'mkdir -p {0}'.format(home)
+            ssh.call(cmd, check=True)
+
+            cmd = '[ -d {0} ] && rm -rf {0}'.format(sandbox)
             ssh.call(cmd)
 
             def _mnt(path, directory):
@@ -122,12 +130,19 @@ class Runner(object):
                           interface=localhost['hostname'],
                           username=localhost['username'],
                           password=localhost['password'])
+            #ssh.WD = home
 
-            _mnt(self._project.dir, PROJECT_FOLDER)
-            _mnt(conan_storage, CONAN_STORAGE)
+            _mnt(self._project.dir, project)
+            _mnt(conan_storage, storage)
 
-            command = [pathlib.PurePath(filename).as_posix()] + argv
-            return ssh.call(command, cwd=PROJECT_FOLDER)
+            command = "export EPM_SANDBOX_HOME={};".format(home)
+            command += "export EPM_SANDBOX_STORAGE={};".format(storage)
+            command += "export EPM_SANDBOX_PROJECT={};".format(project)
+            command += "cd {} && ".format(project)
+            command += './'+pathlib.PurePath(filename).as_posix()
+            command = [command] + argv
+            #print('--->', command)
+            return ssh.call(command)
 
 
 class Sandbox(Worker):

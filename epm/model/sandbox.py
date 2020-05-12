@@ -35,13 +35,13 @@ def conanbuildinfo(folder):
     return None
 
 
-def conaninfo(folder):
-    return ConanInfo.load_from_package(folder)
-
-
-P_PATH = re.compile(r'(?P<folder>(build|package))/(?P<relpath>\S+)')
-P_PREFIX = re.compile(r'(?P<prefix>\.test/[\w\-\.]+)/(?P<path>\S+)')
-P_PATH = re.compile(r'(?P<prefix>[\w\-\.]+)?/(?P<folder>(build|package))/(?P<relpath>\S+)')
+#def conaninfo(folder):
+#    return ConanInfo.load_from_package(folder)
+#
+#
+#P_PATH = re.compile(r'(?P<folder>(build|package))/(?P<relpath>\S+)')
+#P_PREFIX = re.compile(r'(?P<prefix>\.test/[\w\-\.]+)/(?P<path>\S+)')
+#P_PATH = re.compile(r'(?P<prefix>[\w\-\.]+)?/(?P<folder>(build|package))/(?P<relpath>\S+)')
 
 HOST_FOLDER = '@host'
 PROJECT_FOLDER = '%s/project' % HOST_FOLDER
@@ -199,10 +199,8 @@ class Program(object):
         docker = dict({'image': 'alpine', 'shell': '/bin/bash', 'home': '/tmp'}, **docker)
 
         return template.render(name=name,
-                               # libdirs=libdirs,
                                filename=filename,
                                dylibs=self.dynamic_libs,
-                               # docker=docker,
                                image=docker['image'],
                                shell=docker['shell'],
                                home=docker['home'],
@@ -227,13 +225,7 @@ class Program(object):
         docker = dict({'image': 'alpine', 'shell': '/bin/bash', 'home': '/tmp'}, **docker)
 
         return template.render(name=name,
-                               # filename=filename,
-                               # libdirs=libdirs,
-                               # dylibs=self.dynamic_libs,
                                docker=docker,
-                               # image=docker['image'],
-                               # shell=docker['shell'],
-                               # home=docker['home'],
                                folder=self._project.folder,
                                profile=self._project.profile,
                                scheme=self._project.scheme,

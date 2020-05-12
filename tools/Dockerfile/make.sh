@@ -24,7 +24,7 @@ options="--build $options"
 
 CONAN_IMAGES=(conan-gcc5-x86 conan-gcc8-x86 conan-hisiv300)
 EPM_IMAGES=(gcc5-x86 gcc5 hisiv300)
-EPM_IMAGES=(gcc5)
+#EPM_IMAGES=(gcc5)
 _mkconan=$1
 if [ "$_mkconan" != "with-conan" ]; then
   CONAN_IMAGES=()

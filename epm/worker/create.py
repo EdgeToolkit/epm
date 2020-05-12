@@ -150,7 +150,7 @@ class Creator(Worker):
         dirs = None
 
         if sandbox:
-            from epm.worker.sandbox import SB
+            from epm.worker.sandbox import Builder as SB
             sb = SB(project)
             sb.exec()
 

@@ -18,7 +18,7 @@ class SSH(object):
         self._port = port or 22
         self._username = username
         self._password = password
-        self.WD = '~'
+        self.WD = None
 
         self.LD_LIBRARY_PATH = None
 
@@ -32,21 +32,21 @@ class SSH(object):
         if self._ssh:
             self._ssh.close()
 
-    def call(self, cmd, cwd=None, timeout=None, out=None, check=False):
+    def call(self, cmd, timeout=None, out=None, check=False):
 
         if isinstance(cmd, list):
             cmd = " ".join(cmd)
-        if cwd and not pathlib.PurePath(cwd).is_absolute():
-            cwd = os.path.join(self.WD, cwd)
-            cwd = pathlib.PurePath(cwd).as_posix()
 
-        cwd = cwd or self.WD
         out = out or self._out
         script = ''
         if self.LD_LIBRARY_PATH:
             script += ' export LD_LIBRARY_PATH=%s:$LD_LIBRARY_PATH;' % self.LD_LIBRARY_PATH
 
-        script += 'cd %s && %s' % (cwd, cmd)
+        script = ''
+        if self.WD:
+            wd = pathlib.PurePath(self.WD).as_posix()
+            script += 'cd %s && ' % wd
+        script += cmd
 
         _, stdout, stderr = self._ssh.exec_command(script, timeout=timeout)
         exit_code = stdout.channel.recv_exit_status()
@@ -59,14 +59,13 @@ class SSH(object):
             out.write(_(stdout))
         if stderr:
             out.write(_(stderr))
+
         if check and exit_code:
-            raise Exception('ssh cmd failed -> %s' % cmd)
+            raise Exception('ssh cmd failed -> %s.' % cmd)
 
         return exit_code
 
     def mount(self, path, directory, interface=None, username=None, password=None):
-        if not pathlib.PurePath(directory).is_absolute():
-            directory = os.path.join(self.WD, directory)
 
         path = pathlib.PurePath(path).as_posix()
         directory = pathlib.PurePath(directory).as_posix()
@@ -82,9 +81,10 @@ class SSH(object):
             path = path.replace(':', '')
             auth = ''
             if username:
-                auth = '-o user=%s,pass=%s' % (username, password)
+                auth = '-o user=%s,pass=%s,noserverino' % (username, password)
             formatter = 'mount -t cifs %s //{hostname}/{path} {directory}' % auth
 
         cmd = formatter.format(hostname=interface, path=path, directory=directory)
+        cmd = 'mkdir -p {};{}'.format(directory, cmd)
         self.call(cmd, check=True)
 
