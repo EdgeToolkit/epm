@@ -140,3 +140,69 @@ class Sandbox(Worker):
         runner = Runner(self, runner)
 
         return runner.exec(command, argv)
+
+
+class Builder(object):
+
+    def __str__(self, project):
+        self._project = project
+        self._api = project.api
+
+    def exec(self, program=None, steps=None):
+        steps = steps or ['configure', 'make']
+        if isinstance(program, str):
+            program = [program]
+
+        if program:
+            bads = set(program).difference(self._project.manfest.sandbox.keys())
+            if bads:
+                raise Exception('{} NOT valid sandbox item'.format(",".join(bads)))
+        else:
+            program = self._project.manfest.sandbox.keys()
+
+        builds = {}
+        for name in program:
+            sb = self._project.sanbox[name]
+            if sb.directory in builds:
+                builds[sb.directory].append(sb)
+            else:
+                builds[sb.directory] = [sb]
+
+        profile = os.path.join(self._project.folder.out, 'profile')
+        if 'configure' in steps:
+            self._project.profile.save(profile)
+        conan = self.api.conan
+        options = ['%s=%s' % (k, v) for k, v in self._project.scheme.package_options.as_list()]
+
+        for folder, sbs in builds.items():
+            conanfile_path = os.path.join(folder, 'conanfile.py')
+            build_folder = os.path.join(self._project.folder.out, folder, 'build')
+
+            name = '{}-{}'.format(self._project.name, folder.replace('-', '_'))
+
+            def _(step):
+                self.api.out.highlight('[%s sandbox program] %s. project folder  %s'
+                                       % (step, ",".join([x.name for x in sbs]), folder))
+
+            _('Build')
+
+            if 'configure' in steps:
+                _('configure')
+                info = conan.install(path=conanfile_path,
+                                     name=name,
+                                     settings=None,  # should be same as profile
+                                     options=options,
+                                     profile_names=[profile],
+                                     install_folder=build_folder)
+                print(info)
+            if 'make' in steps:
+                _('make')
+                conan.build(conanfile_path=conanfile_path,
+                            build_folder=build_folder,
+                            install_folder=build_folder)
+                for sb in sbs:
+                    program = Program(self._project, sb, build_folder)
+                    program.generate(sb.name)
+
+
+

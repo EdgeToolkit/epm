@@ -23,8 +23,8 @@ class Create(Command):
                 ArgparseArgument("--clear", default=False, action="store_true",
                                     help="clear local cache of .conan in project"),
 
-                ArgparseArgument("-s", "--sandbox", default=None, type=str,
-                                 help="build specified sandbox only, if not set all sandbox will be built, or 'no' build none")
+                ArgparseArgument("--no-sandbox", default=False, action="store_true",
+                                 help="do not build sandbox program (with local cached package")
 
             ]
             Command.__init__(self, args)
@@ -37,8 +37,8 @@ class Create(Command):
         if args.clear:
             param['clear'] = args.clear
 
-        if args.sandbox:
-            param['sandbox'] = args.sandbox
+        if not args.no_sandbox:
+            param['sandbox'] = True
 
         api.create(param)
 

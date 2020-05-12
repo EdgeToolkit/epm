@@ -8,11 +8,11 @@ from conans.client.tools import environment_append
 from epm.worker import Worker, DockerBase, param_encode
 from epm.model.project import Project
 from epm.errors import APIError, EException
-from epm.model.sandbox import Program
+#from epm.model.sandbox import Program
 from epm.util import is_elf
 from epm.util.files import remove, rmdir
 from epm.paths import HOME_EPM_DIR
-from epm.model import sandbox_builds_filter
+#from epm.model import sandbox_builds_filter
 
 
 def _delete(path):
@@ -94,7 +94,7 @@ class Creator(Worker):
                 storage = os.path.join(project.dir, storage) if storage else self.api.conan_storage_path
                 with environment_append(dict(self.api.config.env_vars,
                                              **{'CONAN_STORAGE_PATH': storage})):
-                    self._exec(project, clear, param.get('sandbox'))
+                    self._exec(project, clear, bool(param.get('sandbox')))
             elif runner == 'docker':
                 param['RUNNER'] = 'shell'
                 docker = Docker(self.api, project)
@@ -115,7 +115,7 @@ class Creator(Worker):
                 'info': e
             })
 
-    def _exec(self, project, clear=False, sandbox=None):
+    def _exec(self, project, clear=False, sandbox=True):
 
         conan = self.api.conan
         scheme = project.scheme
@@ -149,12 +149,10 @@ class Creator(Worker):
         result = {'id': id}
         dirs = None
 
-        if sandbox in ['no', 'disable']:
-            self.api.out.info('Do not build sandbox programs!')
-        else:
-            builds = sandbox_builds_filter(sandbox, project.manifest.sandbox.values())
-            self._build_sandbox(project, builds)
-
+        if sandbox:
+            from epm.worker.sandbox import Builder
+            sb = Builder(project)
+            sb.exec()
         if clear:
             self._clear(project)
 
@@ -185,31 +183,32 @@ class Creator(Worker):
                 '$storage': {'size': sizeof(self.api.conan_storage_path)}
                 }
 
-    def _build_sandbox(self, project, builds):
-        conan = self.api.conan
-        options = ['%s=%s' % (k, v) for k, v in project.scheme.package_options.as_list()]
-
-        for folder, sbs in builds.items():
-
-            self.api.out.highlight('[build sandbox program] %s. project folder  %s'
-                                   % (",".join([x.name for x in sbs]), folder))
-
-            conanfile_path = os.path.join(folder, 'conanfile.py')
-
-            instd = os.path.join(project.folder.out, folder, 'build')
-            #pkgdir = os.path.join(project.folder.out, folder, 'package')
-
-            info = conan.install(path=conanfile_path,
-                                 name='%s-%s' % (project.name, folder.replace('-', '_')),
-                                 settings=None,  # should be same as profile
-                                 options=options,
-                                 profile_names=[project.generate_profile()],
-                                 install_folder=instd)
-
-            conan.build(conanfile_path=conanfile_path,
-                        #package_folder=pkgdir,
-                        build_folder=instd,
-                        install_folder=instd)
-            for sb in sbs:
-                program = Program(project, sb, instd)
-                program.generate(sb.name)
+    #def _build_sandbox(self, project, builds):
+    #    conan = self.api.conan
+    #    options = ['%s=%s' % (k, v) for k, v in project.scheme.package_options.as_list()]
+    #
+    #    for folder, sbs in builds.items():
+    #
+    #        self.api.out.highlight('[build sandbox program] %s. project folder  %s'
+    #                               % (",".join([x.name for x in sbs]), folder))
+    #
+    #        conanfile_path = os.path.join(folder, 'conanfile.py')
+    #
+    #        instd = os.path.join(project.folder.out, folder, 'build')
+    #        #pkgdir = os.path.join(project.folder.out, folder, 'package')
+    #
+    #        info = conan.install(path=conanfile_path,
+    #                             name='%s-%s' % (project.name, folder.replace('-', '_')),
+    #                             settings=None,  # should be same as profile
+    #                             options=options,
+    #                             profile_names=[project.generate_profile()],
+    #                             install_folder=instd)
+    #
+    #        conan.build(conanfile_path=conanfile_path,
+    #                    #package_folder=pkgdir,
+    #                    build_folder=instd,
+    #                    install_folder=instd)
+    #        for sb in sbs:
+    #            program = Program(project, sb, instd)
+    #            program.generate(sb.name)
+    #

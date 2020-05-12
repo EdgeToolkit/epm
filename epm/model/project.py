@@ -146,16 +146,16 @@ class Project(object):
 
         return self._manifest
 
-    @property
-    def sandbox(self):
-        return self.manifest.sandbox
-
-    def generate_profile(self, force=False):
-        filename = os.path.join(self.folder.out, 'profile')
-        if not os.path.exists(filename):
-            self.scheme.profile.save(filename)
-        return filename
-
+    #@property
+    #def sandbox(self):
+    #    return self.manifest.sandbox
+    #
+    #def generate_profile(self, force=False):
+    #    filename = os.path.join(self.folder.out, 'profile')
+    #    if not os.path.exists(filename):
+    #        self.scheme.profile.save(filename)
+    #    return filename
+    #
 
 
 
