@@ -144,11 +144,12 @@ class Sandbox(Worker):
 
 class Builder(object):
 
-    def __str__(self, project):
+    def __init__(self, project):
         self._project = project
         self._api = project.api
 
     def exec(self, program=None, steps=None):
+        manifest = self._project.manifest
         steps = steps or ['configure', 'make']
         if isinstance(program, str):
             program = [program]
@@ -158,11 +159,11 @@ class Builder(object):
             if bads:
                 raise Exception('{} NOT valid sandbox item'.format(",".join(bads)))
         else:
-            program = self._project.manfest.sandbox.keys()
+            program = manifest.sandbox.keys()
 
         builds = {}
         for name in program:
-            sb = self._project.sanbox[name]
+            sb = manifest.sandbox[name]
             if sb.directory in builds:
                 builds[sb.directory].append(sb)
             else:
@@ -171,7 +172,7 @@ class Builder(object):
         profile = os.path.join(self._project.folder.out, 'profile')
         if 'configure' in steps:
             self._project.profile.save(profile)
-        conan = self.api.conan
+        conan = self._api.conan
         options = ['%s=%s' % (k, v) for k, v in self._project.scheme.package_options.as_list()]
 
         for folder, sbs in builds.items():
@@ -181,7 +182,7 @@ class Builder(object):
             name = '{}-{}'.format(self._project.name, folder.replace('-', '_'))
 
             def _(step):
-                self.api.out.highlight('[%s sandbox program] %s. project folder  %s'
+                self._api.out.highlight('[%s sandbox program] %s. project folder  %s'
                                        % (step, ",".join([x.name for x in sbs]), folder))
 
             _('Build')
@@ -194,7 +195,9 @@ class Builder(object):
                                      options=options,
                                      profile_names=[profile],
                                      install_folder=build_folder)
-                print(info)
+                if info['error']:
+                    raise Exception('configure sandbox %s failed.' % folder)
+
             if 'make' in steps:
                 _('make')
                 conan.build(conanfile_path=conanfile_path,

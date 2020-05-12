@@ -36,9 +36,7 @@ class Builder(Worker):
             runner = 'docker' if project.profile.docker.builder else 'shell'
 
         if runner == 'shell':
-            steps = param.get('steps') or []
-            if not sandbox:
-                steps = steps or ['configure', 'make', 'package']
+            steps = param.get('steps')
 
             try:
                 self._exec(project, steps)

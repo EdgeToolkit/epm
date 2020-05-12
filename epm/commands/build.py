@@ -51,6 +51,10 @@ class Build(Command):
         steps += ['package'] if args.package else []
         param = self.parameter(args)
         param['steps'] = steps
+        if not steps:
+            if args.no_sandbox or not args.sandbox:
+                param['steps'] = ['configure', 'make', 'package']
+
         param['sandbox'] = None
         if not args.no_sandbox:
             param['sandbox'] = args.sandbox or '*'

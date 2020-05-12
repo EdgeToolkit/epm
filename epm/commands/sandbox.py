@@ -41,9 +41,9 @@ class Sandbox(Command):
         param = parser.parse_args(args.argv)
         program = param.name or None
         steps = []
-        if args.configure:
+        if param.configure:
             steps += ['configure']
-        if args.make:
+        if param.make:
             steps += ['make']
         steps = steps or None
 
