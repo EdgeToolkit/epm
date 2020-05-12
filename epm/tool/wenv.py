@@ -176,15 +176,7 @@ def install(origin, to=None, out=None):
             _render('bash.rc')
     conand = os.path.join(instd, '.conan')
     mkdir(conand)
-    #conan_conf = os.path.join(conand, 'conan.conf')
-    #if not os.path.exists(conan_conf):
-    #    shutil.copy(os.pah.join(DATA_DIR, 'venv', '.conan', 'conan.conf'),
-    #                os.path.join(instd, '.conan', 'conan.conf'))
-    #
-    #if config.venv.with_default_profiles:
-    #    from epm.model.profile import Profile
-    #    Profile.install_default_profiles(folder)
-    #
+
     from conans.client.conan_api import ConanAPIV1 as ConanAPI
     conan = ConanAPI(conand)
     conan.remote_clean()

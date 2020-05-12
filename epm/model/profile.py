@@ -124,20 +124,20 @@ class Profile(object):
         from epm.paths import is_home_epm_dir
         if not is_home_epm_dir(cached):
             return
-        for i in ['.', 'legacy']:
-            pd = os.path.normpath(os.path.join(cached, 'profiles', i))
-            if not os.path.exists(pd):
-                os.makedirs(pd)
 
-            manifest = os.path.join(pd, 'manifest.yml')
-            if not os.path.exists(manifest):
-                buildin = os.path.normpath(os.path.join(DATA_DIR, 'profiles', i))
-                with open(os.path.join(buildin, 'manifest.yml')) as f:
-                    m = yaml.safe_load(f)
-                files = ['manifest.yml']
+        pd = os.path.normpath(os.path.join(cached, 'profiles'))
+        if not os.path.exists(pd):
+            os.makedirs(pd)
 
-                for _, family in m.items():
-                    files += family.get('profiles', {}).keys() or []
+        manifest = os.path.join(pd, 'manifest.yml')
+        if not os.path.exists(manifest):
+            buildin = os.path.normpath(os.path.join(DATA_DIR, 'profiles'))
+            with open(os.path.join(buildin, 'manifest.yml')) as f:
+                m = yaml.safe_load(f)
+            files = ['manifest.yml']
 
-                for j in files:
-                    shutil.copy(os.path.join(buildin, j), os.path.join(pd, j))
+            for _, family in m.items():
+                files += family.get('profiles', {}).keys() or []
+
+            for j in files:
+                shutil.copy(os.path.join(buildin, j), os.path.join(pd, j))
