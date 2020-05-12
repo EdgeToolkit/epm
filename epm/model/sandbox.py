@@ -51,7 +51,7 @@ SANDBOX_FOLDER = '%s/.sandbox' % HOST_FOLDER
 
 class Program(object):
 
-    def __init__(self, project, sandbox, build_folder,storage=None):
+    def __init__(self, project, sandbox, build_folder, storage=None):
         self._project = project
         self._sandbox = sandbox
         self._build_folder = build_folder
@@ -65,7 +65,7 @@ class Program(object):
         self._filename = pathlib.PurePath(os.path.abspath(filename)).as_posix()
         self._argv = sandbox.argv
         self._wd = pathlib.PurePath(os.path.abspath('.')).as_posix()
-        self._storage_path = storage or os.getenv('CONAN_STORAGE_PATH')
+        self._storage_path = storage or os.getenv('CONAN_STORAGE_PATH') or self._project.api.conan_storage_path
 
     def _sempath(self, path, prefixes=None, check=False):
         prefixes = prefixes or ['project={}'.format(self._wd), 'storage={}'.format(self._storage_path)]
