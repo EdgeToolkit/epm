@@ -52,8 +52,10 @@ class Scheme(object):
 
         m = manifest.as_dict() if isinstance(manifest, Manifest) else {}
         schemes = m.get('scheme', {})
-        if name and schemes.get(name, None) is None:
-            raise Exception('the specified scheme name `%s` not set in package.yml.' % name)
+
+        if schemes.get(name, None) is None:
+            if name and name not in ['default', None, 'None']:
+                raise Exception('the specified scheme name `%s` not set in package.yml.' % name)
 
         name = name or 'default'
         scheme = schemes.get(name, {})

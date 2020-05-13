@@ -126,20 +126,6 @@ class DockerRunner(object):
         config = config or profile.docker.builder
         config = dict({'shell': '/bin/bash', 'home': '/tmp'}, **config)
 
-        if self._dc:
-            try:
-                builder = self._dc['profile'][profile.name]['docker']['builder']
-                if builder.get('image'):
-                    config['image'] = builder['image']
-
-                if builder.get('epm'):
-                    source = builder['epm']['source']
-                    target = builder['epm']['target']
-                    self.add_volume(source, target)
-            except Exception as e:
-                print(str(e))
-                pass
-
         WD = self._docker_var_parse(config, self.WD)
         volumes = dict({}, **self.volumes)
         environment = {}
@@ -159,13 +145,6 @@ class DockerRunner(object):
         from string import Template
         s = Template(value)
         return s.substitute(config)
-
-    @property
-    def _dc(self):
-        if DockerRunner._DEBUG is None:
-            from epm.util import _get_debug_configuration
-            DockerRunner._DEBUG = _get_debug_configuration() or False
-        return DockerRunner._DEBUG
 
 
 DockerBase = DockerRunner

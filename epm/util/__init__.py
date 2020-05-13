@@ -134,24 +134,3 @@ def symbolize(string):
         raise SyntaxError('{} can not be converted to symbol.'.format(string))
     return symbol
 
-
-_debug_configuration = None
-
-
-def _get_debug_configuration():
-    global _debug_configuration
-    if _debug_configuration is None:
-        _debug_configuration = {}
-        filename = os.getenv('EPM_DEBUG_CONFIG_FILE')
-        if filename:
-            if os.path.exists(filename):
-                try:
-                    with open(filename) as f:
-                        _debug_configuration = yaml.safe_load(f)
-                except Exception as e:
-                    print('load debug config file %s failed.\n%s' % (filename, e))
-                import pprint
-                pprint.pprint(_debug_configuration, depth=10, indent=2)
-            else:
-                print('the specified debug config file <%s> not exists' % filename)
-    return _debug_configuration
