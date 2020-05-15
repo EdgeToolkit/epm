@@ -131,7 +131,7 @@ class Creator(Worker):
         for i in conan.editable_list():
             conan.editable_remove(i)
 
-        info = self.conan.create('.',
+        info = self.conan.create(project.dir,
                                  name=project.name,
                                  version=project.version,
                                  user=project.user,

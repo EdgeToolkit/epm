@@ -8,6 +8,7 @@ from epm.worker.build import Builder
 from epm.worker.create import Creator
 from epm.worker.sandbox import Sandbox
 from epm.worker.upload import Uploader
+from epm.worker.download import Downloader
 from epm.util.files import load_yaml
 from conans.client.tools import environment_append
 
@@ -94,6 +95,11 @@ class APIv1(object):
     @api_method
     def upload(self, param):
         worker = Uploader(self)
+        worker.exec(param)
+
+    @api_method
+    def download(self, param):
+        worker = Downloader(self)
         worker.exec(param)
 
     @api_method

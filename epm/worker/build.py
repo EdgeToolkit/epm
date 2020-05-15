@@ -142,7 +142,7 @@ class Builder(Worker):
                     package_folder=package_folder,
                     build_folder=folder,
                     install_folder=folder,
-                    source_folder=folder,
+                    #source_folder=folder,
                     cwd=project.dir)
 
     def _package(self, project):
@@ -155,7 +155,7 @@ class Builder(Worker):
                       build_folder=folder,
                       package_folder=package_folder,
                       install_folder=folder,
-                      source_folder=folder,
+                      #source_folder=project.dir,
                       cwd=project.dir)
 
     #def _test(self, project):

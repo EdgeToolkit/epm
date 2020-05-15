@@ -60,12 +60,14 @@ class Scheme(object):
         name = name or 'default'
         scheme = schemes.get(name, {})
 
-        deps = copy.deepcopy(manifest.dependencies)
+        deps = manifest.dependencies if isinstance(manifest, Manifest) else OrderedDict()
+        deps = copy.deepcopy(deps)
 
         options = scheme.get('options', {})
         for pkg in deps.values():
             pkg.scheme = None
             pkg.options = None
+
 
         for k, v in scheme.items():
             if k in deps:
@@ -100,6 +102,7 @@ class Scheme(object):
 
             libs[name] = {'scheme': scheme_name, 'manifest': manifest, 'options': options, 'deps': deps}
 
+
             self._load_dep_schemes(libs, deps, storage)
 
     def _options_items(self, package):
@@ -119,6 +122,24 @@ class Scheme(object):
                 items[key] = v
         return items
 
+    def _deps_options_items(self, scheme):
+        libs = {}
+        options = {}
+        deps= OrderedDict()
+        deps[self.project.name] = scheme
+        self._load_dep_schemes(libs, deps)
+        items = {}
+        for key, value in options.items():
+            key = '%s:%s' % (self.project.name, key)
+            items[key] = value
+
+        for name, info in libs.items():
+            for k, v in info['options'].items():
+                key = '%s:%s' % (name, k)
+                items[key] = v
+        return items
+
+
     def as_conan_options(self, package=False):
 
         return OptionsValues(self._options_items(package))
@@ -133,3 +154,19 @@ class Scheme(object):
     @property
     def package_options(self):
         return self._options(True)
+
+    def deps_options(self, reference, scheme):
+        libs = {}
+        deps = OrderedDict()
+        from conans.model.ref import ConanFileReference
+        ref = ConanFileReference.loads(reference)
+        ref.scheme = scheme
+        deps[ref.name] = ref
+        self._load_dep_schemes(libs, deps)
+        items = {}
+        for name, info in libs.items():
+            for k, v in info['options'].items():
+                key = '%s:%s' % (name, k)
+                items[key] = v
+
+        return OptionsValues(items)
