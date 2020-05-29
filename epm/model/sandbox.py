@@ -182,6 +182,7 @@ class Program(object):
 
         template = self._template('windows.j2')
         return template.render(name=name,
+                               sandbox=self._sandbox,
                                libdirs=libdirs,
                                filename=filename,
                                folder=self._project.folder,
@@ -199,6 +200,7 @@ class Program(object):
         docker = dict({'image': 'alpine', 'shell': '/bin/bash', 'home': '/tmp'}, **docker)
 
         return template.render(name=name,
+                               sandbox=self._sandbox,
                                filename=filename,
                                dylibs=self.dynamic_libs,
                                image=docker['image'],
@@ -225,6 +227,7 @@ class Program(object):
         docker = dict({'image': 'alpine', 'shell': '/bin/bash', 'home': '/tmp'}, **docker)
 
         return template.render(name=name,
+                               sandbox=self._sandbox,
                                docker=docker,
                                folder=self._project.folder,
                                profile=self._project.profile,

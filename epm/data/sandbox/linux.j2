@@ -79,6 +79,12 @@ _docker_exec()
   project=$_home/@host/project
 
   _CMD="docker run -it --rm --name sandbox.{{ name }}"
+  {% if sandbox.privileged %}
+  _CMD=" $_CMD --privileged"
+  {% endif %}
+  {% for port in sandbox.ports %}
+  _CMD=" $_CMD -p {{port}}:{{port}}"
+  {% endfor %}
   _CMD=" $_CMD -v $_storage:${storage}"
   _CMD=" $_CMD -v $_project:${project}"
   _CMD=" $_CMD -e EPM_SANDBOX_STORAGE=${storage}"

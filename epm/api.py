@@ -7,6 +7,7 @@ from epm.paths import get_epm_cache_dir
 from epm.worker.build import Builder
 from epm.worker.create import Creator
 from epm.worker.sandbox import Sandbox
+from epm.worker.runit import Runit
 from epm.worker.upload import Uploader
 from epm.worker.download import Downloader
 from epm.util.files import load_yaml
@@ -110,6 +111,15 @@ class APIv1(object):
         argv = param.get('args') or []
         runner = param.get('RUNNER', None)
         return sandbox.exec(command, runner=runner, argv=argv)
+
+    @api_method
+    def runit(self, param):
+        project = self.project(param.get('PROFILE'), param.get('SCHEME'))
+        runit = Runit(project, self)
+        command = param['command']
+        argv = param.get('args') or []
+        runner = param.get('RUNNER', None)
+        return runit.exec(command, runner=runner, argv=argv)
 
     @api_method
     def load_config(self, update=True):

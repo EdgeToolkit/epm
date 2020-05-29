@@ -16,7 +16,12 @@ from conans.client.tools import ConanRunner
 from epm.tool.ssh import SSH
 from conans.tools import environment_append
 
+
 PLATFORM, ARCH = system_info()
+
+
+
+
 
 
 class Remoter(SSH):
@@ -52,6 +57,11 @@ class Remoter(SSH):
                                source=source,
                                directory=directory)
         self.call(cmd, check=True)
+
+
+
+
+
 
 
 class Runner(object):
@@ -170,7 +180,7 @@ class Builder(object):
             program = [program]
 
         if program:
-            bads = set(program).difference(self._project.manfest.sandbox.keys())
+            bads = set(program).difference(manifest.sandbox.keys())
             if bads:
                 raise Exception('{} NOT valid sandbox item'.format(",".join(bads)))
         else:

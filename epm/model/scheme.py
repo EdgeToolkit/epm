@@ -55,7 +55,8 @@ class Scheme(object):
 
         if schemes.get(name, None) is None:
             if name and name not in ['default', None, 'None']:
-                raise Exception('the specified scheme name `%s` not set in package.yml.' % name)
+                raise Exception('[{}] the specified scheme name `{}` not set in package.yml.'.format(
+                    m.get('name'), name))
 
         name = name or 'default'
         scheme = schemes.get(name, {})

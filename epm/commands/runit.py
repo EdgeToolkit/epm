@@ -10,10 +10,19 @@ class Run(Command):
     #prog = 'epm [-p PROFILE] [-s SCHEME] [-r RUNNER] %s' % name
 
     def __init__(self):
-        Command.__init__(self, [])
+        args = [
 
-    def run(self, args):
-        print(args)
+            ArgparseArgument("run_command", type=str,
+                             help="The command that defined in package.yml script section.")
+            ]
 
+        Command.__init__(self, args)
+
+    def run(self, args, api):
+        param = self.parameter(args)
+        param['command'] = args.run_command
+        param['args'] = args.argv
+
+        api.runit(param)
 
 register_command(Run)

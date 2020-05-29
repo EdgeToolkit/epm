@@ -100,20 +100,33 @@ class ManifestParser(object):
         self.data = yaml.safe_load(self.text)
 
     def sandbox(self):
-        Sandbox = namedtuple('Sandbox', 'content name directory type folder program param argv')
+        Sandbox = namedtuple('Sandbox', 'content name directory type folder program param argv ports privileged')
         result = {}
+        ports = []
+        privileged = False
         for name, item in self.data.get('sandbox', {}).items():
-            parts = item.split(' ', 1)
+            cmdstr = item
+            if isinstance(item, dict):
+                cmdstr = item['command']
+                ports = item.get('ports', []) or []
+                if isinstance(ports, int):
+                    ports = [ports]
+                privileged = item.get('privileged', False)
+
+            parts = cmdstr.split(' ', 1)
             command = parts[0]
             command = pathlib.PurePath(command).as_posix()
             param = None if len(parts) < 2 else parts[1].strip()
             argv = param.split() if param else []
             m = _SANDBOX_PATTERN.match(command)
             if not m:
-                raise Exception('the sandbox `%s` format invalid' % name)
+                raise Exception('sandbox {} invalid'.format(name))
+
             result[name] = Sandbox(item, name,
-                                   m.group('project'), m.group('type'), m.group('folder'), m.group('program'),
-                                   param, argv)
+                                   m.group('project'), m.group('type'),
+                                   m.group('folder'), m.group('program'),
+                                   param, argv, ports, privileged)
+
         return result
 
     def dependencies(self):
