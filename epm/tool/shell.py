@@ -193,8 +193,8 @@ class SSH(_Shell):
         self._client = client
         self._channel = client.invoke_shell(term='')
 
-        self.write('export PS1=\n')
-        self.read_until('export PS1=', timeout=timeout, check=True)
+        self.write(b'export PS1=\n')
+        self.read_until(b'export PS1=', timeout=10, check=True)
 
     def _sync_cache(self, nbytes=4096):
         if self._channel.recv_ready():

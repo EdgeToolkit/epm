@@ -55,6 +55,7 @@ class _Shell(object):
         self._cache = b''
         self._binary_mode = True
         self._returncode = None
+        self._polling_interval = 0.02
 
     @abstractmethod
     def open(self, timeout=None):
@@ -63,6 +64,11 @@ class _Shell(object):
     @abstractmethod
     def close(self):
         pass
+
+    def _wait(self, timeout=None):
+        if timeout is None:
+            timeout = self._polling_interval
+        time.sleep(timeout)
 
     def read(self, n=-1, timeout=None):
         buf = self._get(n)
@@ -73,16 +79,16 @@ class _Shell(object):
             deadline = _time() + timeout
 
         while self.running:
-            self._sync()
-            buf += self._get(n)
-            if n == len(buf):
-                return buf
+            if self._sync():
+                buf += self._get(n)
+                if n == len(buf):
+                    return buf
 
             if timeout is not None:
                 timeout = deadline - _time()
                 if timeout < 0:
                     break
-            time.sleep(0.02)
+            self._wait()
         return buf
 
 
@@ -118,13 +124,13 @@ class _Shell(object):
                 timeout = deadline - _time()
                 if timeout < 0:
                     break
-            time.sleep(0.02)
+            self._wait()
 
         if check:
             raise TimeoutError(self._get())
         return self._get()
 
-    def expect(self, list, timeout=None):
+    def expect(self, list, timeout=None, check=False):
         """Read until one from a list of a regular expressions matches.
 
         The first argument is a list of regular expressions, either
@@ -159,32 +165,29 @@ class _Shell(object):
                 list[i] = re.compile(pattern)
         if timeout is not None:
             deadline = _time() + timeout
-        while not self.eof:
-            self._sync_cache()
-            for i in indices:
-                m = list[i].search(self._cache)
-                if m:
-                    e = m.end()
-                    text = self._cache[:e]
-                    self._cache = self._cache[e:]
-                    return (i, m, text)
+
+        first = True
+        while self.running:
+            if self._sync() or first:
+                i, m, text = self._search(list)
+                if text:
+                    return i, m, text
+
             if timeout is not None:
                 timeout = deadline - _time()
                 if timeout < 0:
                     break
-                time.sleep(0.02)
+            self._wait()
 
-        text = self._flush_cache()
-        if not text and self.eof:
-            raise EOFError
-        return (-1, None, text)
+        text = self._get()
+        if check:
+            raise TimeoutError(text)
+
+        return -1, None, text
 
     @abstractmethod
     def exec(self, cmd, env=None):
         pass
-
-    def read(self, nbytes=4096):
-        raise NotImplemented('read not implemented.')
 
     @abstractmethod
     def call(self, cmd, timeout=None, env=None, check=False):
@@ -202,6 +205,18 @@ class _Shell(object):
 
     def _find(self, sub, start=None, end=None):
         return self._cache.find(sub, start, end)
+
+    def _search(self, patterns):
+        i = 0
+        for pattern in patterns:
+            m = pattern.search(self._cache)
+            if m:
+                e = m.end()
+                text = self._get(e)
+                return (i, m, text)
+            i += 1
+        return (-1, None, None)
+
 
     def _put(self, data):
         self._cache += data
@@ -253,8 +268,6 @@ class Shell(_Shell):
         self._returncode = None
         self._proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
 
-
-
     def call(self, cmd, env=None, timeout=None, check=False):
         self.exec(cmd, env)
         if timeout is not None:
@@ -273,12 +286,14 @@ class Shell(_Shell):
         return self._flush_cache()
 
     def _sync(self):
+        n = 0
         if self._returncode is None:
-            self._returncode = self._proc.poll() #subprocess.Popen.poll(self._proc)
+            self._returncode = self._proc.poll()
             data = self._proc.stdout.read()
-            self._put(data)
-            return len(data)
-        return 0
+            n = len(data)
+            if n:
+                self._put(data)
+        return n
 
     @property
     def running(self):
@@ -296,7 +311,10 @@ class SSH(_Shell):
         self._closed = False
         self._client = None
         self._channel = None
-        self._exit_code = None
+        self._command_executing = False
+        self._prompt =b'[sandbox@epm]##'
+        self._ending = False
+        self._cut_ending = True
 
     def open(self, timeout=None):
         client = paramiko.SSHClient()
@@ -306,17 +324,29 @@ class SSH(_Shell):
 
         self._client = client
         self._channel = client.invoke_shell(term='')
-
-        self.write('export PS1=\n')
-        self.read_until('export PS1=', timeout=timeout, check=True)
+        self._command_executing = True
+        cmd = b'export PS1=' + self._prompt
+        self.exec(cmd)
+        self._cut_ending = False
+        self.read_until(cmd, timeout=timeout, check=True)
+        self._cut_ending = True
 
     def _sync(self):
+        n = 0
         if self._channel.recv_ready():
             data = self._channel.recv(4096)
-            if len(data) == 0:
+            n = len(data)
+            if n == 0:
                 self._closed = True
-                return
-            self._put(data)
+                self._command_executing = False
+            else:
+                self._ending = data.endswith(self._prompt)
+                if self._ending:
+                    if self._cut_ending:
+                        data = data[: -1*len(self._prompt)]
+                        n = len(data)
+                self._put(data)
+        return n
 
     def _write(self, data):
         n = self._channel.send(data)
@@ -324,7 +354,8 @@ class SSH(_Shell):
             self._closed = True
 
     def exec(self, cmd, env=None):
-        self._exit_code = None
+        self._ending = False
+        self._returncode = None
         if isinstance(cmd, list):
             cmd = " ".join(cmd)
         if not isinstance(cmd, str):
@@ -336,29 +367,26 @@ class SSH(_Shell):
         self._write(cmd)
 
     def call(self, cmd, timeout=None, env=None, check=False):
-        self.exec(cmd + ';echo [_<_<__exit__.code=$?>_>_]')
-        i, m, txt = self.expect([r'\[\<_\<__exit__.code=(?<code>\d+)\>\_\>\]'], timeout)
-        if check:
-            code = int(m.group('code'))
-            if code:
-                raise subprocess.SubprocessError(code, txt)
-        return txt
+        self.exec(cmd)
+        text = self.read(-1, timeout)
+        if check and self.returncode:
+            raise subprocess.SubprocessError(self.returncode, text)
+        return text
 
     @property
-    def eof(self):
-        return self._closed
+    def running(self):
+        return not self._closed and not self._ending
 
     @property
-    def exit_code(self):
-        if self._exit_code is None:
-            self._write(b'echo $?')
-
+    def returncode(self):
+        if self._returncode is None:
+            self.exec(b'echo $?')
             i, m, txt = self.expect([b'(?P<code>\d+)'], 5)
             if m:
-                self._exit_code = int(m.group('code'))
+                self._returncode = int(m.group('code'))
             else:
-                self._exit_code = -1
-        return self._exit_code
+                self._returncode = -1
+        return self._returncode
 
 
 class Runner(object):
