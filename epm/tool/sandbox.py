@@ -1,11 +1,14 @@
 import os
 import queue
 import threading
-import time
-from time import monotonic as _time
-from epm.api import API
 import telnetlib
+import paramiko
+import time
+import  subprocess
+from abc import ABC, abstractmethod
+from time import monotonic as _time
 
+from epm.api import API
 from epm.model.project import Project
 
 
@@ -44,13 +47,6 @@ def get_runner_config(profile, scheme, runner, api=None):
     return config
 
 
-import paramiko
-import time
-from time import monotonic as _time
-import  subprocess
-
-
-
 class _Shell(object):
 
     def __init__(self):
@@ -58,14 +54,37 @@ class _Shell(object):
         self.encoding = 'utf-8'
         self._cache = b''
         self._binary_mode = True
-        self._exit_code = None
+        self._returncode = None
 
-
+    @abstractmethod
     def open(self, timeout=None):
-        raise NotImplementedError('open method not implemented.')
+        pass
 
+    @abstractmethod
     def close(self):
-        raise NotImplementedError('close method not implemented.')
+        pass
+
+    def read(self, n=-1, timeout=None):
+        buf = self._get(n)
+        if len(buf) == n:
+            return buf
+
+        if timeout is not None:
+            deadline = _time() + timeout
+
+        while self.running:
+            self._sync()
+            buf += self._get(n)
+            if n == len(buf):
+                return buf
+
+            if timeout is not None:
+                timeout = deadline - _time()
+                if timeout < 0:
+                    break
+            time.sleep(0.02)
+        return buf
+
 
     def read_until(self, match, timeout=None, check=False):
         """Read until a given string is encountered or until timeout.
@@ -79,46 +98,31 @@ class _Shell(object):
         if self._binary_mode:
             if isinstance(match, str):
                 match = bytes(match, encoding=self.encoding)
+
         n = len(match)
-        i = self._cache.find(match)
+        i = self._find(match)
         if i >= 0:
-            i = i + n
-            buf = self._cache[:i]
-            self._cache = self._cache[i:]
-            return buf
+            return self._get(i + n)
 
         if timeout is not None:
             deadline = _time() + timeout
 
-        while not self.eof:
-            i = max(0, len(self._cache) - n)
-            self._sync_cache()
-
-            i = self._cache.find(match, i)
-
-            if i >= 0:
-                i = i + n
-                buf = self._cache[:i]
-                self._cache = self._cache[i:]
-                return buf
+        while self.running:
+            begin = max(0, self._size() - n)
+            if self._sync():
+                i = self._find(match, begin)
+                if i >= 0:
+                    return self._get(i + n)
 
             if timeout is not None:
                 timeout = deadline - _time()
                 if timeout < 0:
-                    if check:
-                        raise TimeoutError(self._flush_cache())
                     break
             time.sleep(0.02)
 
-        return self._flush_cache()
-
-    def _flush_cache(self):
-        """Return any data available in the cache. and clear it
-        """
-        buf = self._cache
-        self._cache = b''
-        return buf
-
+        if check:
+            raise TimeoutError(self._get())
+        return self._get()
 
     def expect(self, list, timeout=None):
         """Read until one from a list of a regular expressions matches.
@@ -175,22 +179,61 @@ class _Shell(object):
             raise EOFError
         return (-1, None, text)
 
-    def exec(self, cmd):
-        raise NotImplementedError('exec method not implemented.')
+    @abstractmethod
+    def exec(self, cmd, env=None):
+        pass
 
-    def read(self):
-        raise NotImplementedError('read method not implemented.')
+    def read(self, nbytes=4096):
+        raise NotImplemented('read not implemented.')
 
-    def write(self):
-        raise NotImplementedError('write method not implemented.')
+    @abstractmethod
+    def call(self, cmd, timeout=None, env=None, check=False):
+        raise NotImplemented('call not implemented.')
 
-    def _sync_cache(self, nbytes=None):
-        raise NotImplementedError('_sync_cache method not implemented.')
+    @abstractmethod
+    def _sync(self):
+        """ sync data from shell out buffer to cahce, and return the updated bytes.
+        :return:
+        """
+        raise NotImplemented('_sync not implemented.')
+
+    def _size(self):
+        return len(self._cache)
+
+    def _find(self, sub, start=None, end=None):
+        return self._cache.find(sub, start, end)
+
+    def _put(self, data):
+        self._cache += data
+
+    def _get(self, n=-1):
+        """Try to pop the request count data, but the return data may less then request
+        """
+        if n > 0:
+            n = min(len(self._cache), n)
+            buf = self._cache[:n]
+            self._cache = self._cache[n:]
+        elif n < 0:
+            buf = self._cache
+            self._cache = b''
+        else:
+            buf = b''
+        return buf
 
     @property
-    def exit_code(self):
-        return self._exit_code
+    def returncode(self):
+        """command exited coded"""
+        return self._returncode
 
+    @property
+    @abstractmethod
+    def eof(self):
+        return not self.running and not self._cache
+
+    @property
+    @abstractmethod
+    def running(self):
+        raise NotImplemented('exited not implemented.')
 
 class Shell(_Shell):
 
@@ -198,39 +241,48 @@ class Shell(_Shell):
         super(Shell, self).__init__()
         self._proc = None
 
-    def open(self):
+    def open(self, timeout=None):
         pass
 
-    def exec(self, cmd):
-        self._exit_code = None
+    def close(self):
+        if self._returncode is None and self._proc:
+            self._proc.kill()
+            self._proc = None
+
+    def exec(self, cmd, env=None):
+        self._returncode = None
         self._proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
 
-    def call(self, cmd, timeout=None):
-        self.exec(cmd)
+
+
+    def call(self, cmd, env=None, timeout=None, check=False):
+        self.exec(cmd, env)
         if timeout is not None:
             deadline = _time() + timeout
 
         while not self.eof:
             self._sync_cache()
-        if timeout is not None:
-            timeout = deadline - _time()
-            if timeout < 0:
-                self._proc.kill()
-                raise Exception('XXXXXXXXXXXXXXXXX')
-            time.sleep(0.02)
+            if timeout is not None:
+                timeout = deadline - _time()
+                if timeout < 0:
+                    self._proc.terminate()
+                    if check:
+                        raise TimeoutError(self._flush_cache())
+                    break
+                time.sleep(0.02)
         return self._flush_cache()
 
-
-
-    def _sync_cache(self, nbytes=4096):
-        self._exit_code = subprocess.Popen.poll(self._proc)
-        if self._exit_code is None:
+    def _sync(self):
+        if self._returncode is None:
+            self._returncode = self._proc.poll() #subprocess.Popen.poll(self._proc)
             data = self._proc.stdout.read()
-            self._cache += data
+            self._put(data)
+            return len(data)
+        return 0
 
     @property
-    def eof(self):
-        return self._exit_code is not None
+    def running(self):
+        return self._returncode is None
 
 class SSH(_Shell):
 
@@ -258,36 +310,20 @@ class SSH(_Shell):
         self.write('export PS1=\n')
         self.read_until('export PS1=', timeout=timeout, check=True)
 
-    def _sync_cache(self, nbytes=4096):
+    def _sync(self):
         if self._channel.recv_ready():
-            data = self._channel.recv(nbytes)
+            data = self._channel.recv(4096)
             if len(data) == 0:
                 self._closed = True
                 return
-            self._cache += data
+            self._put(data)
 
-    def write(self, data):
-
+    def _write(self, data):
         n = self._channel.send(data)
         if n == 0:
             self._closed = True
 
-    def read(self, timeout=None):
-        buf = b''
-        if timeout is not None:
-            deadline = _time() + timeout
-        while not self.eof:
-            if self._channel.recv_ready():
-                buf += self._channel.recv(4096)
-                print(buf)
-            else:
-                if timeout is not None:
-                    timeout = deadline - _time()
-                    if timeout < 0:
-                        break
-        return buf
-
-    def exec(self, cmd):
+    def exec(self, cmd, env=None):
         self._exit_code = None
         if isinstance(cmd, list):
             cmd = " ".join(cmd)
@@ -295,13 +331,13 @@ class SSH(_Shell):
             cmd = str(cmd, encoding=self.encoding)
         cmd = cmd.strip() + '\n'
         cmd = bytes(cmd, encoding=self.encoding)
-        self.write(cmd)
+        if env:
+            assert env, 'not support'
+        self._write(cmd)
 
-    def call(self, cmd, timeout=None, check=False):
-        marker = ';echo __exitcode__=$?'
-        self.exec(cmd +marker)
-        txt = self.read_until(marker)
-        i, m, _ = self.expect([r';echo __exitcode__=(?<code>\d+)'], 0.5)
+    def call(self, cmd, timeout=None, env=None, check=False):
+        self.exec(cmd + ';echo [_<_<__exit__.code=$?>_>_]')
+        i, m, txt = self.expect([r'\[\<_\<__exit__.code=(?<code>\d+)\>\_\>\]'], timeout)
         if check:
             code = int(m.group('code'))
             if code:
@@ -315,11 +351,11 @@ class SSH(_Shell):
     @property
     def exit_code(self):
         if self._exit_code is None:
-            self.write(b'echo $?')
+            self._write(b'echo $?')
 
-            i, m, txt = self.expect([b'(?P<exit_code>\d+)'], 5)
+            i, m, txt = self.expect([b'(?P<code>\d+)'], 5)
             if m:
-                self._exit_code = int(m.group('exit_code'))
+                self._exit_code = int(m.group('code'))
             else:
                 self._exit_code = -1
         return self._exit_code
@@ -383,9 +419,10 @@ class Sandbox(object):
             env_vars['EPM_SANDBOX_SHELL'] = docker['shell']
             env_vars['EPM_SANDBOX_RUNNER'] = 'shell'
         elif self._executor.is_ssh:
+            pass
             # mount
 
-        command = "{} {}".format(program, " ".join(argv))
+        #command = "{} {}".format(program, " ".join(argv))
 
         return self._executor.exec(command)
 
