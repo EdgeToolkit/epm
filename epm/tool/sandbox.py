@@ -45,7 +45,7 @@ def get_runner_config(profile, scheme, runner, api=None):
     project = Project(profile, scheme, api)
     profile = project.profile
 
-    if runner in [None, 'auto']:
+    if runner in [None, 'auto', 'docker']:
 
         docker = profile.docker.runner
         config = {'.type': 'shell'}
@@ -569,6 +569,7 @@ class Sandbox(object):
         if PLATFORM == 'Windows':
             program += '.cmd'
         command = '{} {}'.format(program, " ".join(argv))
+
         return self._executor.exec(command, env=env_vars)
 
     def _ssh(self, name, argv, env):
