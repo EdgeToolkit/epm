@@ -119,7 +119,7 @@ class APIv1(object):
         command = param['command']
         argv = param.get('args') or []
         runner = param.get('RUNNER', None)
-        print(param, command, '=============================')
+
         return runit.exec(command, runner=runner, argv=argv)
 
     @api_method
