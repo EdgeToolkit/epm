@@ -36,6 +36,8 @@ class Runner(object):
 
         command = ['echo', 'ABCDEFG HIJKLMN!']
         print(command + argv, runner, '\n  ----', __file__, 'out', self._api.out)
+        import subprocess
+        subprocess.run(command, shell=True)
 
         return runner(command + argv)
 
