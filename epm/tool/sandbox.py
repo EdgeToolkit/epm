@@ -528,6 +528,7 @@ class Runner(object):
         return self._shell
 
     def exec(self, cmd, env=None):
+        print(cmd, '=============>><<<================')
         self.shell.exec(cmd)
         return self.shell
 
