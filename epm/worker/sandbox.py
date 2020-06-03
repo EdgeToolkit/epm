@@ -102,7 +102,7 @@ class Runner(object):
             env['EPM_SANDBOX_IMAGE'] = docker['image']
             env['EPM_SANDBOX_HOME'] = docker['home']
             env['EPM_SANDBOX_SHELL'] = docker['shell']
-            env['EPM_SANDBOX_RUNNER'] = 'shell'
+            env['EPM_SANDBOX_RUNNER'] = 'docker'
             runner = ConanRunner(output=self._api.out)
             command = [filename] + argv
 
