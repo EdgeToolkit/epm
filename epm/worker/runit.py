@@ -34,12 +34,8 @@ class Runner(object):
     def exec(self, command, argv):
         runner = ConanRunner(output=self._api.out)
 
-        command = ['ls', '-l']
-        print(command + argv, runner, '\n  ----', __file__, 'out', self._api.out)
-        import subprocess
-        p = subprocess.run(['echo', 'ABCDEFG'], stdout=subprocess.PIPE, shell=True, check=True)
-        print('stdout->', p.stdout)
-        print('--------------END subprocess', p.returncode)
+        command = "echo ABCDE"
+        return runner(command)
 
         #return runner(command + argv)
 
