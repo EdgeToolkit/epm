@@ -102,11 +102,12 @@ class Runner(object):
             env['EPM_SANDBOX_IMAGE'] = docker['image']
             env['EPM_SANDBOX_HOME'] = docker['home']
             env['EPM_SANDBOX_SHELL'] = docker['shell']
-            env['EPM_SANDBOX_RUNNER'] = 'docker'
+            env['EPM_SANDBOX_RUNNER'] = 'shell'
             runner = ConanRunner(output=self._api.out)
             command = [filename] + argv
 
             with environment_append(env):
+                command = " ".join(command)
                 return runner(command)
 
         elif 'ssh' in self._runner:
