@@ -33,9 +33,9 @@ class Runner(object):
 
     def exec(self, command, argv):
         runner = ConanRunner(output=self._api.out)
-        cmd = " ".join(command) + " ".join(argv)
-        print(command, argv)
-        return runner(command + argv)
+        command = '{} {}'.format(" ".join(command), " ".join(argv))
+        print(command, '@')
+        return runner(command)
         #return runner(cmd)
 
 
