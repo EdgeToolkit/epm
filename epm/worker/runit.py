@@ -37,7 +37,8 @@ class Runner(object):
         command = ['ls', '-l']
         print(command + argv, runner, '\n  ----', __file__, 'out', self._api.out)
         import subprocess
-        p = subprocess.run(['ls', '-l'], stdout=subprocess.PIPE, shell=True, check=True)
+        p = subprocess.run(['echo', 'ABCDEFG'], stdout=subprocess.PIPE, shell=True, check=True)
+        print(p.stdout)
         print('--------------END subprocess', p.returncode)
 
         #return runner(command + argv)
