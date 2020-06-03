@@ -23,7 +23,10 @@ class Run(Command):
         param['command'] = args.run_command
         param['args'] = args.argv
         print(param, '\n----', __file__)
-
+        import subprocess
+        p = subprocess.run(['echo', 'ABCDEFG'], stdout=subprocess.PIPE, shell=True, check=True)
+        print('Stdout->', p.stdout)
+        print('==END subprocess', p.returncode)
         return api.runit(param)
 
 register_command(Run)
