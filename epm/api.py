@@ -1,7 +1,7 @@
 import sys
 import os
 from conans.client.conan_api import ConanAPIV1 as ConanAPI
-from conans.client.output import ConanOutput , colorama_initialize
+from conans.client.output import colorama_initialize
 from conans.client.userio import UserIO as UserIO
 from epm.paths import get_epm_cache_dir
 from epm.worker.build import Builder
@@ -12,7 +12,7 @@ from epm.worker.upload import Uploader
 from epm.worker.download import Downloader
 from epm.util.files import load_yaml
 from conans.client.tools import environment_append
-
+from epm.model.runner import Output
 
 def api_method(f):
     def wrapper(api, *args, **kwargs):
@@ -38,7 +38,7 @@ class APIv1(object):
 
     def __init__(self, cache_dir=None, output=None, user_io=None):
         color = colorama_initialize()
-        self.out = output or ConanOutput(sys.stdout, sys.stderr, color)
+        self.out = output or Output(sys.stdout, sys.stderr, color)
 
         self.user_io = user_io or UserIO(out=self.out)
         self.cache_dir = cache_dir or get_epm_cache_dir()

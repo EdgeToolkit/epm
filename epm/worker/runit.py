@@ -9,7 +9,6 @@ from conans.client.tools import ConanRunner
 PLATFORM, ARCH = system_info()
 
 
-
 class Runner(object):
 
     def __init__(self, sandbox, name=None):
@@ -34,7 +33,6 @@ class Runner(object):
 
     def exec(self, command, argv):
         runner = ConanRunner(output=self._api.out)
-
         return runner(command + argv)
 
 
@@ -58,8 +56,7 @@ class Runit(Worker):
         profile = self.project.profile.name if self.project.profile else None
         scheme = self.project.scheme.name if self.project.scheme else None
 
-
-        env_vars = {'EPM_RUN_PROFILE':  profile,
+        env_vars = {'EPM_RUN_PROFILE': profile,
                     'EPM_RUN_SCHEME': scheme,
                     'EPM_RUN_RUNNER': runner
                     }

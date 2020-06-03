@@ -4,8 +4,9 @@ import sys
 import errno
 import argparse
 
-from conans.client.output import Color, ConanOutput, colorama_initialize
+from conans.client.output import Color, colorama_initialize
 from epm import commands
+from epm.model.runner import Output
 
 # Exit codes for conan command:
 SUCCESS = 0                         # 0: Success (done)
@@ -21,45 +22,15 @@ _PROFILE_HELP = 'Profile of the target package, this required in build/create/sa
 _SCHEME_HELP = 'Scheme of the target package'
 _RUNNER_HELP = 'Runner of the command used to execute/process'
 
-
 class Main(object):
 
     def __init__(self, args, out=None):
         color = colorama_initialize()
-        self.out = out or ConanOutput(sys.stdout, sys.stderr, color)
-#        if user_is_root():
-#            m.warning(_("Running as root"))
-
-#        self.check_in_cerbero_shell()
+        self.out = out or Output(sys.stdout, sys.stderr, color)
         self.create_parser()
         self.load_commands()
         self.parse_arguments(args)
-#        self.self_update()
-#        self.init_logging()
-#        self.load_config()
-#        self.list_variants()
         self.run_command()
-
-#    def check_in_cerbero_shell(self):
-#        if os.environ.get('CERBERO_PREFIX', '') != '':
-#            self.log_error(_("ERROR: cerbero can't be run "
-#                             "from a cerbero shell"))
-#
-#    def log_error(self, msg, print_usage=False, command=None):
-#        ''' Log an error and exit '''
-#        if command is not None:
-#            m.error("***** Error running '%s' command:" % command)
-#        m.error('%s' % msg)
-#        if print_usage:
-#            self.parser.print_usage()
-#        sys.exit(1)
-#
-#    def init_logging(self):
-#        ''' Initialize logging '''
-#        if self.args.timestamps:
-#            m.START_TIME = time.monotonic()
-#        logging.getLogger().setLevel(logging.INFO)
-#        logging.getLogger().addHandler(logging.StreamHandler())
 
     def create_parser(self):
         ''' Creates the arguments parser '''
@@ -86,45 +57,15 @@ class Main(object):
         else:
             self.args = self.parser.parse_args(args)
 
-#    def list_variants(self):
-#        if not self.args.list_variants:
-#            return
-#        print('Available variants are: ' + ', '.join(self.config.variants.all()))
-#        sys.exit(0)
-
     def load_commands(self):
         subparsers = self.parser.add_subparsers(help='sub-command help',
                                                 dest='command')
         commands.load_commands(subparsers)
 
-#    def load_config(self):
-#        ''' Load the configuration '''
-#        try:
-#            self.config = config.Config()
-#            if self.args.command == 'shell':
-#                self.config.for_shell = True
-#            self.config.load(self.args.config, self.args.variants)
-#            if self.args.manifest:
-#                self.config.manifest = self.args.manifest
-#        except ConfigurationError as exc:
-#            self.log_error(exc, False)
-
     def run_command(self):
         command = self.args.command
         try:
             res = commands.run(command, self.args, self.out)
-#        except UsageError as exc:
-#            self.log_error(exc, True, command)
-#            sys.exit(1)
-#        except FatalError as exc:
-#            traceback.print_exc()
-#            self.log_error(exc, True, command)
-#        except BuildStepError as exc:
-#            self.log_error(exc.msg, False, command)
-#        except AbortedError as exc:
-#            self.log_error('', False, command)
-#        except CerberoException as exc:
-#            self.log_error(exc, False, command)
         except SystemExit as exc:
             if exc.code != 0:
                 self.out.error("Exiting with code: %d" % exc.code)

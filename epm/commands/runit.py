@@ -23,6 +23,6 @@ class Run(Command):
         param['command'] = args.run_command
         param['args'] = args.argv
 
-        api.runit(param)
+        return api.runit(param)
 
 register_command(Run)

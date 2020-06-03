@@ -160,3 +160,4 @@ project base on [conan](conan.io), and some code ported from GStreamer cerbero p
 
 [MIT License](./LICENSE.md)
 
+https://blog.conan.io/2016/03/22/From-CMake-syntax-to-libstdc++-ABI-incompatibiliy-migrations-are-always-hard.html

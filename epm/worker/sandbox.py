@@ -225,6 +225,7 @@ class Builder(object):
 
             if 'make' in steps:
                 _('make')
+                print(build_folder, '<==================================')
                 conan.build(conanfile_path,
                             build_folder=build_folder,
                             install_folder=build_folder

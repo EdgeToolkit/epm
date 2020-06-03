@@ -3,10 +3,10 @@ import yaml
 import sys
 import shutil
 from string import Template
-from conans.tools import ConanOutput as Output
 from epm.util.files import mkdir
 from jinja2 import PackageLoader, Environment, FileSystemLoader
 from epm.paths import HOME_EPM_DIR, DATA_DIR
+from epm.model.runner import Output
 
 class Creator(object):
 

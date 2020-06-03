@@ -12,7 +12,6 @@ import subprocess
 
 from urllib.parse import urlparse
 from jinja2 import Environment, BaseLoader
-from conans.client.output import ConanOutput as Output
 from epm.util import system_info
 from epm.util.files import load_yaml, save_yaml, save, rmdir, mkdir
 from epm.errors import EException
@@ -20,7 +19,7 @@ from epm.paths import get_epm_cache_dir
 from epm.api import API
 from epm.paths import HOME_EPM_DIR, DATA_DIR
 from conans.tools import environment_append
-
+from epm.model.runner import Output
 
 PLATFORM, ARCH = system_info()
 
@@ -139,10 +138,9 @@ def _cache(path):
 
 
 def install(origin, to=None, out=None):
-    from conans.client.tools import ConanOutput
     from epm.model.config import Config
 
-    out = out or ConanOutput(sys.stdout, sys.stderr, color=True)
+    out = out or Output(sys.stdout, sys.stderr, color=True)
     folder = _cache(origin)
     config = Config(os.path.join(folder, 'config.yml'))
 
