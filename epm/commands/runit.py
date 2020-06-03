@@ -22,6 +22,7 @@ class Run(Command):
         param = self.parameter(args)
         param['command'] = args.run_command
         param['args'] = args.argv
+        print(param, '\n----', __file__)
 
         return api.runit(param)
 

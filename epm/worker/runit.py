@@ -33,6 +33,8 @@ class Runner(object):
 
     def exec(self, command, argv):
         runner = ConanRunner(output=self._api.out)
+        print(runner, '\n----', __file__)
+
         return runner(command + argv)
 
 
@@ -64,6 +66,7 @@ class Runit(Worker):
 
         from conans.tools import environment_append
         with environment_append(env_vars):
+            print(command, env_vars, '\n----', __file__)
 
             return Runner(self, 'shell').exec(command, argv)
 

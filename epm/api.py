@@ -119,6 +119,8 @@ class APIv1(object):
         command = param['command']
         argv = param.get('args') or []
         runner = param.get('RUNNER', None)
+        print(command, '\n----', __file__)
+
 
         return runit.exec(command, runner=runner, argv=argv)
 
