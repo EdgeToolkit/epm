@@ -309,7 +309,6 @@ class Shell(_Shell):
         self._start_time = _time()
         self._returncode = None
         stdin = subprocess.PIPE if self._input else None
-        stdin = subprocess.PIPE
         self._proc = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, env=env)
 
     def call(self, cmd, env=None, timeout=None, check=False):
