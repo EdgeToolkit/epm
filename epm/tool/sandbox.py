@@ -309,8 +309,11 @@ class Shell(_Shell):
         self._start_time = _time()
         self._returncode = None
         stdin = subprocess.PIPE if self._input else None
+        from conans.tools import environment_append
+        if env:
+            env = dict(os.environ.copy(), **env)
 
-        self._proc = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True)
+        self._proc = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
 
     def call(self, cmd, env=None, timeout=None, check=False):
         self.exec(cmd, env)
@@ -544,7 +547,7 @@ class Sandbox(object):
         self._executor = Runner(profile, scheme, runner, api)
 
     def run(self, name, argv=[], env=None):
-        env_vars = {}
+        env_vars = None
         config = self._executor.config
         program = os.path.join(self._project.folder.out, 'sandbox', name)
         program = os.path.normpath(program)
@@ -553,6 +556,7 @@ class Sandbox(object):
             return self._ssh(name, argv, env)
         elif self._executor.is_docker:
             docker = config['docker']
+            env_vars = env_vars or {}
             env_vars['EPM_SANDBOX_IMAGE'] = docker['image']
             env_vars['EPM_SANDBOX_HOME'] = docker['home']
             env_vars['EPM_SANDBOX_SHELL'] = docker['shell']
