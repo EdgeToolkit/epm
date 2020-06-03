@@ -24,7 +24,7 @@ class Run(Command):
         param['args'] = args.argv
         print(param, '\n----', __file__)
         import subprocess
-        p = subprocess.run(['echo', 'ABCDEFG'], stdout=subprocess.PIPE, shell=True, check=True)
+        p = subprocess.run(['echo', 'ABCDEFG'], stdout=subprocess.PIPE, shell=True, check=True,  capture_output=True)
         print('Stdout->', p.stdout)
         print('==END subprocess', p.returncode)
         return api.runit(param)
