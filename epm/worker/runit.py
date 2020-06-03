@@ -33,7 +33,7 @@ class Runner(object):
 
     def exec(self, command, argv):
         runner = ConanRunner(output=self._api.out)
-        print(runner, '\n----', __file__, 'out', self._api.out)
+        print(command + argv, runner, '\n----', __file__, 'out', self._api.out)
 
         return runner(command + argv)
 
