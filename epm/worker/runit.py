@@ -40,7 +40,7 @@ class Runner(object):
         subprocess.run(command, shell=True)
         print('--------------END subprocess')
 
-        return runner(command + argv)
+        #return runner(command + argv)
 
 
 class Runit(Worker):
