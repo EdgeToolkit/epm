@@ -12,6 +12,7 @@ class Output(ConanOutput):
 
     def write(self, data, front=None, back=None, newline=False, error=False):
         #if PLATFORM == 'Windows':
+        print('*', len(data))
         data = data.replace('\r\n', '\n')
         super(Output, self).write(data, front, back, newline, error)
 
