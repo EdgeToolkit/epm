@@ -38,6 +38,7 @@ class Runner(object):
         print(command + argv, runner, '\n  ----', __file__, 'out', self._api.out)
         import subprocess
         subprocess.run(command, shell=True)
+        print('--------------END subprocess')
 
         return runner(command + argv)
 
