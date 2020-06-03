@@ -312,6 +312,7 @@ class Shell(_Shell):
         from conans.tools import environment_append
         if env:
             env = dict(os.environ.copy(), **env)
+        print(env,'###############')
 
         self._proc = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
 
