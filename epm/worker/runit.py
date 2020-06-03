@@ -33,11 +33,10 @@ class Runner(object):
 
     def exec(self, command, argv):
         runner = ConanRunner(output=self._api.out)
-
-        command = "echo ABCDE"
-        return runner(command)
-
-        #return runner(command + argv)
+        cmd = " ".join(command) + " ".join(argv)
+        print(command, argv)
+        return runner(command + argv)
+        #return runner(cmd)
 
 
 class Runit(Worker):
@@ -65,11 +64,8 @@ class Runit(Worker):
                     'EPM_RUN_RUNNER': runner
                     }
 
-
         from conans.tools import environment_append
         with environment_append(env_vars):
-            print(command, env_vars, '\n----', __file__)
-
             return Runner(self, 'shell').exec(command, argv)
 
 

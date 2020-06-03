@@ -11,11 +11,7 @@ class Output(ConanOutput):
         super(Output, self).__init__(stream, stream_err, color)
 
     def write(self, data, front=None, back=None, newline=False, error=False):
-        #if PLATFORM == 'Windows':
-        print('*', len(data))
-        n = len(data)
-        for i in range(0, n):
-            print(i, data[i], '*')
-        data = data.replace('\r\n', '\n')
+        if PLATFORM == 'Windows':
+            data = data.replace('\r\n', '\n')
         super(Output, self).write(data, front, back, newline, error)
 

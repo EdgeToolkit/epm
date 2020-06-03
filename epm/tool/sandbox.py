@@ -310,9 +310,7 @@ class Shell(_Shell):
         self._returncode = None
         stdin = subprocess.PIPE if self._input else None
 
-
-        self._proc = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, env=env)
-        print(cmd, '=============================', self._proc)
+        self._proc = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE)
 
     def call(self, cmd, env=None, timeout=None, check=False):
         self.exec(cmd, env)
@@ -528,7 +526,6 @@ class Runner(object):
         return self._shell
 
     def exec(self, cmd, env=None):
-        print(cmd, '=============>><<<================')
         self.shell.exec(cmd, env=env)
         return self.shell
 
@@ -567,7 +564,6 @@ class Sandbox(object):
         if PLATFORM == 'Windows':
             program += '.cmd'
         command = '{} {}'.format(program, " ".join(argv))
-        print(command, '@@@@@@@@', env_vars)
         return self._executor.exec(command, env=env_vars)
 
     def _ssh(self, name, argv, env):
