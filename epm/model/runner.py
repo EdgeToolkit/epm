@@ -14,5 +14,5 @@ class Output(ConanOutput):
         #if PLATFORM == 'Windows':
         print('*', len(data))
         data = data.replace('\r\n', '\n')
-        super(Output, self).write(data, front, back, newline, error)
+        #super(Output, self).write(data, front, back, newline, error)
 
