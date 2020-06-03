@@ -561,7 +561,7 @@ class Sandbox(object):
             env_vars['EPM_SANDBOX_IMAGE'] = docker['image']
             env_vars['EPM_SANDBOX_HOME'] = docker['home']
             env_vars['EPM_SANDBOX_SHELL'] = docker['shell']
-            env_vars['EPM_SANDBOX_RUNNER'] = 'shell'
+            env_vars['EPM_SANDBOX_RUNNER'] = 'docker'
 
         else:
             pass

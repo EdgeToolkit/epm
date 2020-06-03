@@ -107,7 +107,6 @@ class Runner(object):
             command = [filename] + argv
 
             with environment_append(env):
-                command = " ".join(command)
                 return runner(command)
 
         elif 'ssh' in self._runner:
