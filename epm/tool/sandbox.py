@@ -529,7 +529,7 @@ class Runner(object):
 
     def exec(self, cmd, env=None):
         print(cmd, '=============>><<<================')
-        self.shell.exec(cmd)
+        self.shell.exec(cmd, env=env)
         return self.shell
 
     def call(self, cmd, env=None, timeout=None, check=False):
@@ -567,6 +567,7 @@ class Sandbox(object):
         if PLATFORM == 'Windows':
             program += '.cmd'
         command = '{} {}'.format(program, " ".join(argv))
+        print(command, '@@@@@@@@', env_vars)
         return self._executor.exec(command, env=env_vars)
 
     def _ssh(self, name, argv, env):
