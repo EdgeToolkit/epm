@@ -64,7 +64,7 @@ class Runit(Worker):
 
         from conans.tools import environment_append
         with environment_append(env_vars):
-            print(command, '=============================')
+
             return Runner(self, 'shell').exec(command, argv)
 
 
