@@ -310,7 +310,9 @@ class Shell(_Shell):
         self._returncode = None
         stdin = subprocess.PIPE if self._input else None
 
+
         self._proc = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, env=env)
+        print(cmd, '=============================', self._proc)
 
     def call(self, cmd, env=None, timeout=None, check=False):
         self.exec(cmd, env)
