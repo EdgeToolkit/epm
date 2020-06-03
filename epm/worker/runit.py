@@ -34,6 +34,7 @@ class Runner(object):
     def exec(self, command, argv):
         runner = ConanRunner(output=self._api.out)
         print(command + argv, runner, '\n----', __file__, 'out', self._api.out)
+        command = ['echo', 'ABCDEFG HIJKLMN!']
 
         return runner(command + argv)
 
