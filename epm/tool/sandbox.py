@@ -584,6 +584,7 @@ class Sandbox(object):
         sh.call('[ -d {0} ] && rm -rf {0}'.format(sandbox))
         print('project-dir:',self._project.dir)
         print('WD:', os.getcwd())
+        print('project:', project)
 
         self._mount(os.path.abspath(self._project.dir), project, sh, username, password)
         self._mount(conan_storage, storage, sh, username, password)
