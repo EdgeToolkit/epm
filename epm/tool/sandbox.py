@@ -338,6 +338,7 @@ class Shell(_Shell):
             data = self._proc.stdout.read()
             n = len(data)
             if n:
+                print('*', data)
                 if self._startup_duration is None:
                     self._startup_duration = _time() - self._start_time
                 self._put(data)
