@@ -312,15 +312,7 @@ class Shell(_Shell):
         if env:
             env = dict(os.environ.copy(), **env)
         #print(cmd, stdin, subprocess.PIPE, env)
-        with open(cmd.strip(), 'r') as f:
-            data = f.read()
-
-        with open(cmd.strip(), 'w') as f:
-            data.replace('-it', '-t')
-            f.write(data)
-            f.close()
-
-        cmd ='docker run -it --rm --name sandbox.test_package ubuntu:xenial /bin/bash -c ls'
+        cmd ='echo docker run -it --rm --name sandbox.test_package ubuntu:xenial /bin/bash -c ls -l'
 
         subprocess.run(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
         import  sys
