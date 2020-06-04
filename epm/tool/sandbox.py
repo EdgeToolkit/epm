@@ -315,7 +315,7 @@ class Shell(_Shell):
 
         self._proc = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
         for i in range(1, 100):
-            self._sync()
+            print(self._sync())
             time.sleep(0.1)
 
 
