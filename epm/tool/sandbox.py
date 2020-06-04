@@ -320,7 +320,7 @@ class Shell(_Shell):
             f.write(data)
             f.close()
 
-        subprocess.run(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
+        subprocess.run(cmd, shell=True, env=env)
         import  sys
         sys.exit()
         return
