@@ -311,8 +311,13 @@ class Shell(_Shell):
         stdin = subprocess.PIPE if self._input else None
         if env:
             env = dict(os.environ.copy(), **env)
+        print(cmd, stdin, subprocess.PIPE, env)
 
         self._proc = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
+        for i in range(1, 100):
+            self._sync()
+            time.sleep(0.1)
+
 
     def call(self, cmd, env=None, timeout=None, check=False):
         self.exec(cmd, env)
