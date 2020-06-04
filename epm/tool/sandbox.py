@@ -457,10 +457,6 @@ class SSH(_Shell):
         cmd = cmd.strip() + '\n'
         cmd = bytes(cmd, encoding=self.encoding)
         cmd = self._exports_cmd(env) + cmd
-        print('---------------exec---------------------------------------')
-        print(cmd)
-        print('---------------.exec---------------------------------------')
-
         self._write(cmd)
 
     def call(self, cmd, timeout=None, env=None, check=False):
@@ -606,10 +602,8 @@ class Sandbox(object):
         source = pathlib.PurePath(source).as_posix()
         directory = pathlib.PurePath(directory).as_posix()
 
-        try:
-            sh.call('[[ -d {0} ]] && umount {0}'.format(directory))
-        except:
-            pass
+        sh.call('[[ -d {0} ]] && umount {0}'.format(directory))
+
         formatter = 'mount -t nfs -o nolock {hostname}:{source} {directory}'
 
         if PLATFORM == 'Windows':
