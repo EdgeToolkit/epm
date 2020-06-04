@@ -316,8 +316,8 @@ class Shell(_Shell):
             data = f.read()
             data.replace('-it', '-t')
             f.write(data)
-            f.close()
             print(f.read())
+            f.close()
         subprocess.run(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
         import  sys
         sys.exit()
