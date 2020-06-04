@@ -313,9 +313,9 @@ class Shell(_Shell):
             env = dict(os.environ.copy(), **env)
         print(cmd, stdin, subprocess.PIPE, env)
 
-        self._proc = subprocess.Popen('./' + cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
+        self._proc = subprocess.Popen('echo ' + cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
         for i in range(1, 100):
-            print(self._sync())
+            self._sync()
             time.sleep(0.1)
 
 
