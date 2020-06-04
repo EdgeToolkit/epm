@@ -313,6 +313,7 @@ class Shell(_Shell):
             env = dict(os.environ.copy(), **env)
         #print(cmd, stdin, subprocess.PIPE, env)
         subprocess.run(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
+        return
 
         self._proc = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
         for i in range(1, 100):
