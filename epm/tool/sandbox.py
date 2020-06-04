@@ -308,7 +308,7 @@ class Shell(_Shell):
         self._startup_duration = None
         self._start_time = _time()
         self._returncode = None
-        stdin = subprocess.PIPE if self._input else None
+        stdin = subprocess.PIPE #if self._input else None
         if env:
             env = dict(os.environ.copy(), **env)
         print(cmd, stdin, subprocess.PIPE, env)
