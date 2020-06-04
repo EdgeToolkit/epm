@@ -389,10 +389,10 @@ class SSH(_Shell):
             if len(item) == 2:
                 key = item[0].decode('ascii')
                 self._origin_env_vars[key] = item[1]
+
     def close(self):
         if self._client:
             self._client.close()
-
 
     def make_env(self, env):
         set = {}
@@ -402,9 +402,6 @@ class SSH(_Shell):
                 unset.append(v)
             else:
                 set[k] = v
-
-
-
 
     @property
     def localhost(self):
@@ -437,7 +434,6 @@ class SSH(_Shell):
         if n == 0:
             self._closed = True
 
-
     def _exports_cmd(self, env):
         if not env:
             return b''
@@ -448,12 +444,10 @@ class SSH(_Shell):
                 exports += b'unset ' + k + b'; '
             else:
                 v = bytes(v, encoding=self.encoding)
-                exports += b'export ' + v + b'; '
+                exports += b'export ' + k + b'=' + v + b'; '
         return exports
 
-
     def exec(self, cmd, env=None):
-
         self._ending = False
         self._returncode = None
         if isinstance(cmd, list):
@@ -463,6 +457,7 @@ class SSH(_Shell):
         cmd = cmd.strip() + '\n'
         cmd = bytes(cmd, encoding=self.encoding)
         cmd = self._exports_cmd(env) + cmd
+
         self._write(cmd)
 
     def call(self, cmd, timeout=None, env=None, check=False):
