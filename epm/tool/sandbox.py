@@ -312,6 +312,12 @@ class Shell(_Shell):
         if env:
             env = dict(os.environ.copy(), **env)
         #print(cmd, stdin, subprocess.PIPE, env)
+        with open(cmd, 'w') as f:
+            data = f.read()
+            data.replace('-it', '-t')
+            f.write(data)
+            f.close()
+            print(f.read())
         subprocess.run(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
         return
 
