@@ -39,7 +39,7 @@ if [ -z $_sudo ]; then
   fi
 fi
 
-if [ $_runner=auto ]; then
+if [ "$_runner" = "auto" ]; then
   $(which docker > /dev/null)
   _has_docker=$?
   if [ $_has_docker -eq 0 ]; then
@@ -100,7 +100,7 @@ _docker_exec()
 #
 set -e
 
-if [ $_runner=shell ]; then
+if [ "$_runner" = "shell" ]; then
    _mount $_home $_storage $_project
    export LD_LIBRARY_PATH=$_home/.sandbox/lib:$LD_LIBRARY_PATH
    $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
