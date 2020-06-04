@@ -312,7 +312,7 @@ class Shell(_Shell):
         if env:
             env = dict(os.environ.copy(), **env)
         #print(cmd, stdin, subprocess.PIPE, env)
-        with open(cmd, 'w') as f:
+        with open(cmd, 'rw') as f:
             data = f.read()
             data.replace('-it', '-t')
             f.write(data)
