@@ -320,7 +320,9 @@ class Shell(_Shell):
             f.write(data)
             f.close()
 
-        subprocess.run(cmd, shell=True, env=env)
+        cmd ='docker run -it --rm --name sandbox.test_package ubuntu:xenial /bin/bash -c ls'
+
+        subprocess.run(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
         import  sys
         sys.exit()
         return
