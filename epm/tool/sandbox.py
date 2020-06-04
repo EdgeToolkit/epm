@@ -309,10 +309,8 @@ class Shell(_Shell):
         self._start_time = _time()
         self._returncode = None
         stdin = subprocess.PIPE if self._input else None
-        from conans.tools import environment_append
         if env:
             env = dict(os.environ.copy(), **env)
-        print(env,'###############')
 
         self._proc = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
 
