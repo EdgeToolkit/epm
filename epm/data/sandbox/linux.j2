@@ -93,7 +93,7 @@ _docker_exec()
   _CMD=" $_CMD -w $home"
   _CMD=" $_CMD $_image {{ shell }} -c "
 
-  $_sudo $_CMD "{{ filename }} $*"
+  $_sudo $_CMD "${project}/.epm/{{ folder.name }}/sandbox/{{ name }} $*"
 }
 #
 #
