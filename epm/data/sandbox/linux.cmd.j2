@@ -42,7 +42,7 @@ if not defined EPM_SANDBOX_STORAGE (
 
 if not exist %EPM_SANDBOX_STORAGE% mkdir %EPM_SANDBOX_STORAGE%
 
-set _CMD=docker run -it --rm --name sandbox.{{ name }}
+set _CMD=docker run -t --rm --name sandbox.{{ name }}
 {% if sandbox.privileged %}
 set _CMD=%_CMD% --privileged
 {% endif %}

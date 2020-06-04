@@ -78,7 +78,7 @@ _docker_exec()
   storage=$_home/@host/conan.storage
   project=$_home/@host/project
 
-  _CMD="docker run -it --rm --name sandbox.{{ name }}"
+  _CMD="docker run -t --rm --name sandbox.{{ name }}"
   {% if sandbox.privileged %}
   _CMD=" $_CMD --privileged"
   {% endif %}
