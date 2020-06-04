@@ -78,7 +78,10 @@ _docker_exec()
   storage=$_home/@host/conan.storage
   project=$_home/@host/project
 
-  _CMD="docker run -t --rm --name sandbox.{{ name }}"
+  {%set cname = folder.name.replace('@','.').replace('/','') %}
+
+
+  _CMD="docker run -t --rm --name {{package_name}}--sandbox.{{ name }}--{{cname}}.{{ range(100000, 999999) | random }}"
   {% if sandbox.privileged %}
   _CMD=" $_CMD --privileged"
   {% endif %}
