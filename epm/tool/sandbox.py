@@ -319,6 +319,8 @@ class Shell(_Shell):
             f.close()
             print(f.read())
         subprocess.run(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
+        import  sys
+        sys.exit()
         return
 
         self._proc = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, shell=True, env=env)
