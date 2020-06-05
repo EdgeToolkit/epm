@@ -84,6 +84,7 @@ class _Shell(object):
         self._hostname = '127.0.0.1'
         self._localhost = '127.0.0.1'
         self._input = False
+        self._terminated = None
 
     @property
     def hostname(self):
@@ -299,10 +300,23 @@ class Shell(_Shell):
     def open(self, timeout=None):
         pass
 
-    def close(self):
-        if self._returncode is None and self._proc:
-            self._proc.kill()
-            self._proc = None
+    def close(self, timeout=5):
+        if not self.running:
+            return
+
+        if not self._proc:
+            return
+
+        for i in range(1, 10):
+            self._returncode = self._proc.poll()
+            if self._returncode is None:
+                return
+            time.sleep(0.01)
+
+        self._proc.kill()
+        self._proc.wait(timeout=timeout)
+        self._returncode = None
+        self._proc = None
 
     def exec(self, cmd, env=None):
         self._startup_duration = None
@@ -332,20 +346,23 @@ class Shell(_Shell):
         return self._flush_cache()
 
     def _sync(self):
-        n = 0
         if self._returncode is None:
             self._returncode = self._proc.poll()
+
+        if self._returncode is None:
             data = self._proc.stdout.read()
-            n = len(data)
-            if n:
-                if self._startup_duration is None:
-                    self._startup_duration = _time() - self._start_time
+            if data:
                 self._put(data)
-        return n
+
+            return len(data)
+        return 0
 
     @property
     def running(self):
+        if self._returncode is None:
+            self._returncode = self._proc.poll()
         return self._returncode is None
+
 
 class SSH(_Shell):
 
