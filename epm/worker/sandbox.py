@@ -95,18 +95,21 @@ class Runner(object):
             command = [filename] + argv
 
             with environment_append(env):
+                print(command, '<-docker-X', self._name)
                 return runner(command)
 
         if 'docker' in self._runner:
-            docker = dict(self._runner, home='/tmp', shell='/bin/bash')
+            conf = dict(self._runner, home='/tmp', shell='/bin/bash')
+            docker = conf['docker']
             env['EPM_SANDBOX_IMAGE'] = docker['image']
             env['EPM_SANDBOX_HOME'] = docker['home']
             env['EPM_SANDBOX_SHELL'] = docker['shell']
-            env['EPM_SANDBOX_RUNNER'] = 'shell'
+            env['EPM_SANDBOX_RUNNER'] = 'docker'
             runner = ConanRunner(output=self._api.out)
             command = [filename] + argv
 
             with environment_append(env):
+                print(command, '<-docker-')
                 return runner(command)
 
         elif 'ssh' in self._runner:
