@@ -1,3 +1,7 @@
+#
+# this utility is used for Python test
+#
+
 import os
 import queue
 import threading
