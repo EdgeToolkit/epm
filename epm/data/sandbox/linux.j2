@@ -106,7 +106,7 @@ set -e
 if [ "$_runner" = "shell" ]; then
    _mount $_home $_storage $_project
    export LD_LIBRARY_PATH=$_home/.sandbox/lib:$LD_LIBRARY_PATH
-   $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
+   $_sudo $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
 else
    _docker_exec $*
 fi

@@ -23,8 +23,8 @@ def api_method(f):
 
             with environment_append(env_vars):
                 return f(api, *args, **kwargs)
-        except Exception as exc:
-            raise
+        except Exception as e:
+            raise e
         finally:
             os.chdir(old_curdir)
     return wrapper
