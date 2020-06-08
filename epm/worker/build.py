@@ -1,9 +1,10 @@
 import os
 from epm.worker import Worker, DockerRunner, param_encode
 from epm.model.project import Project
-from epm.errors import EException, APIError
+from epm.errors import EConanAPIError
 from conans.tools import environment_append
 from epm.paths import HOME_EPM_DIR
+
 
 class Docker(DockerRunner):
 
@@ -15,8 +16,9 @@ class Builder(Worker):
 
     def __init__(self, api=None):
         super(Builder, self).__init__(api)
+        self._step = None
 
-    def _exec(self, project, steps):
+    def _exec(self, project, steps, sandbox):
         for i in self.conan.editable_list():
             self.conan.editable_remove(i)
 
@@ -27,6 +29,20 @@ class Builder(Worker):
                 with environment_append(self.api.config.env_vars):
                     fn(project)
 
+        if sandbox:
+
+            program = None if sandbox == '*' else sandbox
+
+            from epm.worker.sandbox import Builder as SandboxBuilder
+            conan = self.api.conan
+            conan.editable_add(path=project.dir,
+                               reference=str(project.reference),
+                               layout=project.layout,
+                               cwd=project.dir)
+
+            sb = SandboxBuilder(project)
+            sb.exec(program)
+
     def exec(self, param):
         project = Project(param['PROFILE'], param.get('SCHEME'), self.api)
         runner = param.get('RUNNER') or 'auto'
@@ -35,29 +51,9 @@ class Builder(Worker):
 
         if runner == 'shell':
             steps = param.get('steps')
+            sandbox = param.get('sandbox')
 
-            try:
-                self._exec(project, steps)
-            except APIError:
-                raise
-            except BaseException as e:
-                raise APIError('other error ', details={
-                    'info': str(e)
-                })
-
-            program = param.get('sandbox')
-            if program:
-                program = None if program == '*' else program
-
-                from epm.worker.sandbox import Builder as SB
-                conan = self.api.conan
-                conan.editable_add(path=project.dir,
-                                   reference=str(project.reference),
-                                   layout=project.layout,
-                                   cwd=project.dir)
-
-                sb = SB(project)
-                sb.exec(program)
+            self._exec(project, steps, sandbox)
 
         elif runner == 'docker':
             param['RUNNER'] = 'shell'
@@ -66,7 +62,9 @@ class Builder(Worker):
 
             docker.add_volume(project.dir, docker.WD)
             docker.add_volume(HOME_EPM_DIR, '$home/.epm')
-            docker.exec('epm api build %s' % param_encode(param))
+            ret = docker.exec('epm api build %s' % param_encode(param))
+            if not ret:
+                assert False
 
     def _configure(self, project):
         scheme = project.scheme
@@ -90,12 +88,8 @@ class Builder(Worker):
                              profile_names=[filename],
                              install_folder=folder,
                              cwd=project.dir)
-
         if info['error']:
-            raise APIError('failed when building project %s | %s in configure step'
-                           % (project.name, scheme.name), details={
-
-                           })
+            raise EConanAPIError('configure step failed on conan.install.', details=info)
 
         conan.source(project.dir, source_folder=folder, info_folder=folder)
 
