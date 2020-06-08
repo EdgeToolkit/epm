@@ -1,12 +1,16 @@
 import sys
-
-import sys
+import json
+import os
+import time
 import errno
 import argparse
+import traceback
 
 from conans.client.output import Color, colorama_initialize
 from epm import commands
 from epm.model.runner import Output
+from conans.errors import ConanException
+from epm.errors import EDockerAPIError
 
 # Exit codes for conan command:
 SUCCESS = 0                         # 0: Success (done)
@@ -21,6 +25,8 @@ _DESCRIPTION = 'Embedded-system package manager for C/C++ development base on co
 _PROFILE_HELP = 'Profile of the target package, this required in build/create/sandbox/upload command'
 _SCHEME_HELP = 'Scheme of the target package'
 _RUNNER_HELP = 'Runner of the command used to execute/process'
+
+
 
 class Main(object):
 
@@ -64,6 +70,7 @@ class Main(object):
 
     def run_command(self):
         command = self.args.command
+        res = 255
         try:
             res = commands.run(command, self.args, self.out)
         except SystemExit as exc:
@@ -76,10 +83,53 @@ class Main(object):
         except IOError as e:
             if e.errno != errno.EPIPE:
                 raise
-            sys.exit(0)
+        except Exception as e:
+            res = self._error(e)
 
         if res:
             sys.exit(res)
+
+    def _error(self, e):
+        #raise  e
+        if not os.path.exists('.epm'):
+            os.makedirs('.epm')
+
+        tb = traceback.format_exc()
+        msg = str(e)
+        is_docker = False
+
+        if isinstance(e, ConanException):
+            pass
+        elif isinstance(e, EDockerAPIError):
+            if not os.path.exists('.epm/errors.json'):
+                msg = 'command executed in docker failed, but .epm/errors.json missed.'
+                tb = None
+            else:
+                with open('.epm/errors.json') as f:
+                    info = json.load(f)
+                is_docker = True
+                msg = info.get('msg')
+                tb = info.get('traceback')
+
+        if self.args.command == 'api':
+
+            info = {'msg': msg,
+                    'command': self.args.command,
+                    'time': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                    'traceback': tb
+                    }
+            with open('.epm/errors.json', 'w') as f:
+                json.dump(info, f)
+        else:
+            hint = '%s{}%s' % ('='*35, '='*35)
+            hint = hint.format('%10s' % '[docker] ' if is_docker else '='*10)
+            self.out.write('\n{}\n'.format(hint))
+            self.out.error(msg)
+            with open('.epm/traceback.log', 'w') as f:
+                f.write(str(tb))
+
+        return 1
+
 
 
 def run():

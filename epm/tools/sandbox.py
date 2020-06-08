@@ -3,9 +3,6 @@
 #
 
 import os
-import queue
-import threading
-import telnetlib
 import paramiko
 import time
 import pathlib
@@ -13,7 +10,7 @@ import subprocess
 from abc import ABC, abstractmethod
 from time import monotonic as _time
 
-from epm.api import API
+
 from epm.model.project import Project
 from epm.model.sandbox import HOST_FOLDER, PROJECT_FOLDER, CONAN_STORAGE, SANDBOX_FOLDER
 
@@ -553,6 +550,7 @@ class Runner(object):
 class Sandbox(object):
 
     def __init__(self, profile=None, scheme=None, runner=None, api=None):
+        from epm.api import API
         self._api = api or API()
         self._project = Project(profile, scheme, self._api)
         self._runner = runner

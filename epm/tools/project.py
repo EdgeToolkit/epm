@@ -1,12 +1,9 @@
 import os
 import yaml
-import sys
-import shutil
 from string import Template
-from epm.util.files import mkdir
-from jinja2 import PackageLoader, Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader
 from epm.paths import HOME_EPM_DIR, DATA_DIR
-from epm.model.runner import Output
+
 
 class Creator(object):
 

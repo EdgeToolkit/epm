@@ -25,9 +25,7 @@ def api_method(f):
 
             with environment_append(env_vars):
                 return f(api, *args, **kwargs)
-        except EConanAPIError as e:
-            raise APIError(f.name)
-#            raise e
+
         finally:
             os.chdir(old_curdir)
     return wrapper

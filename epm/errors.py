@@ -48,6 +48,14 @@ class EConanAPIError(EException):
     def __init__(self, msg, details, traceback=None):
         super(APIError, self).__init__(msg=msg, details=details, traceback=traceback)
 
+
+class EDockerAPIError(EException):
+
+    def __init__(self, returncode, msg=None):
+        self.returncode = returncode
+        super(EDockerAPIError, self).__init__(msg=msg)
+
+
 class EForwardException(EException):
     """
         Conan error (exeception) wrapper
