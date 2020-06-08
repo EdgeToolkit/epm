@@ -11,7 +11,7 @@ from epm import commands
 from epm.model.runner import Output
 from conans.errors import ConanException
 from epm.errors import EDockerAPIError
-
+from epm.tool.conan import Packager
 # Exit codes for conan command:
 SUCCESS = 0                         # 0: Success (done)
 ERROR_GENERAL = 1                   # 1: General ConanException error (done)
@@ -90,6 +90,9 @@ class Main(object):
             sys.exit(res)
 
     def _error(self, e):
+        from epm import __version__ as version
+
+
         #raise  e
         if not os.path.exists('.epm'):
             os.makedirs('.epm')
@@ -110,10 +113,12 @@ class Main(object):
                 is_docker = True
                 msg = info.get('msg')
                 tb = info.get('traceback')
+                version = info.get('version')
 
         if self.args.command == 'api':
 
             info = {'msg': msg,
+                    'version': version,
                     'command': self.args.command,
                     'time': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
                     'traceback': tb
@@ -121,8 +126,9 @@ class Main(object):
             with open('.epm/errors.json', 'w') as f:
                 json.dump(info, f)
         else:
-            hint = '%s{}%s' % ('='*35, '='*35)
-            hint = hint.format('%10s' % '[docker] ' if is_docker else '='*10)
+            hint = ' docker epm %s ' % version if is_docker else ''
+            hint = '{:=^80s}'.format(hint)
+
             self.out.write('\n{}\n'.format(hint))
             self.out.error(msg)
             with open('.epm/traceback.log', 'w') as f:
