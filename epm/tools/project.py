@@ -1,12 +1,10 @@
 import os
 import yaml
-import sys
 import shutil
 from string import Template
-from epm.util.files import mkdir
-from jinja2 import PackageLoader, Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader
 from epm.paths import HOME_EPM_DIR, DATA_DIR
-from epm.model.runner import Output
+
 
 class Creator(object):
 
@@ -48,10 +46,15 @@ class Creator(object):
         return results
 
     def copy(self, src, dst):
+        import shutil
+        path = os.path.join(self._dir, src)
+        if os.path.isdir(path):
+            shutil.copytree(path, dst)
+            return
         folder = os.path.dirname(dst)
         if folder and not os.path.exists(folder):
             os.makedirs(folder)
-        import shutil
+
         shutil.copyfile(os.path.join(self._dir, src), dst)
 
     def jinja(self, src, dst):
@@ -68,8 +71,6 @@ class Creator(object):
 
     def run(self):
         for src, dst, type in self.artifacts:
-            #print(src, dst, bool(type))
-            print('-- %s' % dst)
             if type == 'jinja':
                 self.jinja(src, dst)
             else:

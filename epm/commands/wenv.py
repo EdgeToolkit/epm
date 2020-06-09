@@ -74,13 +74,13 @@ class WorkEnvironment(Command):
         Command.__init__(self, args)
 
     def run(self, args, api=None):
-        from epm.tool import wenv
+        from epm.tools import wenv
         if args.sub_command == 'install':
             wenv.install(args.location, args.install_dir)
         elif args.sub_command == 'shell':
             wenv.active(args.name)
         elif args.sub_command == 'banner':
-            from epm.tool.wenv import banner
+            from epm.tools.wenv import banner
             print(banner(args.name))
         elif args.sub_command == 'list':
             info = wenv.get_all_installed_wenv_info()

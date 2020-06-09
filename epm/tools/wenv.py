@@ -83,7 +83,7 @@ def get_all_installed_wenv_info():
 
 
 def banner(name=None):
-    from epm.tool.conan import get_channel
+    from epm.tools.conan import get_channel
     from epm.api import API
     infos = get_all_installed_wenv_info()
     name = name or os.getenv('EPM_WORK_ENVIRONMENT')

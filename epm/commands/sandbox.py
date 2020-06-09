@@ -7,7 +7,6 @@ class Sandbox(Command):
 
     name = 'sandbox'
     help = 'Sandbox to execute build/create binary package.'
-    #prog = 'epm [-p PROFILE] [-s SCHEME] [-r RUNNER] %s' % name
 
     def __init__(self):
         args = [

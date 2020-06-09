@@ -20,7 +20,7 @@ from epm.util import is_elf, system_info
 from epm.util.files import remove, rmdir, load_yaml
 
 from conans.client.tools import environment_append
-from epm.tool.conan import Manifest
+from epm.tools.conan import Manifest
 
 PLATFORM, ARCH = system_info()
 

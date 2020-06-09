@@ -88,7 +88,7 @@ class Project(object):
 
     @property
     def channel(self):
-        from epm.tool.conan import get_channel
+        from epm.tools.conan import get_channel
         return get_channel(user=self.user)
 
     @property
@@ -141,7 +141,7 @@ class Project(object):
         if self._manifest is None:
             path = os.path.join(self.dir, 'package.yml')
             self._manifest = load_yaml(path)
-            from epm.tool.conan import Manifest
+            from epm.tools.conan import Manifest
             self._manifest = Manifest.loads(path)
 
         return self._manifest
