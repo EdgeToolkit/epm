@@ -92,8 +92,6 @@ class Main(object):
     def _error(self, e):
         from epm import __version__ as version
 
-
-        #raise  e
         if not os.path.exists('.epm'):
             os.makedirs('.epm')
 

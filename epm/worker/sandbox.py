@@ -98,13 +98,15 @@ class Runner(object):
                 return runner(command)
 
         if 'docker' in self._runner:
-            docker = dict(self._runner, home='/tmp', shell='/bin/bash')
+            docker = dict(self._runner['docker'], home='/tmp', shell='/bin/bash')
+            print(docker)
             env['EPM_SANDBOX_IMAGE'] = docker['image']
             env['EPM_SANDBOX_HOME'] = docker['home']
             env['EPM_SANDBOX_SHELL'] = docker['shell']
-            env['EPM_SANDBOX_RUNNER'] = 'shell'
+            env['EPM_SANDBOX_RUNNER'] = 'docker'
             runner = ConanRunner(output=self._api.out)
             command = [filename] + argv
+            print(command, '<------------------------')
 
             with environment_append(env):
                 return runner(command)

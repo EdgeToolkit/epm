@@ -51,7 +51,7 @@ set _CMD=%_CMD% -p {{port}}:{{port}}
 {% endfor %}
 set _CMD=%_CMD% -v %EPM_SANDBOX_STORAGE%:%_HOME%/@host/conan.storage
 set _CMD=%_CMD% -v %EPM_SANDBOX_PROJECT%:%_HOME%/@host/project
-set _CMD=%_CMD% -e EPM_SANDBOX_HOME=%_HOME
+set _CMD=%_CMD% -e EPM_SANDBOX_HOME=%_HOME%
 set _CMD=%_CMD% -e EPM_SANDBOX_STORAGE=%_HOME%/@host/conan.storage
 set _CMD=%_CMD% -e EPM_SANDBOX_PROJECT=%_HOME%/@host/project
 set _CMD=%_CMD% -w %_HOME%

@@ -63,8 +63,8 @@ class Builder(Worker):
             docker.add_volume(project.dir, docker.WD)
             docker.add_volume(HOME_EPM_DIR, '$home/.epm')
             ret = docker.exec('epm api build %s' % param_encode(param))
-            if not ret:
-                assert False
+            if ret:
+                raise EDockerAPIError(ret)
 
     def _configure(self, project):
         scheme = project.scheme
