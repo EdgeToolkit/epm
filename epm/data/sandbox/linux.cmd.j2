@@ -45,14 +45,15 @@ if not defined EPM_SANDBOX_STORAGE (
 if not exist %EPM_SANDBOX_STORAGE% mkdir %EPM_SANDBOX_STORAGE%
 
 set _CMD=docker run -t --rm --name sandbox.{{ name }}
-{% if sandbox.privileged -%}
+{% if sandbox.privileged %}
 set _CMD=%_CMD% --privileged
-{%- endif %}
-{% for port in sandbox.ports -%}
+{% endif %}
+{% for port in sandbox.ports %}
 set _CMD=%_CMD% -p {{port}}:{{port}}
-{%- endfor %}
-set _CMD=%_CMD% -v %EPM_SANDBOX_STORAGE%:%_HOME%/@host/conan.storage
-set _CMD=%_CMD% -v %EPM_SANDBOX_PROJECT%:%_HOME%/@host/project
+{% endfor %}
+
+set _CMD=%_CMD% -v %EPM_SANDBOX_STORAGE%:%_DHOME%/@host/conan.storage
+set _CMD=%_CMD% -v %EPM_SANDBOX_PROJECT%:%_DHOME%/@host/project
 set _CMD=%_CMD% -e EPM_SANDBOX_HOME=%_DHOME%
 set _CMD=%_CMD% -e EPM_SANDBOX_STORAGE=%_DHOME%/@host/conan.storage
 set _CMD=%_CMD% -e EPM_SANDBOX_PROJECT=%_DHOME%/@host/project

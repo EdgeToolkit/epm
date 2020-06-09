@@ -99,15 +99,14 @@ _docker_exec()
 
   {%set cname = folder.name.replace('@','.').replace('/','') %}
 
-
   _CMD="docker run -t --rm --name {{package_name}}--sandbox.{{ name }}--{{cname}}.{{ range(100000, 999999) | random }}"
   {% if sandbox.privileged %}
   _CMD=" $_CMD --privileged"
   {% endif %}
-
   {% for port in sandbox.ports %}
   _CMD=" $_CMD -p {{port}}:{{port}}"
   {% endfor %}
+
   _CMD=" $_CMD -v $_storage:${storage}"
   _CMD=" $_CMD -v $_project:${project}"
   _CMD=" $_CMD -e EPM_SANDBOX_STORAGE=${storage}"
@@ -116,7 +115,7 @@ _docker_exec()
   _CMD=" $_CMD -e EPM_SANDBOX_HOME=${home}"
   _CMD=" $_CMD -e EPM_SANDBOX_RUNNER=shell"
   _CMD=" $_CMD -w $home"
-  _CMD=" $_CMD $_image $shell -c "
+  _CMD=" $_CMD $image $shell -c "
 
   $_sudo $_CMD "${project}/.epm/{{ folder.name }}/sandbox/{{ name }} $*"
 }
@@ -129,16 +128,15 @@ if [ "$_runner" = "shell" ]; then
    _mount $_home $_storage $_project
    export LD_LIBRARY_PATH=$_home/.sandbox/lib:$LD_LIBRARY_PATH
 
-   {% if sandbox.privileged -%}
+   {% if sandbox.privileged %}
    if [ -z $_sudo ]; then
      $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
    else
-
      sudo -E $_shell -c "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH && $_home/.sandbox/bin/{{ name }} {{ arguments }} $*"
    fi
    {% else %}
    $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
-   {%- endif %}
+   {% endif %}
 
 else
    _docker_exec $*
