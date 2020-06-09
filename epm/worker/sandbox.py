@@ -13,7 +13,7 @@ from epm.model.sandbox import Program
 from epm.util import is_elf, system_info
 from epm.util.files import remove, rmdir, load_yaml
 from conans.client.tools import ConanRunner
-from epm.tool.ssh import SSH
+from epm.tools.ssh import SSH
 from conans.tools import environment_append
 
 
@@ -99,14 +99,20 @@ class Runner(object):
                 return runner(command)
 
         if 'docker' in self._runner:
+<<<<<<< .mine
             conf = dict(self._runner, home='/tmp', shell='/bin/bash')
             docker = conf['docker']
+=======
+            docker = dict(self._runner['docker'], home='/tmp', shell='/bin/bash')
+            print(docker)
+>>>>>>> .theirs
             env['EPM_SANDBOX_IMAGE'] = docker['image']
             env['EPM_SANDBOX_HOME'] = docker['home']
             env['EPM_SANDBOX_SHELL'] = docker['shell']
             env['EPM_SANDBOX_RUNNER'] = 'docker'
             runner = ConanRunner(output=self._api.out)
             command = [filename] + argv
+            print(command, '<------------------------')
 
             with environment_append(env):
                 print(command, '<-docker-')
