@@ -95,17 +95,11 @@ class Runner(object):
             command = [filename] + argv
 
             with environment_append(env):
-                print(command, '<-docker-X', self._name)
                 return runner(command)
 
         if 'docker' in self._runner:
-<<<<<<< .mine
-            conf = dict(self._runner, home='/tmp', shell='/bin/bash')
-            docker = conf['docker']
-=======
             docker = dict(self._runner['docker'], home='/tmp', shell='/bin/bash')
             print(docker)
->>>>>>> .theirs
             env['EPM_SANDBOX_IMAGE'] = docker['image']
             env['EPM_SANDBOX_HOME'] = docker['home']
             env['EPM_SANDBOX_SHELL'] = docker['shell']
@@ -115,7 +109,6 @@ class Runner(object):
             print(command, '<------------------------')
 
             with environment_append(env):
-                print(command, '<-docker-')
                 return runner(command)
 
         elif 'ssh' in self._runner:
