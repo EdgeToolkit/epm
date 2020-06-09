@@ -508,6 +508,7 @@ class Runner(object):
         self._profile = profile
         self._scheme = scheme
         self._runner = runner
+        self._env_vars = None
 
 
 
@@ -528,14 +529,14 @@ class Runner(object):
         if self._shell is None:
 
             conf = self.config
-            if conf['.type'] in ['shell', 'docker']:
-                self._shell = Shell()
-            elif 'ssh' in conf:
+            if 'ssh' in conf:
                 hostname = conf['hostname']
                 port = conf['ssh'].get('port', 22)
                 username = conf['ssh'].get('username')
                 password = conf['ssh'].get('password')
                 self._shell = SSH(hostname=hostname, port=port, username=username, password=password)
+            else:
+                self._shell = Shell()
             self._shell.open()
         return self._shell
 
