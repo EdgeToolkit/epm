@@ -251,6 +251,87 @@ def mirror(conanfile, origin, format='{name}/{basename}'):
     return origin
 
 
+#_MIRRORs = None
+#
+#
+#def _mirror_download(url, filename, verify=True, out=None, retry=None, retry_wait=None, overwrite=False,
+#                     auth=None, headers=None, requester=None, md5='', sha1='', sha256=''):
+#    global _MIRRORs
+#    if _MIRRORs:
+#        if isinstance(url, )
+#
+#
+#
+#def register_mirror(self, url, format='{mirror}/{name}/{basename}', mirror=None):
+#    mirror = mirror or os.getenv('EPM_ARCHIVE_URL')
+#    if not mirror:
+#        return
+#    from conans import tools
+#    global _MIRRORs
+#    if _MIRRORs is None:
+#        _MIRRORs = {}
+#        _get = tools.get
+#        _download = tools.download
+#
+#        def get(*args, **kwargs):
+#            url = kwargs.get('url')
+#            if url in _MIRRORs:
+#                kwargs['url'] = _MIRRORs[url]
+#                print('mirror {} -> {}'.format(url, kwargs['url']))
+#            return _get(*args, **kwargs)
+#
+#        def download(*args, **kwargs):
+#            url = kwargs.get('url')
+#            if url in _MIRRORs:
+#                kwargs['url'] = tools.MIRRORs[url]
+#                print('mirror {} -> {}'.format(url, kwargs['url']))
+#            return _download(*args, **kwargs)
+#        tools.get = get
+#        tools.download = download
+#
+#    _MIRRORs[url] = format.format(mirror=mirror, name=self.name,
+#                                  basename=os.path.basename(url), version=self.version)
+
+from conans import ConanFile
+class ConanFileEx(ConanFile):
+    _MIRRORs = None
+
+    def register_mirror(self, url, format='{mirror}/{name}/{basename}', mirror=None):
+        mirror = mirror or os.getenv('EPM_ARCHIVE_URL')
+        if not mirror:
+            return
+        if ConanFileEx._MIRRORs is None:
+            ConanFileEx._MIRRORs = {}
+            from conans.client.tools import net
+            _download = net.download
+
+            def download(url, filename, **kwargs):
+                urls = []
+                if isinstance(url, (list, tuple)):
+                    for i in url:
+                        if i in ConanFileEx._MIRRORs:
+                            urls.append(ConanFileEx._MIRRORs[i])
+                            print('[mirror] {} -> {}'.format(i, ConanFileEx._MIRRORs[i]))
+                        else:
+                            urls.append(i)
+                else:
+                    if url in ConanFileEx._MIRRORs:
+                        urls = ConanFileEx._MIRRORs[url]
+                        print('[mirror] {} -> {}'.format(url, ConanFileEx._MIRRORs[url]))
+                    else:
+                        urls = url
+
+                _download(urls, filename, **kwargs)
+            net.download = download
+
+        if not isinstance(url, (list, tuple)):
+            url = [url]
+        for i in url:
+            ConanFileEx._MIRRORs[i] = format.format(mirror=mirror, name=self.name,
+                                             basename=os.path.basename(i),
+                                             version=self.version)
+
+
 def Packager(manifest='package.yml'):
     m = Manifest.loads(manifest)
     name = m.name
@@ -260,9 +341,9 @@ def Packager(manifest='package.yml'):
     global _PackagerClassId
     _PackagerClassId += 1
     class_name = symbolize('_%d_%s_%s_%s' % (_PackagerClassId, str(user), name, version))
-    from conans import ConanFile
+
     exports = [manifest]
-    klass = type(class_name, (ConanFile,),
+    klass = type(class_name, (ConanFileEx,),
                  dict(name=name, version=version, manifest=m, exports=exports))
     return klass
 
