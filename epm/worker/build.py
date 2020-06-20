@@ -1,7 +1,7 @@
 import os
 from epm.worker import Worker, DockerRunner, param_encode
 from epm.model.project import Project
-from epm.errors import EConanAPIError
+from epm.errors import EConanAPIError, EDockerAPIError
 from conans.tools import environment_append
 from epm.paths import HOME_EPM_DIR
 
@@ -64,7 +64,7 @@ class Builder(Worker):
             docker.add_volume(HOME_EPM_DIR, '$home/.epm')
             ret = docker.exec('epm api build %s' % param_encode(param))
             if ret:
-                raise EDockerAPIError(ret)
+                raise EDockerAPIError(ret, self.api)
 
     def _configure(self, project):
         scheme = project.scheme

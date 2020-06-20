@@ -39,7 +39,8 @@ class Project(object):
         self._scheme = None
         self._profile = None
 
-        self._manifest = None
+        self._manifest = None # to be replaced by metainfo
+        self._metainfo = None
         self._conan_meta = None
         self._api = api
         self._conan_storage_path = None
@@ -146,16 +147,12 @@ class Project(object):
 
         return self._manifest
 
-    #@property
-    #def sandbox(self):
-    #    return self.manifest.sandbox
-    #
-    #def generate_profile(self, force=False):
-    #    filename = os.path.join(self.folder.out, 'profile')
-    #    if not os.path.exists(filename):
-    #        self.scheme.profile.save(filename)
-    #    return filename
-    #
+    @property
+    def metainfo(self):
+        if self._metainfo is None:
+            path = os.path.join(self.dir, 'package.yml')
+            from epm.model.config import MetaInformation
+            self._metainfo = MetaInformation(path)
 
-
+        return self._metainfo
 

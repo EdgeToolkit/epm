@@ -10,7 +10,7 @@ from conans.client.output import Color, colorama_initialize
 from epm import commands
 from epm.model.runner import Output
 from conans.errors import ConanException
-from epm.errors import EDockerAPIError
+from epm.errors import EDockerAPIError, EException
 from epm.tool.conan import Packager
 # Exit codes for conan command:
 SUCCESS = 0                         # 0: Success (done)
@@ -112,6 +112,9 @@ class Main(object):
                 msg = info.get('msg')
                 tb = info.get('traceback')
                 version = info.get('version')
+        else:
+            print('------------------------')
+            print(type(e), str(e))
 
         if self.args.command == 'api':
 

@@ -3,6 +3,8 @@ import yaml
 from conans.model.ref import ConanFileReference, get_reference_fields
 import re
 import pathlib
+from conans import ConanFile
+
 
 def get_channel(user=None, channel=None):
 
@@ -251,48 +253,25 @@ def mirror(conanfile, origin, format='{name}/{basename}'):
     return origin
 
 
-#_MIRRORs = None
-#
-#
-#def _mirror_download(url, filename, verify=True, out=None, retry=None, retry_wait=None, overwrite=False,
-#                     auth=None, headers=None, requester=None, md5='', sha1='', sha256=''):
-#    global _MIRRORs
-#    if _MIRRORs:
-#        if isinstance(url, )
-#
-#
-#
-#def register_mirror(self, url, format='{mirror}/{name}/{basename}', mirror=None):
-#    mirror = mirror or os.getenv('EPM_ARCHIVE_URL')
-#    if not mirror:
-#        return
-#    from conans import tools
-#    global _MIRRORs
-#    if _MIRRORs is None:
-#        _MIRRORs = {}
-#        _get = tools.get
-#        _download = tools.download
-#
-#        def get(*args, **kwargs):
-#            url = kwargs.get('url')
-#            if url in _MIRRORs:
-#                kwargs['url'] = _MIRRORs[url]
-#                print('mirror {} -> {}'.format(url, kwargs['url']))
-#            return _get(*args, **kwargs)
-#
-#        def download(*args, **kwargs):
-#            url = kwargs.get('url')
-#            if url in _MIRRORs:
-#                kwargs['url'] = tools.MIRRORs[url]
-#                print('mirror {} -> {}'.format(url, kwargs['url']))
-#            return _download(*args, **kwargs)
-#        tools.get = get
-#        tools.download = download
-#
-#    _MIRRORs[url] = format.format(mirror=mirror, name=self.name,
-#                                  basename=os.path.basename(url), version=self.version)
+class MetaInformation(object):
 
-from conans import ConanFile
+    def __init__(self, conanfile, metadata):
+        self._conanfile = conanfile
+        self._metadata = metadata
+        self._helper = ManifestHelper(self._conanfile._meta_information_filename, self._metadata)
+
+    @property
+    def metadata(self):
+        return self._metadata
+
+    @property
+    def requirements(self):
+        return self._helper.requirements(self._conanfile)
+
+
+
+
+
 class ConanFileEx(ConanFile):
     _MIRRORs = None
 
@@ -332,11 +311,14 @@ class ConanFileEx(ConanFile):
                                              version=self.version)
 
 
+from epm.model.config import MetaInformation
 def Packager(manifest='package.yml'):
+    metainfo = MetaInformation(manifest)
     m = Manifest.loads(manifest)
     name = m.name
     version = m.version
     user = m.user
+
 
     global _PackagerClassId
     _PackagerClassId += 1
@@ -344,15 +326,18 @@ def Packager(manifest='package.yml'):
 
     exports = [manifest]
     klass = type(class_name, (ConanFileEx,),
-                 dict(name=name, version=version, manifest=m, exports=exports))
+                 dict(name=name, version=version, manifest=m, exports=exports,
+                      _META_INFO=metainfo))
     return klass
 
 
 def TestPackager(manifest='../package.yml'):
+    metainfo = MetaInformation(manifest)
     m = Manifest.loads(manifest)
     name = m.name
     version = m.version
     user = m.user
+
 
     global _PackagerClassId
     _PackagerClassId += 1
@@ -365,5 +350,6 @@ def TestPackager(manifest='../package.yml'):
     klass = type(class_name, (ConanFile,),
                  dict(version=version,
                       manifest=m,
+                      _META_INFO = metainfo,
                       requires=requires))
     return klass

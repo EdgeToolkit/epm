@@ -21,7 +21,7 @@ from epm.util.files import remove, rmdir, load_yaml
 
 from conans.client.tools import environment_append
 from epm.tools.conan import Manifest
-
+from epm.model.config import MetaInformation
 PLATFORM, ARCH = system_info()
 
 
@@ -47,7 +47,8 @@ class Scheme(object):
 
         conan = self.project.api.conan
         if manifest is None:
-            conanfile = conan.inspect(self.project.dir, ['settings', 'options', 'default_options', 'manifest'])
+            conanfile = conan.inspect(self.project.dir, ['settings', 'options', 'default_options',
+                                                         'manifest', 'metainfo'])
             manifest = conanfile['manifest']
 
         m = manifest.as_dict() if isinstance(manifest, Manifest) else {}
@@ -123,29 +124,51 @@ class Scheme(object):
                 items[key] = v
         return items
 
-    def _deps_options_items(self, scheme):
-        libs = {}
-        options = {}
-        deps= OrderedDict()
-        deps[self.project.name] = scheme
-        self._load_dep_schemes(libs, deps)
-        items = {}
+    def _get_options(self, package):
+        api = self.project.api
+        settings = self.project.profile.settings
+        metainfo = self.project.metainfo
+        options, package_options = metainfo.get_options(self.name, settings, storage=None, api=api)
+
+        items = dict()
         for key, value in options.items():
-            key = '%s:%s' % (self.project.name, key)
+            if package:
+                key = '%s:%s' % (self.project.name, key)
             items[key] = value
 
-        for name, info in libs.items():
-            for k, v in info['options'].items():
+        for name, opts in package_options.items():
+            for k, v in opts.items():
                 key = '%s:%s' % (name, k)
                 items[key] = v
         return items
 
+#    def _deps_options_items(self, scheme):
+#        libs = {}
+#        options = {}
+#        deps= OrderedDict()
+#        deps[self.project.name] = scheme
+#        self._load_dep_schemes(libs, deps)
+#        items = {}
+#        for key, value in options.items():
+#            key = '%s:%s' % (self.project.name, key)
+#            items[key] = value
+#
+#        for name, info in libs.items():
+#            for k, v in info['options'].items():
+#                key = '%s:%s' % (name, k)
+#                items[key] = v
+#        return items
 
-    def as_conan_options(self, package=False):
 
-        return OptionsValues(self._options_items(package))
+#    def as_conan_options(self, package=False):
+#
+#        return OptionsValues(self._options_items(package))
+
+    
 
     def _options(self, package=False):
+        return OptionsValues(self._get_options(package))
+        
         return OptionsValues(self._options_items(package))
 
     @property
@@ -156,18 +179,18 @@ class Scheme(object):
     def package_options(self):
         return self._options(True)
 
-    def deps_options(self, reference, scheme):
-        libs = {}
-        deps = OrderedDict()
-        from conans.model.ref import ConanFileReference
-        ref = ConanFileReference.loads(reference)
-        ref.scheme = scheme
-        deps[ref.name] = ref
-        self._load_dep_schemes(libs, deps)
-        items = {}
-        for name, info in libs.items():
-            for k, v in info['options'].items():
-                key = '%s:%s' % (name, k)
-                items[key] = v
-
-        return OptionsValues(items)
+#    def deps_options(self, reference, scheme):
+#        libs = {}
+#        deps = OrderedDict()
+#        from conans.model.ref import ConanFileReference
+#        ref = ConanFileReference.loads(reference)
+#        ref.scheme = scheme
+#        deps[ref.name] = ref
+#        self._load_dep_schemes(libs, deps)
+#        items = {}
+#        for name, info in libs.items():
+#            for k, v in info['options'].items():
+#                key = '%s:%s' % (name, k)
+#                items[key] = v
+#
+#        return OptionsValues(items)
