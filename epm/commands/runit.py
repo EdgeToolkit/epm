@@ -7,7 +7,6 @@ class Run(Command):
 
     name = 'run'
     help = 'Execute command in epm running environment.'
-    #prog = 'epm [-p PROFILE] [-s SCHEME] [-r RUNNER] %s' % name
 
     def __init__(self):
         args = [
@@ -23,5 +22,6 @@ class Run(Command):
         param['command'] = args.run_command
         param['args'] = args.argv
         return api.runit(param)
+
 
 register_command(Run)

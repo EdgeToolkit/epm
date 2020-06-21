@@ -21,14 +21,22 @@ _sudo=$EPM_SANDBOX_SUDO
 _home=$EPM_SANDBOX_HOME
 _project=$EPM_SANDBOX_PROJECT
 _image=$EPM_SANDBOX_IMAGE
-_docker_home=$EPM_SANDBOX_DOCKER_HOME
+_shell=$EPM_SANDBOX_SHELL
+_dshell=$EPM_SANDBOX_DOCKER_SHELL
+_dhome=$EPM_SADNBOX_DOCKER_HOME
+_dimage=$EPM_SANDBOX_DOCKER_IMAGE
 [ -z $_storage ] && _storage=$CONAN_STORAGE_PATH
 [ -z $_storage ] && _storage=~/.epm/.conan/data
 [ -z $_runner  ] && _runner='auto'
-[ -z $_home    ] && _home={{ home }}
 [ -z $_project ] && _project=$PWD
-[ -z $_image   ] && _image={{ image }}
 
+if [ -z $_shell ]; then
+  if [ -f /bin/bash ]; then
+    _shell=/bin/bash
+  else
+    _shell=/bin/sh
+  fi
+fi
 
 if [ -z $_sudo ]; then
   $(which sudo > /dev/null)
@@ -47,6 +55,15 @@ if [ "$_runner" = "auto" ]; then
   else
     _runner='shell'
   fi
+fi
+
+if [ "$_runner" = "docker" ]; then
+  [ -z $_dimage   ] && _dimage={{ docker['image'] }}
+  [ -z $_dhome    ] && _dhome={{ docker['home'] }}
+  [ -z $_dshell   ] && _dshell={{ docker['shell'] }}
+
+else
+  [ -z $_home    ] && _home=$(cd ~;pwd)
 fi
 
 _mount()
@@ -74,12 +91,13 @@ _mount()
 
 _docker_exec()
 {
-  home=$_home
-  storage=$_home/@host/conan.storage
-  project=$_home/@host/project
+  home=$_dhome
+  image=$_dimage
+  shell=$_dshell
+  storage=$home/@host/conan.storage
+  project=$home/@host/project
 
   {%set cname = folder.name.replace('@','.').replace('/','') %}
-
 
   _CMD="docker run -t --rm --name {{package_name}}--sandbox.{{ name }}--{{cname}}.{{ range(100000, 999999) | random }}"
   {% if sandbox.privileged %}
@@ -88,13 +106,16 @@ _docker_exec()
   {% for port in sandbox.ports %}
   _CMD=" $_CMD -p {{port}}:{{port}}"
   {% endfor %}
+
   _CMD=" $_CMD -v $_storage:${storage}"
   _CMD=" $_CMD -v $_project:${project}"
   _CMD=" $_CMD -e EPM_SANDBOX_STORAGE=${storage}"
   _CMD=" $_CMD -e EPM_SANDBOX_PROJECT=${project}"
+  _CMD=" $_CMD -e EPM_SADNBOX_SHELL=${shell}"
+  _CMD=" $_CMD -e EPM_SANDBOX_HOME=${home}"
   _CMD=" $_CMD -e EPM_SANDBOX_RUNNER=shell"
   _CMD=" $_CMD -w $home"
-  _CMD=" $_CMD $_image {{ shell }} -c "
+  _CMD=" $_CMD $image $shell -c "
 
   $_sudo $_CMD "${project}/.epm/{{ folder.name }}/sandbox/{{ name }} $*"
 }
@@ -106,7 +127,17 @@ set -e
 if [ "$_runner" = "shell" ]; then
    _mount $_home $_storage $_project
    export LD_LIBRARY_PATH=$_home/.sandbox/lib:$LD_LIBRARY_PATH
+
+   {% if sandbox.privileged %}
+   if [ -z $_sudo ]; then
+     $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
+   else
+     sudo -E $_shell -c "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH && $_home/.sandbox/bin/{{ name }} {{ arguments }} $*"
+   fi
+   {% else %}
    $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
+   {% endif %}
+
 else
    _docker_exec $*
 fi

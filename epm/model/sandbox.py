@@ -58,10 +58,11 @@ class Program(object):
         filename = os.path.join(self._build_folder,
                                 self._sandbox.folder or '',
                                 self._sandbox.program)
+        print(filename)
 
         if not self._is_program(filename):
             raise Exception('Can not find sandbox program %s in %s' %
-                            (self._sandbox.program, self._build_dir))
+                            (self._sandbox.program, self._build_folder))
         self._filename = pathlib.PurePath(os.path.abspath(filename)).as_posix()
         self._argv = sandbox.argv
         self._wd = pathlib.PurePath(os.path.abspath('.')).as_posix()
@@ -205,9 +206,10 @@ class Program(object):
                                sandbox=self._sandbox,
                                filename=filename,
                                dylibs=self.dynamic_libs,
-                               image=docker['image'],
-                               shell=docker['shell'],
-                               home=docker['home'],
+                               #image=docker['image'],
+                               #shell=docker['shell'],
+                               #home=docker['home'],
+                               docker=docker,
                                folder=self._project.folder,
                                profile=self._project.profile,
                                scheme=self._project.scheme,

@@ -1,5 +1,6 @@
 import os
 from epm.commands import Command, register_command, ArgparseArgument
+from epm.errors import ECommandError
 
 _generate_args = [
     ArgparseArgument("template", type=str,
@@ -58,13 +59,13 @@ class Project(Command):
         Command.__init__(self, args)
 
     def run(self, args, api):
-        from epm.tool.project import load_project_templates_manifest, generate_project
+        from epm.tools.project import load_project_templates_manifest, generate_project
         templates = load_project_templates_manifest()
 
         if args.sub_command in ['gen', 'generate']:
             manifest = templates.get(args.template, None)
             if manifest is None:
-                raise Exception('project template <%s> not exists' % args.name)
+                raise ECommandError('project template <%s> not exists' % args.name)
             import os
             name = args.name or os.path.basename(os.path.abspath('.'))
 
@@ -112,7 +113,7 @@ class Project(Command):
 
         path = os.path.join(prjd, name)
         if os.path.exists(path):
-            raise Exception('%s already installed' % name)
+            raise ECommandError('project template %s already installed' % name)
 
         if editable:
             with open(path, 'w', encoding='utf-8') as f:

@@ -39,7 +39,8 @@ class Project(object):
         self._scheme = None
         self._profile = None
 
-        self._manifest = None
+        self._manifest = None # to be replaced by metainfo
+        self._metainfo = None
         self._conan_meta = None
         self._api = api
         self._conan_storage_path = None
@@ -51,7 +52,7 @@ class Project(object):
         self._generate_layout()
 
     def _generate_layout(self):
-        manifest = self.manifest.as_dict()
+        manifest = self.metainfo.data
         template = manifest.get('conan.layout', DEFALT_CONAN_LAYOUT)
         layout = Template(template)
 
@@ -76,19 +77,19 @@ class Project(object):
 
     @property
     def name(self):
-        return self.manifest.name
+        return self.metainfo.name
 
     @property
     def version(self):
-        return self.manifest.version
+        return self.metainfo.version
 
     @property
     def user(self):
-        return self.manifest.user
+        return self.metainfo.user
 
     @property
     def channel(self):
-        from epm.tool.conan import get_channel
+        from epm.tools.conan import get_channel
         return get_channel(user=self.user)
 
     @property
@@ -135,27 +136,23 @@ class Project(object):
     @property
     def layout(self):
         return '%s/conan.layout' % self.folder.out
+#
+#    @property
+#    def manifest(self):
+#        if self._manifest is None:
+#            path = os.path.join(self.dir, 'package.yml')
+#            self._manifest = load_yaml(path)
+#            from epm.tools.conan import Manifest
+#            self._manifest = Manifest.loads(path)
+#
+#        return self._manifest
 
     @property
-    def manifest(self):
-        if self._manifest is None:
+    def metainfo(self):
+        if self._metainfo is None:
             path = os.path.join(self.dir, 'package.yml')
-            self._manifest = load_yaml(path)
-            from epm.tool.conan import Manifest
-            self._manifest = Manifest.loads(path)
+            from epm.model.config import MetaInformation
+            self._metainfo = MetaInformation(path)
 
-        return self._manifest
-
-    #@property
-    #def sandbox(self):
-    #    return self.manifest.sandbox
-    #
-    #def generate_profile(self, force=False):
-    #    filename = os.path.join(self.folder.out, 'profile')
-    #    if not os.path.exists(filename):
-    #        self.scheme.profile.save(filename)
-    #    return filename
-    #
-
-
+        return self._metainfo
 

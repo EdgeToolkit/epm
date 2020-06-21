@@ -1,6 +1,6 @@
 
 from epm.commands import Command, register_command, ArgparseArgument
-from epm.errors import EException
+from epm.errors import APIError
 from epm.worker import param_decode
 
 
@@ -11,7 +11,6 @@ class APICommand(Command):
 
     name = 'api'
     help = 'call epm api via command.'
-    #prog = 'epm [-p PROFILE] [-s SCHEME] [-r RUNNER] %s' % name
 
     def __init__(self):
             args = [
@@ -25,12 +24,11 @@ class APICommand(Command):
     def run(self, args, api):
         param = None
         if args.param:
-
             param = param_decode(args.param)
 
         method = getattr(api, args.method[0])
         if not method:
-            raise EException('epm api no method <%s>' % args.method)
+            raise APIError('epm API no method <%s>.' % args.method)
         method(param)
 
 

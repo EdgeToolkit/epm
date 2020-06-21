@@ -1,7 +1,8 @@
+#
+# this utility is used for Python test
+#
+
 import os
-import queue
-import threading
-import telnetlib
 import paramiko
 import time
 import pathlib
@@ -9,7 +10,7 @@ import subprocess
 from abc import ABC, abstractmethod
 from time import monotonic as _time
 
-from epm.api import API
+
 from epm.model.project import Project
 from epm.model.sandbox import HOST_FOLDER, PROJECT_FOLDER, CONAN_STORAGE, SANDBOX_FOLDER
 
@@ -507,6 +508,7 @@ class Runner(object):
         self._profile = profile
         self._scheme = scheme
         self._runner = runner
+        self._env_vars = None
 
 
 
@@ -527,14 +529,14 @@ class Runner(object):
         if self._shell is None:
 
             conf = self.config
-            if conf['.type'] in ['shell', 'docker']:
-                self._shell = Shell()
-            elif 'ssh' in conf:
+            if 'ssh' in conf:
                 hostname = conf['hostname']
                 port = conf['ssh'].get('port', 22)
                 username = conf['ssh'].get('username')
                 password = conf['ssh'].get('password')
                 self._shell = SSH(hostname=hostname, port=port, username=username, password=password)
+            else:
+                self._shell = Shell()
             self._shell.open()
         return self._shell
 
@@ -549,6 +551,7 @@ class Runner(object):
 class Sandbox(object):
 
     def __init__(self, profile=None, scheme=None, runner=None, api=None):
+        from epm.api import API
         self._api = api or API()
         self._project = Project(profile, scheme, self._api)
         self._runner = runner

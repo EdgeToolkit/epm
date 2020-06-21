@@ -13,6 +13,8 @@ from epm.worker.download import Downloader
 from epm.util.files import load_yaml
 from conans.client.tools import environment_append
 from epm.model.runner import Output
+from epm.errors import EConanAPIError, APIError
+
 
 def api_method(f):
     def wrapper(api, *args, **kwargs):
@@ -23,8 +25,7 @@ def api_method(f):
 
             with environment_append(env_vars):
                 return f(api, *args, **kwargs)
-        except Exception as exc:
-            raise
+
         finally:
             os.chdir(old_curdir)
     return wrapper
