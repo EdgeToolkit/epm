@@ -205,6 +205,7 @@ class Builder(object):
 
                 name = '{}-{}'.format(self._project.name, folder.replace('-', '_'))
 
+
             def _(step):
                 self._api.out.highlight('[%s sandbox program] %s. project folder  %s'
                                        % (step, ",".join([x.name for x in sbs]), folder))
@@ -232,7 +233,7 @@ class Builder(object):
             if 'make' in steps:
 
                 for sb in sbs:
-                    subpath = build_folder if folder else sb.type
+                    subpath = build_folder if folder else os.path.join(self._project.folder.out, sb.type)
 
                     program = Program(self._project, sb, subpath)
                     program.generate(sb.name)
