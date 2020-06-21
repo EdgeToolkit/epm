@@ -174,22 +174,23 @@ class Builder(object):
 
     def exec(self, program=None, steps=None):
         metainfo = self._project.metainfo
+        sandbox = metainfo.get_sandbox()
         steps = steps or ['configure', 'make']
-        program = program or metainfo.sandbox.keys()
+        program = program or sandbox.keys()
         if isinstance(program, str):
             program = [program]
 
-        undef = set(program).difference(metainfo.sandbox.keys())
+        undef = set(program).difference(sandbox.keys())
         if undef:
             raise EException('{} NOT valid sandbox item'.format(",".join(undef)))
 
-        sandboxes = {}
+        candidate = {}
         for name in program:
-            sb = metainfo.sandbox[name]
+            sb = sandbox[name]
             directory = sb.directory if sb.directory else ''
-            if sb.directory not in sandboxes:
-                sandboxes[directory] = []
-            sandboxes[directory].append(sb)
+            if sb.directory not in candidate:
+                candidate[directory] = []
+            candidate[directory].append(sb)
 
         profile = os.path.join(self._project.folder.out, 'profile')
         if 'configure' in steps:
@@ -197,7 +198,7 @@ class Builder(object):
         conan = self._api.conan
         options = ['%s=%s' % (k, v) for k, v in self._project.scheme.package_options.as_list()]
 
-        for folder, sbs in sandboxes.items():
+        for folder, sbs in candidate.items():
             if folder:
                 conanfile_path = os.path.join(folder, 'conanfile.py')
                 build_folder = os.path.join(self._project.folder.out, folder, 'build')

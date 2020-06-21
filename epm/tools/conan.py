@@ -252,6 +252,7 @@ def mirror(conanfile, origin, format='{name}/{basename}'):
         return m
     return origin
 
+
 class MetaInfo(object):
 
     def __init__(self, metainfo, conanfile):
