@@ -232,7 +232,7 @@ class Builder(object):
             if 'make' in steps:
 
                 for sb in sbs:
-                    subpath = build_folder if folder else ''
+                    subpath = build_folder if folder else sb.type
 
                     program = Program(self._project, sb, subpath)
                     program.generate(sb.name)
