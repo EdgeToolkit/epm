@@ -13,7 +13,7 @@ from epm.model.sandbox import Program
 from epm.util import is_elf, system_info
 from epm.util.files import remove, rmdir, load_yaml
 from conans.client.tools import ConanRunner
-from epm.tool.ssh import SSH
+from epm.tools.ssh import SSH
 from conans.tools import environment_append
 
 
