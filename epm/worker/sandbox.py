@@ -173,25 +173,23 @@ class Builder(object):
         self._api = project.api
 
     def exec(self, program=None, steps=None):
-        manifest = self._project.manifest
+        metainfo = self._project.metainfo
         steps = steps or ['configure', 'make']
+        program = program or metainfo.sandbox.keys()
         if isinstance(program, str):
             program = [program]
 
-        if program:
-            bads = set(program).difference(manifest.sandbox.keys())
-            if bads:
-                raise Exception('{} NOT valid sandbox item'.format(",".join(bads)))
-        else:
-            program = manifest.sandbox.keys()
+        undef = set(program).difference(metainfo.sandbox.keys())
+        if undef:
+            raise EException('{} NOT valid sandbox item'.format(",".join(undef)))
 
-        builds = {}
+        sandboxes = {}
         for name in program:
-            sb = manifest.sandbox[name]
-            if sb.directory in builds:
-                builds[sb.directory].append(sb)
-            else:
-                builds[sb.directory] = [sb]
+            sb = metainfo.sandbox[name]
+            directory = sb.directory if sb.directory else ''
+            if sb.directory not in sandboxes:
+                sandboxes[directory] = []
+            sandboxes[directory].append(sb)
 
         profile = os.path.join(self._project.folder.out, 'profile')
         if 'configure' in steps:
@@ -199,11 +197,12 @@ class Builder(object):
         conan = self._api.conan
         options = ['%s=%s' % (k, v) for k, v in self._project.scheme.package_options.as_list()]
 
-        for folder, sbs in builds.items():
-            conanfile_path = os.path.join(folder, 'conanfile.py')
-            build_folder = os.path.join(self._project.folder.out, folder, 'build')
+        for folder, sbs in sandboxes.items():
+            if folder:
+                conanfile_path = os.path.join(folder, 'conanfile.py')
+                build_folder = os.path.join(self._project.folder.out, folder, 'build')
 
-            name = '{}-{}'.format(self._project.name, folder.replace('-', '_'))
+                name = '{}-{}'.format(self._project.name, folder.replace('-', '_'))
 
             def _(step):
                 self._api.out.highlight('[%s sandbox program] %s. project folder  %s'
@@ -211,7 +210,7 @@ class Builder(object):
 
             _('Build')
 
-            if 'configure' in steps:
+            if 'configure' in steps and folder:
                 _('configure')
                 info = conan.install(conanfile_path,
                                      name=name,
@@ -222,12 +221,14 @@ class Builder(object):
                 if info['error']:
                     raise Exception('configure sandbox %s failed.' % folder)
 
-            if 'make' in steps:
+            if 'make' in steps and folder:
                 _('make')
                 conan.build(conanfile_path,
                             build_folder=build_folder,
                             install_folder=build_folder
                             )
+
+            if 'make' in steps:
 
                 for sb in sbs:
                     program = Program(self._project, sb, build_folder)
