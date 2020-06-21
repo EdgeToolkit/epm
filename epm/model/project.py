@@ -52,7 +52,7 @@ class Project(object):
         self._generate_layout()
 
     def _generate_layout(self):
-        manifest = self.manifest.as_dict()
+        manifest = self.metainfo.data
         template = manifest.get('conan.layout', DEFALT_CONAN_LAYOUT)
         layout = Template(template)
 
@@ -77,15 +77,15 @@ class Project(object):
 
     @property
     def name(self):
-        return self.manifest.name
+        return self.metainfo.name
 
     @property
     def version(self):
-        return self.manifest.version
+        return self.metainfo.version
 
     @property
     def user(self):
-        return self.manifest.user
+        return self.metainfo.user
 
     @property
     def channel(self):
@@ -136,16 +136,16 @@ class Project(object):
     @property
     def layout(self):
         return '%s/conan.layout' % self.folder.out
-
-    @property
-    def manifest(self):
-        if self._manifest is None:
-            path = os.path.join(self.dir, 'package.yml')
-            self._manifest = load_yaml(path)
-            from epm.tools.conan import Manifest
-            self._manifest = Manifest.loads(path)
-
-        return self._manifest
+#
+#    @property
+#    def manifest(self):
+#        if self._manifest is None:
+#            path = os.path.join(self.dir, 'package.yml')
+#            self._manifest = load_yaml(path)
+#            from epm.tools.conan import Manifest
+#            self._manifest = Manifest.loads(path)
+#
+#        return self._manifest
 
     @property
     def metainfo(self):

@@ -20,7 +20,6 @@ from epm.util import is_elf, system_info
 from epm.util.files import remove, rmdir, load_yaml
 
 from conans.client.tools import environment_append
-from epm.tools.conan import Manifest
 from epm.model.config import MetaInformation
 PLATFORM, ARCH = system_info()
 
@@ -37,92 +36,92 @@ class Scheme(object):
     def name(self):
         return self._name
 
-    def _parse(self, name, manifest=None):
-        ''' parse the package (manifest) scheme (options) information
-
-        :param name: name of scheme to be parsed
-        :param manifest: manifest (package.yml)
-        :return:
-        '''
-
-        conan = self.project.api.conan
-        if manifest is None:
-            conanfile = conan.inspect(self.project.dir, ['settings', 'options', 'default_options',
-                                                         'manifest', 'metainfo'])
-            manifest = conanfile['manifest']
-
-        m = manifest.as_dict() if isinstance(manifest, Manifest) else {}
-        schemes = m.get('scheme', {})
-
-        if schemes.get(name, None) is None:
-            if name and name not in ['default', None, 'None']:
-                raise Exception('[{}] the specified scheme name `{}` not set in package.yml.'.format(
-                    m.get('name'), name))
-
-        name = name or 'default'
-        scheme = schemes.get(name, {})
-
-        deps = manifest.dependencies if isinstance(manifest, Manifest) else OrderedDict()
-        deps = copy.deepcopy(deps)
-
-        options = scheme.get('options', {})
-        for pkg in deps.values():
-            pkg.scheme = None
-            pkg.options = None
-
-
-        for k, v in scheme.items():
-            if k in deps:
-                deps[k].scheme = v
-                deps[k].options = None
-
-        return options, deps
-
-    def _load_dep_schemes(self, libs, deps, storage=None):
-
-        for name, ref in deps.items():
-
-            if name in libs.keys():
-                continue
-
-            conan = self.project.api.conan
-
-            storage = storage or self.project.api.conan_storage_path
-            with environment_append({'CONAN_STORAGE_PATH': storage}):
-                conanfile = conan.inspect(str(ref), ['options', 'default_options', 'settings', 'manifest'])
-
-            manifest = conanfile['manifest']
-            scheme_name = ref.scheme or 'default'
-            # TODO: support ref.schme as dict to handle options definitions
-            if manifest is None:
-                if not ref.scheme:
-                    raise Exception('request scheme `%s` of %s, It may not an epm package(missing package.yml)' %
-                                    (ref.scheme, name))
-                continue
-
-            options, deps = self._parse(scheme_name, manifest)
-
-            libs[name] = {'scheme': scheme_name, 'manifest': manifest, 'options': options, 'deps': deps}
-
-
-            self._load_dep_schemes(libs, deps, storage)
-
-    def _options_items(self, package):
-
-        options, deps = self._parse(self.name)
-        libs = {}
-        self._load_dep_schemes(libs, deps)
-        items = {}
-        for key, value in options.items():
-            if package:
-                key = '%s:%s' % (self.project.name, key)
-            items[key] = value
-
-        for name, info in libs.items():
-            for k, v in info['options'].items():
-                key = '%s:%s' % (name, k)
-                items[key] = v
-        return items
+#    def _parse(self, name, manifest=None):
+#        ''' parse the package (manifest) scheme (options) information
+#
+#        :param name: name of scheme to be parsed
+#        :param manifest: manifest (package.yml)
+#        :return:
+#        '''
+#
+#        conan = self.project.api.conan
+#        if manifest is None:
+#            conanfile = conan.inspect(self.project.dir, ['settings', 'options', 'default_options',
+#                                                         'manifest', 'metainfo'])
+#            manifest = conanfile['manifest']
+#
+#        m = manifest.as_dict() if isinstance(manifest, Manifest) else {}
+#        schemes = m.get('scheme', {})
+#
+#        if schemes.get(name, None) is None:
+#            if name and name not in ['default', None, 'None']:
+#                raise Exception('[{}] the specified scheme name `{}` not set in package.yml.'.format(
+#                    m.get('name'), name))
+#
+#        name = name or 'default'
+#        scheme = schemes.get(name, {})
+#
+#        deps = manifest.dependencies if isinstance(manifest, Manifest) else OrderedDict()
+#        deps = copy.deepcopy(deps)
+#
+#        options = scheme.get('options', {})
+#        for pkg in deps.values():
+#            pkg.scheme = None
+#            pkg.options = None
+#
+#
+#        for k, v in scheme.items():
+#            if k in deps:
+#                deps[k].scheme = v
+#                deps[k].options = None
+#
+#        return options, deps
+#
+#    def _load_dep_schemes(self, libs, deps, storage=None):
+#
+#        for name, ref in deps.items():
+#
+#            if name in libs.keys():
+#                continue
+#
+#            conan = self.project.api.conan
+#
+#            storage = storage or self.project.api.conan_storage_path
+#            with environment_append({'CONAN_STORAGE_PATH': storage}):
+#                conanfile = conan.inspect(str(ref), ['options', 'default_options', 'settings', 'manifest'])
+#
+#            manifest = conanfile['manifest']
+#            scheme_name = ref.scheme or 'default'
+#            # TODO: support ref.schme as dict to handle options definitions
+#            if manifest is None:
+#                if not ref.scheme:
+#                    raise Exception('request scheme `%s` of %s, It may not an epm package(missing package.yml)' %
+#                                    (ref.scheme, name))
+#                continue
+#
+#            options, deps = self._parse(scheme_name, manifest)
+#
+#            libs[name] = {'scheme': scheme_name, 'manifest': manifest, 'options': options, 'deps': deps}
+#
+#
+#            self._load_dep_schemes(libs, deps, storage)
+#
+#    def _options_items(self, package):
+#
+#        options, deps = self._parse(self.name)
+#        libs = {}
+#        self._load_dep_schemes(libs, deps)
+#        items = {}
+#        for key, value in options.items():
+#            if package:
+#                key = '%s:%s' % (self.project.name, key)
+#            items[key] = value
+#
+#        for name, info in libs.items():
+#            for k, v in info['options'].items():
+#                key = '%s:%s' % (name, k)
+#                items[key] = v
+#        return items
 
     def _get_options(self, package):
         api = self.project.api
@@ -169,7 +168,7 @@ class Scheme(object):
     def _options(self, package=False):
         return OptionsValues(self._get_options(package))
         
-        return OptionsValues(self._options_items(package))
+#        return OptionsValues(self._options_items(package))
 
     @property
     def options(self):

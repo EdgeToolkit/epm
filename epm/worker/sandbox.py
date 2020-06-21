@@ -175,21 +175,24 @@ class Builder(object):
         self._api = project.api
 
     def exec(self, program=None, steps=None):
-        manifest = self._project.manifest
+        metainfo = self._project.metainfo
         steps = steps or ['configure', 'make']
         if isinstance(program, str):
             program = [program]
 
+        sandbox = metainfo.get_sandbox()
+
         if program:
-            bads = set(program).difference(manifest.sandbox.keys())
+            #bads = set(program).difference(manifest.sandbox.keys())
+            bads = set(program).difference(sandbox.keys())
             if bads:
                 raise Exception('{} NOT valid sandbox item'.format(",".join(bads)))
         else:
-            program = manifest.sandbox.keys()
+            program = sandbox.keys()
 
         builds = {}
         for name in program:
-            sb = manifest.sandbox[name]
+            sb = sandbox[name]
             if sb.directory in builds:
                 builds[sb.directory].append(sb)
             else:
@@ -202,6 +205,14 @@ class Builder(object):
         options = ['%s=%s' % (k, v) for k, v in self._project.scheme.package_options.as_list()]
 
         for folder, sbs in builds.items():
+            if not folder:
+                if 'make' in steps:
+                    for sb in sbs:
+                        program = Program(self._project, os.path.join(sb, self._project.folder.out , sbs.type))
+                        program.generate(sb.name)
+                continue
+
+
             conanfile_path = os.path.join(folder, 'conanfile.py')
             build_folder = os.path.join(self._project.folder.out, folder, 'build')
 

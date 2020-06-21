@@ -33,43 +33,43 @@ def get_channel(user=None, channel=None):
 
 from collections import namedtuple, OrderedDict
 from conans.model.version import Version
-
-
-def dependencies_to_reference(data, text=None):
-    dependencies = data.get('dependencies', [])
-    if not isinstance(dependencies, list):
-        raise Exception('package.yml `dependencies` field should be list')
-    deps = OrderedDict()
-    for packages in dependencies:
-        if isinstance(packages, str):
-            name, version, user, channel, revision = get_reference_fields(packages)
-            if user:
-                channel = channel or get_channel(user=user)
-            deps[name] = ConanFileReference(name, version, user, channel, revision)
-
-        elif isinstance(packages, dict):
-            if len(packages) > 1:
-                text = yaml.dump({'dependencies': [packages]})
-                reason = 'package.yml dependencies item wrong format, you may miss indent.'
-                reason += '\n{}'.format(text)
-                print(reason)
-                raise Exception(reason)
-
-            for name, option in packages.items():
-                if 'version' not in option:
-                    raise Exception('package.yml `dependencies` %s `version` not set' % name)
-
-                version = option['version']
-                user = option.get('user', None)
-                channel = get_channel(user=user)
-                channel = option.get('channel', channel)
-                revision= option.get('revision', None)
-                deps[name] = ConanFileReference(name, version, user, channel, revision)
-        else:
-            raise Exception('package.yml `dependencies` item should be dict or reference str ')
-
-    return deps
-
+#
+#
+#def dependencies_to_reference(data, text=None):
+#    dependencies = data.get('dependencies', [])
+#    if not isinstance(dependencies, list):
+#        raise Exception('package.yml `dependencies` field should be list')
+#    deps = OrderedDict()
+#    for packages in dependencies:
+#        if isinstance(packages, str):
+#            name, version, user, channel, revision = get_reference_fields(packages)
+#            if user:
+#                channel = channel or get_channel(user=user)
+#            deps[name] = ConanFileReference(name, version, user, channel, revision)
+#
+#        elif isinstance(packages, dict):
+#            if len(packages) > 1:
+#                text = yaml.dump({'dependencies': [packages]})
+#                reason = 'package.yml dependencies item wrong format, you may miss indent.'
+#                reason += '\n{}'.format(text)
+#                print(reason)
+#                raise Exception(reason)
+#
+#            for name, option in packages.items():
+#                if 'version' not in option:
+#                    raise Exception('package.yml `dependencies` %s `version` not set' % name)
+#
+#                version = option['version']
+#                user = option.get('user', None)
+#                channel = get_channel(user=user)
+#                channel = option.get('channel', channel)
+#                revision= option.get('revision', None)
+#                deps[name] = ConanFileReference(name, version, user, channel, revision)
+#        else:
+#            raise Exception('package.yml `dependencies` item should be dict or reference str ')
+#
+#    return deps
+#
 
 #
 # sandbox:
@@ -81,130 +81,130 @@ def dependencies_to_reference(data, text=None):
 # archive: program (without suffix) of the built
 #
 
-_P_PROJECT = r'(?P<project>\w[\w\-]+)/'
-_P_TYPE = r'(?P<type>(build|package))/'
-_P_FOLDER = r'(?P<folder>bin)?'
-_P_PROGRAM = r'/(?P<program>\w[\w\-]+)'
-_SANDBOX_PATTERN = re.compile(_P_PROJECT + _P_TYPE + _P_FOLDER + _P_PROGRAM + r'$')
-
-
-class ManifestParser(object):
-
-    def __init__(self, filename):
-        if not os.path.exists(filename):
-            raise Exception('Package manifest %s not exits!' % filename)
-
-        self._filename = os.path.abspath(filename)
-
-        with open(self._filename) as f:
-            self.text = f.read()
-
-        self.data = yaml.safe_load(self.text)
-
-    def sandbox(self):
-        Sandbox = namedtuple('Sandbox', 'content name directory type folder program param argv ports privileged')
-        result = {}
-        ports = []
-        privileged = False
-        for name, item in self.data.get('sandbox', {}).items():
-            cmdstr = item
-            if isinstance(item, dict):
-                cmdstr = item['command']
-                ports = item.get('ports', []) or []
-                if isinstance(ports, int):
-                    ports = [ports]
-                privileged = item.get('privileged', False)
-
-            parts = cmdstr.split(' ', 1)
-            command = parts[0]
-            command = pathlib.PurePath(command).as_posix()
-            param = None if len(parts) < 2 else parts[1].strip()
-            argv = param.split() if param else []
-            m = _SANDBOX_PATTERN.match(command)
-            if not m:
-                raise Exception('sandbox {} invalid'.format(name))
-
-            result[name] = Sandbox(item, name,
-                                   m.group('project'), m.group('type'),
-                                   m.group('folder'), m.group('program'),
-                                   param, argv, ports, privileged)
-
-        return result
-
-    def dependencies(self):
-        dependencies = self.data.get('dependencies', [])
-        if not isinstance(dependencies, list):
-            raise Exception('package.yml `dependencies` field should be list')
-        deps = OrderedDict()
-        for packages in dependencies:
-            if isinstance(packages, str):
-                name, version, user, channel, revision = get_reference_fields(packages)
-                if user:
-                    channel = channel or get_channel(user=user)
-                deps[name] = ConanFileReference(name, version, user, channel, revision)
-
-            elif isinstance(packages, dict):
-                if len(packages) > 1:
-                    text = yaml.dump({'dependencies': [packages]})
-                    reason = 'package.yml dependencies item wrong format, you may miss indent.'
-                    reason += '\n{}'.format(text)
-                    print(reason)
-                    raise Exception(reason)
-
-                for name, option in packages.items():
-                    if 'version' not in option:
-                        raise Exception('package.yml `dependencies` %s `version` not set' % name)
-
-                    version = option['version']
-                    user = option.get('user', None)
-                    channel = get_channel(user=user)
-                    channel = option.get('channel', channel)
-                    revision = option.get('revision', None)
-                    deps[name] = ConanFileReference(name, version, user, channel, revision)
-            else:
-                raise Exception('package.yml `dependencies` item should be dict or reference str ')
-
-        return deps
-
-
-class Manifest(namedtuple("Manifest", "name version user dependencies sandbox")):
-    """ Full reference of a package recipes, e.g.:
-    opencv/2.4.10@lasote/testing
-    """
-
-    def __new__(cls, name, version, user, dependencies, sandbox=None):
-        """Simple name creation.
-        @param name:        string containing the desired name
-        @param version:     string containing the desired version
-        @param user:        string containing the user name
-        @param dependencies: OrderDict of ConanFileReference for this package dependencies
-        """
-        version = Version(str(version)) if version is not None else None
-
-        obj = super(cls, Manifest).__new__(cls, name, version, user, dependencies, sandbox)
-        return obj
-
-    @staticmethod
-    def loads(filename='package.yml'):
-        """
-        """
-        parser = ManifestParser(filename)
-        data = parser.data
-        name = data['name']
-        version = data['version']
-        user = data.get('user', None)
-        deps = parser.dependencies()
-        sandbox = parser.sandbox()
-
-        manifest = Manifest(name, version, user, deps, sandbox)
-        manifest._parser = parser
-        manifest._data = data
-        manifest._text = parser.text
-        return manifest
-
-    def as_dict(self):
-        return self._data
-
+#_P_PROJECT = r'(?P<project>\w[\w\-]+)/'
+#_P_TYPE = r'(?P<type>(build|package))/'
+#_P_FOLDER = r'(?P<folder>bin)?'
+#_P_PROGRAM = r'/(?P<program>\w[\w\-]+)'
+#_SANDBOX_PATTERN = re.compile(_P_PROJECT + _P_TYPE + _P_FOLDER + _P_PROGRAM + r'$')
+#
+#
+#class ManifestParser(object):
+#
+#    def __init__(self, filename):
+#        if not os.path.exists(filename):
+#            raise Exception('Package manifest %s not exits!' % filename)
+#
+#        self._filename = os.path.abspath(filename)
+#
+#        with open(self._filename) as f:
+#            self.text = f.read()
+#
+#        self.data = yaml.safe_load(self.text)
+#
+#    def sandbox(self):
+#        Sandbox = namedtuple('Sandbox', 'content name directory type folder program param argv ports privileged')
+#        result = {}
+#        ports = []
+#        privileged = False
+#        for name, item in self.data.get('sandbox', {}).items():
+#            cmdstr = item
+#            if isinstance(item, dict):
+#                cmdstr = item['command']
+#                ports = item.get('ports', []) or []
+#                if isinstance(ports, int):
+#                    ports = [ports]
+#                privileged = item.get('privileged', False)
+#
+#            parts = cmdstr.split(' ', 1)
+#            command = parts[0]
+#            command = pathlib.PurePath(command).as_posix()
+#            param = None if len(parts) < 2 else parts[1].strip()
+#            argv = param.split() if param else []
+#            m = _SANDBOX_PATTERN.match(command)
+#            if not m:
+#                raise Exception('sandbox {} invalid'.format(name))
+#
+#            result[name] = Sandbox(item, name,
+#                                   m.group('project'), m.group('type'),
+#                                   m.group('folder'), m.group('program'),
+#                                   param, argv, ports, privileged)
+#
+#        return result
+#
+#    def dependencies(self):
+#        dependencies = self.data.get('dependencies', [])
+#        if not isinstance(dependencies, list):
+#            raise Exception('package.yml `dependencies` field should be list')
+#        deps = OrderedDict()
+#        for packages in dependencies:
+#            if isinstance(packages, str):
+#                name, version, user, channel, revision = get_reference_fields(packages)
+#                if user:
+#                    channel = channel or get_channel(user=user)
+#                deps[name] = ConanFileReference(name, version, user, channel, revision)
+#
+#            elif isinstance(packages, dict):
+#                if len(packages) > 1:
+#                    text = yaml.dump({'dependencies': [packages]})
+#                    reason = 'package.yml dependencies item wrong format, you may miss indent.'
+#                    reason += '\n{}'.format(text)
+#                    print(reason)
+#                    raise Exception(reason)
+#
+#                for name, option in packages.items():
+#                    if 'version' not in option:
+#                        raise Exception('package.yml `dependencies` %s `version` not set' % name)
+#
+#                    version = option['version']
+#                    user = option.get('user', None)
+#                    channel = get_channel(user=user)
+#                    channel = option.get('channel', channel)
+#                    revision = option.get('revision', None)
+#                    deps[name] = ConanFileReference(name, version, user, channel, revision)
+#            else:
+#                raise Exception('package.yml `dependencies` item should be dict or reference str ')
+#
+#        return deps
+#
+#
+#class Manifest(namedtuple("Manifest", "name version user dependencies sandbox")):
+#    """ Full reference of a package recipes, e.g.:
+#    opencv/2.4.10@lasote/testing
+#    """
+#
+#    def __new__(cls, name, version, user, dependencies, sandbox=None):
+#        """Simple name creation.
+#        @param name:        string containing the desired name
+#        @param version:     string containing the desired version
+#        @param user:        string containing the user name
+#        @param dependencies: OrderDict of ConanFileReference for this package dependencies
+#        """
+#        version = Version(str(version)) if version is not None else None
+#
+#        obj = super(cls, Manifest).__new__(cls, name, version, user, dependencies, sandbox)
+#        return obj
+#
+#    @staticmethod
+#    def loads(filename='package.yml'):
+#        """
+#        """
+#        parser = ManifestParser(filename)
+#        data = parser.data
+#        name = data['name']
+#        version = data['version']
+#        user = data.get('user', None)
+#        deps = parser.dependencies()
+#        sandbox = parser.sandbox()
+#
+#        manifest = Manifest(name, version, user, deps, sandbox)
+#        manifest._parser = parser
+#        manifest._data = data
+#        manifest._text = parser.text
+#        return manifest
+#
+#    def as_dict(self):
+#        return self._data
+#
 
 def archive_mirror(conanfile, origin, folder=None, name=None):
     ARCHIVE_URL = os.getenv('EPM_ARCHIVE_URL', None)
@@ -252,25 +252,15 @@ def mirror(conanfile, origin, format='{name}/{basename}'):
         return m
     return origin
 
+class MetaInfo(object):
 
-class MetaInformation(object):
-
-    def __init__(self, conanfile, metadata):
+    def __init__(self, metainfo, conanfile):
+        self._metainfo = metainfo
         self._conanfile = conanfile
-        self._metadata = metadata
-        self._helper = ManifestHelper(self._conanfile._meta_information_filename, self._metadata)
 
     @property
-    def metadata(self):
-        return self._metadata
-
-    @property
-    def requirements(self):
-        return self._helper.requirements(self._conanfile)
-
-
-
-
+    def dependencies(self):
+        return self._metainfo.get_requirements(self._conanfile.settings)
 
 class ConanFileEx(ConanFile):
     _MIRRORs = None
@@ -310,14 +300,21 @@ class ConanFileEx(ConanFile):
                                              basename=os.path.basename(i),
                                              version=self.version)
 
+    @property
+    def metainfo(self):
+        return MetaInfo(self._META_INFO, self)
+
+    @property
+    def manifest(self):
+        return MetaInfo(self._META_INFO, self)
 
 from epm.model.config import MetaInformation
 def Packager(manifest='package.yml'):
     metainfo = MetaInformation(manifest)
-    m = Manifest.loads(manifest)
-    name = m.name
-    version = m.version
-    user = m.user
+    #m = Manifest.loads(manifest)
+    name = metainfo.name
+    version = metainfo.version
+    user = metainfo.user
 
 
     global _PackagerClassId
@@ -326,17 +323,17 @@ def Packager(manifest='package.yml'):
 
     exports = [manifest]
     klass = type(class_name, (ConanFileEx,),
-                 dict(name=name, version=version, manifest=m, exports=exports,
+                 dict(name=name, version=version, exports=exports,
                       _META_INFO=metainfo))
     return klass
 
 
 def TestPackager(manifest='../package.yml'):
     metainfo = MetaInformation(manifest)
-    m = Manifest.loads(manifest)
-    name = m.name
-    version = m.version
-    user = m.user
+    #m = Manifest.loads(manifest)
+    name = metainfo.name
+    version = metainfo.version
+    user = metainfo.user
 
 
     global _PackagerClassId

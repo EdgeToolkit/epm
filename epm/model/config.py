@@ -5,6 +5,14 @@ from collections import namedtuple, OrderedDict
 from epm.errors import EMetadataError
 from conans.model.ref import ConanFileReference, get_reference_fields
 from conans.client.tools import environment_append
+import pathlib
+import re
+_P_PROJECT = r'(?P<project>\w[\w\-]+)/'
+_P_TYPE = r'((?P<project>\w[\w\-]+)/)?(?P<type>(build|package))/'
+_P_FOLDER = r'(?P<folder>bin)?'
+_P_PROGRAM = r'/(?P<program>\w[\w\-]+)'
+_SANDBOX_PATTERN = re.compile(_P_TYPE + _P_FOLDER + _P_PROGRAM + r'$')
+
 
 class Config(object):
 
@@ -64,6 +72,7 @@ class MetaInformation(object):
     _data = None
     _text = None
     _filename = None
+    _conanfile = None
 
     def __init__(self, filename):
 
@@ -79,6 +88,22 @@ class MetaInformation(object):
 
             with open(filename) as f:
                 self._data = yaml.safe_load(f)
+
+        name = self._data['name']
+        version = self._data['version']
+        user = self._data.get('user', None)
+
+    @property
+    def name(self):
+        return self._data['name']
+
+    @property
+    def version(self):
+        return self._data['version']
+
+    @property
+    def user(self):
+        return self._data.get('user', None)
 
     @property
     def data(self):
@@ -236,6 +261,38 @@ class MetaInformation(object):
                     package_options[key] = value
 
         return options, package_options
+
+    def get_sandbox(self):
+        Sandbox = namedtuple('Sandbox', 'content name directory type folder program param argv ports privileged')
+        result = {}
+        ports = []
+        privileged = False
+        for name, item in self.data.get('sandbox', {}).items():
+            cmdstr = item
+            if isinstance(item, dict):
+                cmdstr = item['command']
+                ports = item.get('ports', []) or []
+                if isinstance(ports, int):
+                    ports = [ports]
+                privileged = item.get('privileged', False)
+
+            parts = cmdstr.split(' ', 1)
+            command = parts[0]
+            command = pathlib.PurePath(command).as_posix()
+            param = None if len(parts) < 2 else parts[1].strip()
+            argv = param.split() if param else []
+            m = _SANDBOX_PATTERN.match(command)
+            if not m:
+                raise Exception('sandbox {} invalid'.format(name))
+
+            result[name] = Sandbox(item, name,
+                                   m.group('project'), m.group('type'),
+                                   m.group('folder'), m.group('program'),
+                                   param, argv, ports, privileged)
+
+        return result
+
+
 
 
 

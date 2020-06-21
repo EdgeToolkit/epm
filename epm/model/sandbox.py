@@ -58,6 +58,7 @@ class Program(object):
         filename = os.path.join(self._build_folder,
                                 self._sandbox.folder or '',
                                 self._sandbox.program)
+        print(filename)
 
         if not self._is_program(filename):
             raise Exception('Can not find sandbox program %s in %s' %
