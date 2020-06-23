@@ -88,7 +88,9 @@ class Runner(object):
 
     def exec(self, command, argv):
         filename = os.path.normpath(os.path.join(self._project.folder.out, 'sandbox', command))
-        conan_storage = self._api.conan_storage_path
+        conan_storage = os.path.normpath(self._api.conan_storage_path)
+
+
         env = {'CONAN_STORAGE_PATH': conan_storage}
         if self._name in ['shell', 'docker']:
             runner = ConanRunner(output=self._api.out)
@@ -168,9 +170,10 @@ class Sandbox(Worker):
 
 class Builder(object):
 
-    def __init__(self, project):
+    def __init__(self, project, is_create_method=False):
         self._project = project
         self._api = project.api
+        self._is_create_method = is_create_method
 
     def exec(self, program=None, steps=None):
         metainfo = self._project.metainfo
@@ -230,10 +233,19 @@ class Builder(object):
                             install_folder=build_folder
                             )
 
+
             if 'make' in steps:
 
                 for sb in sbs:
+
                     subpath = build_folder if folder else os.path.join(self._project.folder.out, sb.type)
+                    if self._is_create_method and not folder:
+                        id = self._project.record.get('package_id')
+
+                        subpath = os.path.join(os.getenv('CONAN_STORAGE_PATH'), self._project.reference.dir_repr(),
+                                               sb.type, id)
+
+
 
                     program = Program(self._project, sb, subpath)
                     program.generate(sb.name)

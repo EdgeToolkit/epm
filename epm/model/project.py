@@ -3,7 +3,7 @@ import pathlib
 from collections import namedtuple
 from string import Template
 from epm.util import system_info
-
+import yaml
 from epm.util.files import rmdir, mkdir, save, load_yaml, save_yaml
 
 PLATFORM, ARCH = system_info()
@@ -26,6 +26,39 @@ ${out_dir}/build/res
 '''
 
 
+class Record(object):
+    _FILENAME = 'record.yaml'
+
+    def __init__(self, project):
+        self._project = project
+        self._data = None
+
+    def get(self, name, default=None):
+        if self._data is None:
+            path = os.path.join(self._project.folder.out, Record._FILENAME)
+            if os.path.exists(path):
+                with open(path, 'r') as f:
+                    self._data = yaml.safe_load(f)
+            self._data = dict()
+        return self._data.get(name, default)
+
+    def set(self, key, value):
+        if self.get(key) == value:
+            return
+
+        if value is None:
+            if key in self._data:
+                del self._data[key]
+            else:
+                return
+        else:
+            self._data[key] = value
+        path = os.path.join(self._project.folder.out, Record._FILENAME)
+        with open(path, 'w') as f:
+            yaml.dump(self._data, f)
+
+
+
 class Project(object):
 
     def __init__(self, profile, scheme, api=None, directory='.'):
@@ -44,6 +77,7 @@ class Project(object):
         self._conan_meta = None
         self._api = api
         self._conan_storage_path = None
+        self._record = None
         self.dir = pathlib.PurePath(os.path.abspath(directory)).as_posix()
 
     def initialize(self):
@@ -61,13 +95,21 @@ class Project(object):
             f.write(text)
             f.flush()
 
+
+
+
     def save(self, info={}):
         save_yaml(os.path.join(self.folder.out, 'buildinfo.yml'), info)
 
     @property
     def buildinfo(self):
         return load_yaml(os.path.join(self.folder.out, 'buildinfo.yml'))
-    
+
+    @property
+    def record(self):
+        if self._record is None:
+            self._record = Record(self)
+        return self._record
     @property
     def api(self):
         if not self._api:
@@ -136,16 +178,6 @@ class Project(object):
     @property
     def layout(self):
         return '%s/conan.layout' % self.folder.out
-#
-#    @property
-#    def manifest(self):
-#        if self._manifest is None:
-#            path = os.path.join(self.dir, 'package.yml')
-#            self._manifest = load_yaml(path)
-#            from epm.tools.conan import Manifest
-#            self._manifest = Manifest.loads(path)
-#
-#        return self._manifest
 
     @property
     def metainfo(self):

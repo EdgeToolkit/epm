@@ -1,4 +1,10 @@
+import os
 import yaml
+import urllib
+import tempfile
+import subprocess
+import zipfile
+from urllib.parse import urlparse
 
 
 def load_yaml(filename):
@@ -38,6 +44,34 @@ def decode_text(text):
 
     return text.decode("utf-8", "ignore")  # Ignore not compatible characters
 
+
+def cache(path):
+    url = urlparse(path)
+    folder = path
+    download_dir = tempfile.mkdtemp(suffix='epm.wenv')
+
+    if url.scheme in ['http', 'https']:
+        filename = os.path.join(download_dir, os.path.basename(path))
+        urllib.request.urlretrieve(path, filename)
+        folder = os.path.join(download_dir, 'wenv.config')
+        zfile = zipfile.ZipFile(filename)
+        zfile.extractall(folder)
+    elif url.scheme.startswith('git+'):
+        url = path[4:]
+        fields = url.split('@')
+        options = ['--depth', '1']
+        if len(fields) > 1:
+            url = fields[0]
+            branch = fields[-1]
+            options += ['-b', branch]
+
+        subprocess.run(['git', 'clone', url, download_dir] + options)
+        rmdir(os.path.join(download_dir, '.git'))
+        folder = download_dir
+
+    if not os.path.exists(folder):
+        raise Exception('Invalid install path {}'.format(path))
+    return folder
 
 import conans.util.files
 mkdir = conans.util.files.mkdir

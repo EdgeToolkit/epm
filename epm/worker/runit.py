@@ -1,6 +1,11 @@
 import sys
 import os
 import pathlib
+import shutil
+
+from epm.util.files import cache
+
+
 from epm.model.sandbox import Program
 from epm.util import is_elf, system_info
 from epm.util.files import remove, rmdir, load_yaml
@@ -45,14 +50,41 @@ class Runit(Worker):
 
     def exec(self, command, runner=None, argv=[]):
 
-        m = self.project.manifest.as_dict()
+        m = self.project.metainfo.data
         script = m.get('script', {}).get(command)
         if not script:
             raise ModuleNotFoundError('no <{}> in script'.format(command))
+
+        cmdline = script
+        if isinstance(script, dict):
+            location = script.get('location')
+            cmdline = script.get('command')
+            path = os.path.normpath(os.path.join('.epm', 'script', command))
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            d = cache(location)
+            shutil.copytree(d, path)
+            cmdline = '%s/%s' % (path, cmdline)
+
+        cmdline = cmdline.strip()
+        args = cmdline.split(' ', 1)
+        filename = args[0]
         command = []
-        if script.endswith('.py'):
-            command = [sys.executable]
-        command += [script]
+
+        if len(args) > 1:
+            import shlex
+
+            for i in shlex.split(args[1]):
+                if ' ' in i:
+                    i = '"{}"'.format(i)
+                print('*', i)
+
+                command.append(i)
+
+        command = [filename] + command
+
+        if filename.endswith('.py'):
+            command = [sys.executable] + command
 
         profile = self.project.profile.name if self.project.profile else None
         scheme = self.project.scheme.name if self.project.scheme else None

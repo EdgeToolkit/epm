@@ -347,7 +347,7 @@ def TestPackager(manifest='../package.yml'):
                                  get_channel(user) or '_'))
     klass = type(class_name, (ConanFile,),
                  dict(version=version,
-                      manifest=m,
+                      manifest=metainfo,
                       _META_INFO = metainfo,
                       requires=requires))
     return klass

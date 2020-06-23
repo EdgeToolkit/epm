@@ -138,19 +138,22 @@ class Creator(Worker):
                            % (project.name, scheme.name), details={})
 
         id = info.get('installed')[0].get('packages')[0]['id']
+        project.record.set('package_id', id)
 
         result = {'id': id}
         dirs = None
+        project.save({'package_id': id})
+
 
         if sandbox:
             from epm.worker.sandbox import Builder as SB
-            sb = SB(project)
+            sb = SB(project, is_create_method=True)
             sb.exec()
 
         if clear:
             self._clear(project)
 
-        project.save({'package_id': id})
+
         if dirs:
             result['dirs'] = dirs
 
