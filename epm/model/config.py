@@ -89,10 +89,6 @@ class MetaInformation(object):
             with open(filename) as f:
                 self._data = yaml.safe_load(f)
 
-        name = self._data['name']
-        version = self._data['version']
-        user = self._data.get('user', None)
-
     @property
     def name(self):
         return self._data['name']
@@ -205,7 +201,6 @@ class MetaInformation(object):
         assert len(default) == 1
         return default[0] if default else 'default'
 
-
     def get_options(self, scheme, settings, storage, api):
         package_options = dict()
 
@@ -229,15 +224,6 @@ class MetaInformation(object):
 
             opt, pkg_opt = metainfo.get_options(sch, settings, storage, api)
 
-            def _merge(base, new):
-                for k, v in new.items():
-                    if k in base and v != base[k]:
-                        raise EMetadataError('package scheme conflict, {}: {} <-> {}'.format(k, v, base[k]))
-                    base[k] = v
-
-            def _check_consistency(name, opt):
-                if name not in package_options:
-                    return
             import pprint
 
             if opt:
