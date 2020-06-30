@@ -120,11 +120,19 @@ class MetaInformation(object):
     @staticmethod
     def condition_only(conditions, settings):
 
+        def _get(container, name):
+            import collections
+            import conans
+            if isinstance(container, (dict, collections.OrderedDict)):
+                return container.get(name)
+            elif isinstance(container, conans.model.settings.Settings):
+                return container.get_safe(name)
+            return None
+
         for cond in conditions:
             for key, value in cond.items():
                 if key == 'compiler':
-
-                    if value != settings.get('compiler'):
+                    if value != _get(settings, 'compiler'):
                         return False
         return True
 
@@ -141,18 +149,21 @@ class MetaInformation(object):
                 deps[name] = ConanFileReference(name, version, user, channel, revision)
 
             elif isinstance(packages, dict):
-                process = True
-                if 'only' in packages and settings:
-                    process = self.condition_only(packages['only'], settings)
+                for name, option in packages.items():
+                    cond = option.get('only')
+                    if cond and settings:
+                        if not self.condition_only(cond, settings):
+                            print('skp dependent {} according condition'.format(name))
+                            import pprint
+                            pprint.pprint(option)
+                            continue
 
-                if process:
-                    for name, option in packages.items():
-                        version = option['version']
-                        user = option.get('user', None)
-                        channel = get_channel(user=user)
-                        channel = option.get('channel', channel)
-                        revision = option.get('revision', None)
-                        deps[name] = ConanFileReference(name, version, user, channel, revision)
+                    version = option['version']
+                    user = option.get('user', None)
+                    channel = get_channel(user=user)
+                    channel = option.get('channel', channel)
+                    revision = option.get('revision', None)
+                    deps[name] = ConanFileReference(name, version, user, channel, revision)
         return deps
 
     def get_scheme(self, scheme, settings):
