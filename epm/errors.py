@@ -1,4 +1,17 @@
 
+
+class EPMError(Exception):
+    """
+             Generic EPM exception
+    """
+    def __init__(self, *args, **kwargs):
+        self.msg = kwargs.pop("msg", None)
+
+    def as_dict(self):
+        pass
+
+
+
 class EException(Exception):
     """
          Generic EPM exception
