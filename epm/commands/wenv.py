@@ -1,33 +1,13 @@
 import os
 from epm.commands import Command, register_command, ArgparseArgument
 
-_install_args = [
 
-    ArgparseArgument("location", type=str,
-                     help="location of the install source, support local directory or http/hppts zip url."),
+_INSTALL_LOCATION = \
+    "location of the work environment source, it could be local directory or "\
+    "url for tarball (.zip) of http/https."
 
-    ArgparseArgument("--install-dir", type=str, default=None,
-                     help="where to installed, by default it will be installed on ~/.epm/wenv/{name}"),
-]
+_SHELL_NAME_HELP = "The name of install virtual environment."
 
-_active_args = [
-    ArgparseArgument("name", default=None, type=str,
-                     help="The name of install virtual environment."),
-]
-
-_show_args = [
-    ArgparseArgument("name", help="The name of the wenv to be display."),
-]
-
-_banner_args = [
-    ArgparseArgument("name", nargs='?', default=None, type=str,
-                     help="The name wenv."),
-]
-
-_uninstall_args = [
-    ArgparseArgument("name", default=None, type=str,
-                     help="The name to be uninstalled."),
-]
 
 
 class WorkEnvironment(Command):
@@ -42,32 +22,33 @@ class WorkEnvironment(Command):
         args = {
             'install': {
                 'help': 'Install epm work environment.',
-                'args': _install_args
+                'args': [ArgparseArgument("location", type=str, help=_INSTALL_LOCATION)]
             },
+
             'shell': {
-                'help': 'Startup an installed work environment shell.',
-                'args': _active_args
-
+                'help': 'Startup work environment.',
+                'args': [ArgparseArgument("name", default=None, type=str, help=_SHELL_NAME_HELP)]
             },
+
             'list': {
-                'help': 'List all installed work environment.',
+                'help': 'List all installed work environments.',
                 'args': []
-
             },
+
             'show': {
                 'help': 'Show specified work environment information.',
-                'args': _show_args
-
+                'args': [ArgparseArgument("name", help="The name of the work environment.")]
             },
 
             'banner': {
                 'help': 'Print banner of the work environment.',
-                'args': _banner_args
+                'args': [ArgparseArgument("name", nargs='?', default=None, type=str, help="The name wenv.")]
 
             },
+
             'uninstall': {
                 'help': 'Uninstall specified work environment',
-                'args': _uninstall_args
+                'args': [ArgparseArgument("name", default=None, type=str, help="The name to be uninstalled.")]
 
             }
         }
