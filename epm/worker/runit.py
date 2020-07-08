@@ -1,14 +1,9 @@
 import sys
 import os
-import pathlib
 import shutil
 
 from epm.util.files import cache
-
-
-from epm.model.sandbox import Program
-from epm.util import is_elf, system_info
-from epm.util.files import remove, rmdir, load_yaml
+from epm.util import system_info
 from epm.worker import Worker
 from conans.client.tools import ConanRunner
 PLATFORM, ARCH = system_info()

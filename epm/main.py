@@ -9,9 +9,8 @@ import traceback
 from conans.client.output import Color, colorama_initialize
 from epm import commands
 from epm.model.runner import Output
-from conans.errors import ConanException
-from epm.errors import EDockerAPIError, EException
-from epm.tool.conan import Packager
+from epm.errors import EException
+
 # Exit codes for conan command:
 SUCCESS = 0                         # 0: Success (done)
 ERROR_GENERAL = 1                   # 1: General ConanException error (done)
@@ -83,6 +82,8 @@ class Main(object):
         except IOError as e:
             if e.errno != errno.EPIPE:
                 raise
+        except EException as e:
+            print(e)
         except Exception as e:
             res = self._error(e)
 

@@ -7,12 +7,10 @@ from conans.client.tools import environment_append
 
 from epm.worker import Worker, DockerBase, param_encode
 from epm.model.project import Project
-from epm.errors import APIError, EDockerAPIError
-#from epm.model.sandbox import Program
+from epm.errors import EException, EConanException, EDockerException
 from epm.util import is_elf
 from epm.util.files import remove, rmdir
 from epm.paths import HOME_EPM_DIR
-#from epm.model import sandbox_builds_filter
 
 
 def _delete(path):
@@ -98,14 +96,24 @@ class Creator(Worker):
             docker.add_volume(HOME_EPM_DIR, '$home/.epm')
             if storage:
                 docker.environment['CONAN_STORAGE_PATH'] = '%s/%s' % (docker.WD, storage)
-            ret = docker.exec('epm api create %s' % param_encode(param))
-            if ret:
-                raise EDockerAPIError(ret)
+            docker.exec('epm api create %s' % param_encode(param))
+            if docker.returncode:
+                raise EDockerException(docker)
+
         else:
             storage = os.path.join(project.dir, storage) if storage else self.api.conan_storage_path
             with environment_append(dict(self.api.config.env_vars,
                                          **{'CONAN_STORAGE_PATH': storage})):
-                self._exec(project, clear, bool(param.get('sandbox')))
+
+                try:
+                    self._exec(project, clear, bool(param.get('sandbox')))
+                except EException as e:
+                    raise e
+                except ConanException as e:
+                    raise EConanException('conan error in build', e)
+                except BaseException as e:
+                    raise EException('execute build api failure.', exception=e)
+
 
     def _exec(self, project, clear=False, sandbox=True):
 
@@ -132,10 +140,8 @@ class Creator(Worker):
                                  options=options,
                                  profile_names=[filename],
                                  test_folder=False)
-
         if info['error']:
-            raise APIError('failed when create package %s | %s '
-                           % (project.name, scheme.name), details={})
+            raise EConanException('create package failed.', info)
 
         id = info.get('installed')[0].get('packages')[0]['id']
         project.record.set('package_id', id)
@@ -143,7 +149,6 @@ class Creator(Worker):
         result = {'id': id}
         dirs = None
         project.save({'package_id': id})
-
 
         if sandbox:
             from epm.worker.sandbox import Builder as SB
@@ -164,14 +169,3 @@ class Creator(Worker):
             _clear_builds(i)
         _clear_storage(self.api.conan_storage_path, project.reference.dir_repr())
 
-        def sizeof(folder):
-            size = 0
-            for root, dirs, files in os.walk(folder):
-                for name in files:
-                    path = os.path.join(root, name)
-                    if os.path.isfile(path):
-                        try:
-                            size += os.path.getsize(path)
-                        except:
-                            pass
-            return size

@@ -19,6 +19,7 @@ def param_decode(param):
     assert (isinstance(param, str))
     return json.loads(base64.b64decode(param))
 
+
 class Worker(object):
 
     def __init__(self, api=None):
@@ -39,14 +40,16 @@ class Worker(object):
         return self._out
 
     @property
-    def out(self):
-        if self._out is None:
-            self._out = self._api.out
-        return self._out
-
-    @property
     def conan(self):
         return self.api.conan
+
+
+def _uname(prj):
+    import time
+    name = '%s_%s_%s' % (prj.name, prj.scheme.name, time.time())
+    for i in "@:/":
+        name = name.replace(i,'-')
+    return name
 
 
 class DockerRunner(object):
@@ -59,12 +62,10 @@ class DockerRunner(object):
         self.environment = {}
         self.WD = None
         self._pre_script = ''
+        self.command_str = ''
+        self.name = _uname(self._project)
+        self.returncode =None
 
-    @property
-    def _container_name(self):
-        import time
-        name = '%s_%s_%s' % (self._project.name, self._project.scheme.name, time.time())
-        return name.replace('@', '-').replace('/', '-')
 
     def exec(self, commands, config=None):
 
@@ -73,7 +74,7 @@ class DockerRunner(object):
         config, WD, volumes, environment = self._preprocess(config)
 
         command = self._command(commands, config, WD, volumes, environment)
-        args = ['docker', 'run', '--name', self._container_name, '--rm']
+        args = ['docker', 'run', '--name', self.name, '--rm']
 
         if PLATFORM == 'Linux' and os.getuid():
             args = ['sudo'] + args
@@ -89,6 +90,8 @@ class DockerRunner(object):
         for name, val in environment.items():
             args += ['-e', '%s=%s' % (name, val)]
 
+        args += ['-e', 'EPM_DOCKER_CONTAINER_NAME={}'.format(self.name)]
+
         wd = WD or config.get('home')
         args += ['-w', wd] if wd else []
 
@@ -97,7 +100,9 @@ class DockerRunner(object):
 
         out = self._api.out
         docker = Runner(output=out)
-        return docker(cmd)
+        self.command_str = cmd
+        self.returncode = docker(cmd)
+        return self.returncode
 
     def add_volume(self, path, bind, mode='rw'):
         """
@@ -120,7 +125,6 @@ class DockerRunner(object):
     def _preprocess(self, config):
         scheme = self._project.scheme
         profile = self._project.profile
-        #scheme.profile.docker.builder
 
         config = config or profile.docker.builder
         config = dict({'shell': '/bin/bash', 'home': '/tmp'}, **config)

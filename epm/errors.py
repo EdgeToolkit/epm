@@ -1,34 +1,84 @@
-
-
-class EPMError(Exception):
-    """
-             Generic EPM exception
-    """
-    def __init__(self, *args, **kwargs):
-        self.msg = kwargs.pop("msg", None)
-
-    def as_dict(self):
-        pass
-
+from conans.errors import ConanException
 
 
 class EException(Exception):
     """
          Generic EPM exception
     """
-    def __init__(self, *args, **kwargs):
-        self.msg = kwargs.pop("msg", None)
-        self.details = kwargs.pop("details", None)
-        self.traceback = kwargs.pop("traceback", None)
+    def __init__(self, msg, **kwargs):
+        self.info = {'__message__': msg, '__traceback__': [self.__traceback__]}
+        self.info.update(**kwargs)
+        e = self.info.get('exception')
+        if isinstance(e, BaseException):
+            self.info['__traceback__'].append(e.__traceback__)
 
-        super(EException, self).__init__(*args, **kwargs)
+        super(EException, self).__init__(msg, **kwargs)
+
+    @property
+    def message(self):
+        return self._info.get('__message__', '?')
 
     def __str__(self):
-        from conans.util.files import exception_message_safe
-        msg = super(EException, self).__str__()
+        import pprint
+        return pprint.pformat(self.info)
 
 
-        return exception_message_safe(msg)
+class EConanException(Exception):
+
+    def __init__(self, msg, conan_exception):
+        super(EConanException, self).__init__(msg)
+        self.info['__class__'] = type(self)
+        if isinstance(conan_exception, ConanException):
+            self.info['details'] = str(conan_exception)
+            self.info['__traceback__'].append(conan_exception.__traceback__)
+        elif isinstance(conan_exception, dict):
+            self.info['details'] = str(conan_exception)
+
+
+class EDockerException(EException):
+
+    def __init__(self, docker):
+        import os
+        filename = os.path.join('.epm/{}.json'.format(docker.name))
+        details = {'msg': 'execut command in docker failed. no details since no info file.'}
+        if os.path.exists(filename):
+            with open(filename) as f:
+                import json
+                details = json.loads(f)
+
+        details['docker-exit-code'] = docker.returncode
+        details['docker-command'] = docker.command_str
+        msg = details.pop('msg')
+        super(EDockerException, self).__init__(msg, **details)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class ECommandError(EException):

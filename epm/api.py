@@ -32,6 +32,7 @@ def api_method(f):
 
 
 class APIv1(object):
+    VERSION = '0.9'
 
     @classmethod
     def factory(cls):

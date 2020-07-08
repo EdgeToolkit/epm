@@ -1,28 +1,15 @@
-
-
 import os
-import glob
-import fnmatch
-import paramiko
 import pathlib
 from epm.errors import EException
 from epm.worker import Worker
-from epm.model.project import Project
-from epm.errors import APIError
 from epm.model.sandbox import Program
-from epm.util import is_elf, system_info
-from epm.util.files import remove, rmdir, load_yaml
+from epm.util import system_info
 from conans.client.tools import ConanRunner
 from epm.tools.ssh import SSH
 from conans.tools import environment_append
 
 
 PLATFORM, ARCH = system_info()
-
-
-
-
-
 
 class Remoter(SSH):
 
@@ -59,11 +46,6 @@ class Remoter(SSH):
         self.call(cmd, check=True)
 
 
-
-
-
-
-
 class Runner(object):
 
     def __init__(self, sandbox, name=None):
@@ -89,7 +71,6 @@ class Runner(object):
     def exec(self, command, argv):
         filename = os.path.normpath(os.path.join(self._project.folder.out, 'sandbox', command))
         conan_storage = os.path.normpath(self._api.conan_storage_path)
-
 
         env = {'CONAN_STORAGE_PATH': conan_storage}
         if self._name in ['shell', 'docker']:
@@ -120,8 +101,6 @@ class Runner(object):
             ssh = SSH(runner['hostname'], runner['ssh']['username'], runner['ssh']['password'], runner['ssh']['port'])
             ssh.open()
 
-
-
             home = runner['home']
             project = '{}/{}'.format(home, PROJECT_FOLDER)
             storage = '{}/{}'.format(home, CONAN_STORAGE)
@@ -142,8 +121,6 @@ class Runner(object):
                           interface=localhost['hostname'],
                           username=localhost['username'],
                           password=localhost['password'])
-            #ssh.WD = home
-
             _mnt(self._project.dir, project)
             _mnt(conan_storage, storage)
 

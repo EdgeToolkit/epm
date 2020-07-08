@@ -1,7 +1,8 @@
 import os
 from epm.worker import Worker, DockerRunner, param_encode
 from epm.model.project import Project
-from epm.errors import EConanAPIError, EDockerAPIError
+from epm.errors import EException, EConanException, EDockerException
+from conans.errors import ConanException
 from conans.tools import environment_append
 from epm.paths import HOME_EPM_DIR
 
@@ -53,7 +54,14 @@ class Builder(Worker):
             steps = param.get('steps')
             sandbox = param.get('sandbox')
 
-            self._exec(project, steps, sandbox)
+            try:
+                self._exec(project, steps, sandbox)
+            except EException as e:
+                raise e
+            except ConanException as e:
+                raise EConanException('conan error in build', e)
+            except BaseException as e:
+                raise EException('execute build api failure.', exception=e)
 
         elif runner == 'docker':
             param['RUNNER'] = 'shell'
@@ -62,9 +70,9 @@ class Builder(Worker):
 
             docker.add_volume(project.dir, docker.WD)
             docker.add_volume(HOME_EPM_DIR, '$home/.epm')
-            ret = docker.exec('epm api build %s' % param_encode(param))
-            if ret:
-                raise EDockerAPIError(ret, self.api)
+            docker.exec('epm api build %s' % param_encode(param))
+            if docker.returncode:
+                raise EDockerException(docker)
 
     def _configure(self, project):
         scheme = project.scheme
@@ -89,7 +97,7 @@ class Builder(Worker):
                              install_folder=folder,
                              cwd=project.dir)
         if info['error']:
-            raise EConanAPIError('configure step failed on conan.install.', details=info)
+            raise EConanException('configure step failed on conan.install.', info)
 
         conan.source(project.dir, source_folder=folder, info_folder=folder)
 
