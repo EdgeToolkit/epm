@@ -1,3 +1,5 @@
+import os
+import traceback
 from conans.errors import ConanException
 
 
@@ -6,17 +8,37 @@ class EException(Exception):
          Generic EPM exception
     """
     def __init__(self, msg, **kwargs):
-        self.info = {'__message__': msg, '__traceback__': [self.__traceback__]}
+        self.info = {'__message__': msg, '__traceback__': []}
         self.info.update(**kwargs)
         e = self.info.get('exception')
         if isinstance(e, BaseException):
+            detail = str(e)
+            if detail:
+                self.info['__message__'] += '\n  + {}'.format(detail)
+            self.info.pop('exception')
             self.info['__traceback__'].append(e.__traceback__)
 
-        super(EException, self).__init__(msg, **kwargs)
+        super(EException, self).__init__(msg, kwargs)
 
     @property
     def message(self):
-        return self._info.get('__message__', '?')
+        return self.info.get('__message__', '?')
+
+    def traceback(self, filename=None):
+
+        file = None
+        if filename:
+            folder = os.path.dirname(filename)
+            if not os.path.exists(folder):
+                os.makedirs(folder)
+            file = open(filename, 'w')
+
+        traceback.print_tb(self.__traceback__, file=file)
+        for tb in self.info['__traceback__']:
+            if tb:
+                traceback.print_tb(tb, file=file)
+        if file:
+            file.close()
 
     def __str__(self):
         import pprint

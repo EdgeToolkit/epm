@@ -45,6 +45,8 @@ class Builder(Worker):
             sb.exec(program)
 
     def exec(self, param):
+        if 'PROFILE' not in param:
+            raise EException('PROFILE required for build.')
         project = Project(param['PROFILE'], param.get('SCHEME'), self.api)
         runner = param.get('RUNNER') or 'auto'
         if runner == 'auto':

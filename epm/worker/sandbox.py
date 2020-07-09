@@ -1,6 +1,6 @@
 import os
 import pathlib
-from epm.errors import EException
+from epm.errors import EConanException, EException
 from epm.worker import Worker
 from epm.model.sandbox import Program
 from epm.util import system_info
@@ -11,40 +11,40 @@ from conans.tools import environment_append
 
 PLATFORM, ARCH = system_info()
 
-class Remoter(SSH):
-
-    def __init__(self, localhost, machine):
-        self._localhost = localhost
-        self._machine = machine
-        super(Remoter, self).__init__(hostname=self._machine['hostname'],
-                                      username=self._machine['ssh']['username'],
-                                      password=self._machine['ssh']['password'],
-                                      port=self._machine['ssh'].get('port'))
-
-    def mount(self, source, directory, host):
-        if not pathlib.PurePath(directory).is_absolute():
-            directory = os.path.join(self.WD, directory)
-
-        source = pathlib.PurePosixPath(source).as_posix()
-        directory = pathlib.PurePosixPath(directory).as_posix()
-
-        try:
-            self.call('[[ -d {0} ]] && umount {0}'.format(directory))
-        except:
-            pass
-        formatter = 'mount -t nfs -o nolock {hostname}:{source} {directory}'
-
-        if PLATFORM == 'Windows':
-            source = source.replace(':', '')
-            formatter = 'mount -t cifs -o user={username},pass={password},noserverino //{hostname}/{source} {directory}'
-
-        cmd = formatter.format(hostname=self._localhost['hostname'],
-                               username=self._localhost['username'],
-                               password=self._localhost['password'],
-                               source=source,
-                               directory=directory)
-        self.call(cmd, check=True)
-
+#class Remoter(SSH):
+#
+#    def __init__(self, localhost, machine):
+#        self._localhost = localhost
+#        self._machine = machine
+#        super(Remoter, self).__init__(hostname=self._machine['hostname'],
+#                                      username=self._machine['ssh']['username'],
+#                                      password=self._machine['ssh']['password'],
+#                                      port=self._machine['ssh'].get('port'))
+#
+#    def mount(self, source, directory, host):
+#        if not pathlib.PurePath(directory).is_absolute():
+#            directory = os.path.join(self.WD, directory)
+#
+#        source = pathlib.PurePosixPath(source).as_posix()
+#        directory = pathlib.PurePosixPath(directory).as_posix()
+#
+#        try:
+#            self.call('[[ -d {0} ]] && umount {0}'.format(directory))
+#        except:
+#            pass
+#        formatter = 'mount -t nfs -o nolock {hostname}:{source} {directory}'
+#
+#        if PLATFORM == 'Windows':
+#            source = source.replace(':', '')
+#            formatter = 'mount -t cifs -o user={username},pass={password},noserverino //{hostname}/{source} {directory}'
+#
+#        cmd = formatter.format(hostname=self._localhost['hostname'],
+#                               username=self._localhost['username'],
+#                               password=self._localhost['password'],
+#                               source=source,
+#                               directory=directory)
+#        self.call(cmd, check=True)
+#
 
 class Runner(object):
 
@@ -185,7 +185,6 @@ class Builder(object):
 
                 name = '{}-{}'.format(self._project.name, folder.replace('-', '_'))
 
-
             def _(step):
                 self._api.out.highlight('[%s sandbox program] %s. project folder  %s'
                                        % (step, ",".join([x.name for x in sbs]), folder))
@@ -201,7 +200,7 @@ class Builder(object):
                                      profile_names=[profile],
                                      install_folder=build_folder)
                 if info['error']:
-                    raise Exception('configure sandbox %s failed.' % folder)
+                    raise EConanException('configure sandbox <{}> failed.'.format(folder), info)
 
             if 'make' in steps and folder:
                 _('make')
@@ -209,7 +208,6 @@ class Builder(object):
                             build_folder=build_folder,
                             install_folder=build_folder
                             )
-
 
             if 'make' in steps:
 
@@ -222,10 +220,6 @@ class Builder(object):
                         subpath = os.path.join(os.getenv('CONAN_STORAGE_PATH'), self._project.reference.dir_repr(),
                                                sb.type, id)
 
-
-
                     program = Program(self._project, sb, subpath)
                     program.generate(sb.name)
-
-
 

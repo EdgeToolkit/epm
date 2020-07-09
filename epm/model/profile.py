@@ -42,10 +42,11 @@ class Profile(object):
         self._filename = os.path.join(folder, 'profiles', name)
         manifest = os.path.join(os.path.dirname(self._filename), 'manifest.yml')
         if not os.path.exists(manifest):
-            raise EException('No %s for %s, you need to install.' % (manifest, name))
+            raise EException('Can not find manifest.yml in profile <{}> folder {}.' % (
+                             os.path.dirname(self._filename), name))
 
         if not os.path.exists(self._filename):
-            raise EException('No  %s profile, you need to install.' % name)
+            raise EException('Can not find profile <%s>.' % name)
 
         with open(manifest) as f:
             self._manifest = yaml.safe_load(f)

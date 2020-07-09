@@ -82,8 +82,6 @@ class Main(object):
         except IOError as e:
             if e.errno != errno.EPIPE:
                 raise
-        except EException as e:
-            print(e)
         except Exception as e:
             res = self._error(e)
 
@@ -93,48 +91,41 @@ class Main(object):
     def _error(self, e):
         from epm import __version__ as version
 
-        if not os.path.exists('.epm'):
-            os.makedirs('.epm')
+        #if not os.path.exists('.epm'):
+        #    os.makedirs('.epm')
+        #
+        #tb = traceback.format_exc()
+        #msg = str(e)
+        #is_docker = False
 
-        tb = traceback.format_exc()
-        msg = str(e)
-        is_docker = False
-
-        if isinstance(e, ConanException):
-            pass
-        elif isinstance(e, EDockerAPIError):
-            if not os.path.exists('.epm/errors.json'):
-                msg = 'command executed in docker failed, but .epm/errors.json missed.'
-                tb = None
-            else:
-                with open('.epm/errors.json') as f:
-                    info = json.load(f)
-                is_docker = True
-                msg = info.get('msg')
-                tb = info.get('traceback')
-                version = info.get('version')
+        if isinstance(e, EException):
+            self.out.error(e.message)
+            e.traceback('.epm/traceback.log')
         else:
             print('------------------------')
             print(type(e), str(e))
+            import traceback
+            traceback.print_tb(e.__traceback__)
 
-        if self.args.command == 'api':
 
-            info = {'msg': msg,
-                    'version': version,
-                    'command': self.args.command,
-                    'time': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
-                    'traceback': tb
-                    }
-            with open('.epm/errors.json', 'w') as f:
-                json.dump(info, f)
-        else:
-            hint = ' docker epm %s ' % version if is_docker else ''
-            hint = '{:=^80s}'.format(hint)
-
-            self.out.write('\n{}\n'.format(hint))
-            self.out.error(msg)
-            with open('.epm/traceback.log', 'w') as f:
-                f.write(str(tb))
+        #if self.args.command == 'api':
+        #
+        #    info = {'msg': msg,
+        #            'version': version,
+        #            'command': self.args.command,
+        #            'time': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+        #            'traceback': tb
+        #            }
+        #    with open('.epm/errors.json', 'w') as f:
+        #        json.dump(info, f)
+        #else:
+        #    hint = ' docker epm %s ' % version if is_docker else ''
+        #    hint = '{:=^80s}'.format(hint)
+        #
+        #    self.out.write('\n{}\n'.format(hint))
+        #    self.out.error(msg)
+        #    with open('.epm/traceback.log', 'w') as f:
+        #        f.write(str(tb))
 
         return 1
 
