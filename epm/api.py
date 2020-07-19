@@ -13,7 +13,7 @@ from epm.worker.download import Downloader
 from epm.util.files import load_yaml
 from conans.client.tools import environment_append
 from epm.model.runner import Output
-from epm.errors import EConanAPIError, APIError
+
 
 
 def api_method(f):
@@ -116,10 +116,17 @@ class APIv1(object):
 
     @api_method
     def runit(self, param):
-        project = self.project(param.get('PROFILE'), param.get('SCHEME'))
-        runit = Runit(project, self)
         command = param['command']
         argv = param.get('args') or []
+        if command == 'conan':
+            import subprocess
+            with environment_append({'CONAN_STORAGE_PATH': self.conan_storage_path}):
+                proc = subprocess.run(['conan'] + argv)
+            return proc.returncode
+
+
+        project = self.project(param.get('PROFILE'), param.get('SCHEME'))
+        runit = Runit(project, self)
         runner = param.get('RUNNER', None)
 
         return runit.exec(command, runner=runner, argv=argv)
