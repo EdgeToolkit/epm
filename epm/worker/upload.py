@@ -2,6 +2,7 @@ import os
 from epm.worker import Worker
 from epm.model.project import Project
 from conans.tools import environment_append
+from epm.errors import EConanException
 
 
 class Uploader(Worker):
@@ -27,3 +28,5 @@ class Uploader(Worker):
             info = self.conan.upload(pattern=reference, package=package_id,
                                      policy=UPLOAD_POLICY_FORCE,
                                      remote_name=remote, all_packages=False)
+            if info['error']:
+                raise EConanException('configure step failed on conan.install.', info)

@@ -1,5 +1,11 @@
 import sys
 import os
+import pathlib
+import shutil
+
+from epm.paths import DATA_DIR
+from conans.util.files import mkdir
+
 from conans.client.conan_api import ConanAPIV1 as ConanAPI
 from conans.client.output import colorama_initialize
 from conans.client.userio import UserIO as UserIO
@@ -13,8 +19,65 @@ from epm.worker.download import Downloader
 from epm.util.files import load_yaml
 from conans.client.tools import environment_append
 from epm.model.runner import Output
-from epm.errors import EConanAPIError, APIError
 
+
+class APIUtils(object):
+    _HOME_WORKBENCH = None
+    CONAN_FOLDER_NAME = '.conan'
+
+    workbench_dir = None
+    out = None
+    user_io = None
+
+    #######
+    @staticmethod
+    def get_home_dir(self):
+        return os.path.join(os.path.expanduser('~'), '.epm')
+
+    @staticmethod
+    def get_workbench_dir(self, name=None):
+        if name:
+            path = os.path.join(self.get_home_dir(), name)
+            if not os.path.exists(path):
+                return None
+            return path
+
+        path = os.getenv('EPM_CI_WORKBENCH_DIRECTORY')
+
+        if os.getenv('EPM_CI_WORK_ENVIRONMENT_DIR'):
+            print('EPM_CI_WORK_ENVIRONMENT_DIR was deprecated, please replace with EPM_CI_WORKBENCH_DIRECTORY.')
+            path = os.getenv('EPM_CI_WORK_ENVIRONMENT_DIR')
+
+        return path or self.get_home_dir()
+
+    @staticmethod
+    def initialize_home_workbench(self):
+        if APIUtils._HOME_WORKBENCH is None:
+            home = self.get_home_dir()
+            conan_home = os.path.jion(home, APIUtils.CONAN_FOLDER_NAME)
+            settings_file = os.path.join(conan_home, 'settings.yml')
+            if not os.path.exists(settings_file):
+                filename = os.path.join(DATA_DIR, 'conan', 'settings.yml')
+                mkdir(conan_home)
+                shutil.copy(filename, settings_file)
+            APIUtils._HOME_WORKBENCH = home
+        return APIUtils._HOME_WORKBENCH
+
+    @property
+    def conan_home(self):
+        return os.path.join(self.workbench_dir, APIUtils.CONAN_FOLDER_NAME)
+
+    @property
+    def conan(self):
+        if self._conan is None:
+            self._conan = ConanAPI(self.conan_home, self.out, self.user_io)
+        return self._conan
+
+    @property
+    def conan_storage_path(self):
+        cache_folder = os.path.join(self.workbench_dir, APIUtils.CONAN_FOLDER_NAME)
+        conan = ConanAPI(cache_folder)
+        return conan.config_get("storage.path", quiet=True)
 
 def api_method(f):
     def wrapper(api, *args, **kwargs):
@@ -31,17 +94,24 @@ def api_method(f):
     return wrapper
 
 
-class APIv1(object):
+class APIv1(APIUtils):
+    VERSION = '0.9'
 
     @classmethod
     def factory(cls):
         return cls()
 
-    def __init__(self, cache_dir=None, output=None, user_io=None):
-        color = colorama_initialize()
+    def __init__(self, cache_dir=None, output=None, user_io=None, color=None, workshop=None):
+        APIUtils.initialize_home_workshop()
+
+        color = color or colorama_initialize()
         self.out = output or Output(sys.stdout, sys.stderr, color)
 
         self.user_io = user_io or UserIO(out=self.out)
+
+        workshop = workshop or cache_dir
+        self.workshop_dir = APIUtils.get_workshop_dir(workshop)
+
         self.cache_dir = cache_dir or get_epm_cache_dir()
 
         self._conan = None
@@ -50,21 +120,6 @@ class APIv1(object):
 
         self._CONFIG = None
 
-    @property
-    def conan(self):
-        cache_folder = os.path.join(self.cache_dir, '.conan')
-        if self._conan is None:
-            settings_file = os.path.join(cache_folder, 'settings.yml')
-            if not os.path.exists(settings_file):
-                from epm.paths import DATA_DIR
-                from epm.util.files import mkdir
-                import shutil
-                filename = os.path.join(DATA_DIR, 'conan', 'settings.yml')
-                mkdir(cache_folder)
-                shutil.copy(filename, settings_file)
-
-            self._conan = ConanAPI(cache_folder, self.out, self.user_io)
-        return self._conan
 
     @property
     def config(self):
@@ -87,7 +142,6 @@ class APIv1(object):
     def sandbox_build(self, param):
         worker = SandboxBuilder(self)
         worker.exec(param)
-
 
     @api_method
     def create(self, param):
@@ -115,10 +169,16 @@ class APIv1(object):
 
     @api_method
     def runit(self, param):
-        project = self.project(param.get('PROFILE'), param.get('SCHEME'))
-        runit = Runit(project, self)
         command = param['command']
         argv = param.get('args') or []
+        if command == 'conan':
+            import subprocess
+            with environment_append({'CONAN_STORAGE_PATH': self.conan_storage_path}):
+                proc = subprocess.run(['conan'] + argv)
+            return proc.returncode
+
+        project = self.project(param.get('PROFILE'), param.get('SCHEME'))
+        runit = Runit(project, self)
         runner = param.get('RUNNER', None)
 
         return runit.exec(command, runner=runner, argv=argv)
@@ -132,11 +192,12 @@ class APIv1(object):
             self._config = load_yaml(path)
         return self._config
 
-    @property
-    def conan_storage_path(self):
-        cache_folder = os.path.join(self.cache_dir, '.conan')
-        conan = ConanAPI(cache_folder)
-        return conan.config_get("storage.path", quiet=True)
+
+
+
+
+
+
 
 
 API = APIv1
