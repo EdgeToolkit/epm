@@ -1,0 +1,17 @@
+# [\da-Z]([\w\-\.]*[\da-Z])?
+property:
+  mirror: http://172.16.0.119/archive
+  
+package:
+  zlib:
+    {mirror}/zlib/{tarball}:
+    - "https://zlib.net/{tarball}"
+    - "https://downloads.sourceforge.net/project/libpng/zlib/{version}/{tarball}"
+
+  zlib-x:
+    property:
+      version: \d+(\.\d+)*
+    {mirror}/zlib/{tarball}:
+    - "https://zlib.net/{tarball}"
+    - "https://downloads.sourceforge.net/project/libpng/zlib/{version}/{tarball}"
+
