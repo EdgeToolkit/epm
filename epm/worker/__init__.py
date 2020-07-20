@@ -97,6 +97,9 @@ class DockerRunner(object):
 
         out = self._api.out
         docker = Runner(output=out)
+        print('----------------- docker command --------------------------------')
+        print(cmd)
+        print('-----------------------------------------------------------------')
         return docker(cmd)
 
     def add_volume(self, path, bind, mode='rw'):
