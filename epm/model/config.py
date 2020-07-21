@@ -27,6 +27,7 @@ class Config(object):
 
     @property
     def wenv(self):
+        print('wenv has been replaced by workbench')
         WEnv = namedtuple('WEnv', ['name', 'with_default_profiles', 'buildin_profiles'])
 
         value = self._data.get('wenv')
@@ -36,6 +37,17 @@ class Config(object):
         with_default_profiles = value.get('with_default_profiles', False)
         buildin_profiles = value.get('buildin_profiles')
         return WEnv(value['name'], with_default_profiles, buildin_profiles)
+
+    @property
+    def workbench(self):
+        Workbench = namedtuple('Workbench', ['name'])
+
+        value = self._data.get('workbench')
+
+        if value is None or value.get('name') is None:
+            return None
+
+        return Workbench(value['name'])
 
     @property
     def environment(self):

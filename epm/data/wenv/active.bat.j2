@@ -1,14 +1,5 @@
-{% set name=config.wenv.name %}
-{% set environment=config.environment %}
 @ECHO OFF
-if defined EPM_WORK_ENVIRONMENT (
-  echo "Already in virtual environment %EPM_VIRTUAL_ENVIRONMENT%, you have to exits this venv, then try again."
-  exit/b 1
-)
+epm workbench banner
 
-set EPM_WORK_ENVIRONMENT={{name}}
-
-epm wenv banner
-
-title [epm wenv] - {{name}}
-prompt $p [epm wenv]@{{name}} $_$$
+title Workbench - {{name}}
+prompt $p [workbench@{{name}}] $_$$

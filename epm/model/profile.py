@@ -16,11 +16,11 @@ from epm.util.files import load_yaml
 
 from collections import OrderedDict, namedtuple
 
-from epm.util import is_elf, system_info
-from epm.util.files import remove, rmdir, load_yaml
-from epm.paths import get_epm_cache_dir, HOME_EPM_DIR
+from epm.util import system_info
+
 
 from conans.client.tools import environment_append
+from epm.util import get_workbench_dir, HOME_DIR
 
 PLATFORM, ARCH = system_info()
 
@@ -33,7 +33,8 @@ class Profile(object):
 
     def __init__(self, name, folder):
         self.name = name
-        folder = folder or get_epm_cache_dir()
+        folder = folder or get_workbench_dir(os.getenv('EPM_WORKBENCH'))
+        print('------>', folder)
 
         if not Profile._checked_default_profiles:
             Profile.install_default_profiles()
@@ -121,7 +122,7 @@ class Profile(object):
 
     @staticmethod
     def install_default_profiles(cached=None):
-        cached = cached or HOME_EPM_DIR
+        cached = cached or HOME_DIR
         from epm.paths import is_home_epm_dir
         if not is_home_epm_dir(cached):
             return

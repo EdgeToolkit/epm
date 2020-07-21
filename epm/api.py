@@ -56,6 +56,7 @@ class APIUtils(object):
 
     @property
     def conan_storage_path(self):
+        print(self.workbench_dir, '*******', CONAN_FOLDER_NAME)
         cache_folder = os.path.join(self.workbench_dir, CONAN_FOLDER_NAME)
         conan = ConanAPI(cache_folder)
         return conan.config_get("storage.path", quiet=True)
@@ -84,7 +85,7 @@ class APIv1(APIUtils):
     def factory(cls):
         return cls()
 
-    def __init__(self, cache_dir=None, output=None, user_io=None, color=None, workshop=None):
+    def __init__(self, workbench=None, output=None, user_io=None, color=None):
         APIUtils.initialize_home_workbench()
 
         color = color or colorama_initialize()
@@ -92,10 +93,8 @@ class APIv1(APIUtils):
 
         self.user_io = user_io or UserIO(out=self.out)
 
-        workshop = workshop or cache_dir
-        self.workbench_dir = get_workbench_dir(workshop)
-
-        self.cache_dir = cache_dir or get_epm_cache_dir()
+        workbench = workbench or os.getenv('EPM_WORKBENCH')
+        self.workbench_dir = get_workbench_dir(workbench)
 
         self._conan = None
         self._config = None
@@ -103,12 +102,11 @@ class APIv1(APIUtils):
 
         self._CONFIG = None
 
-
     @property
     def config(self):
         if self._CONFIG is None:
             from epm.model.config import Config
-            self._CONFIG = Config(os.path.join(self.cache_dir, 'config.yml'))
+            self._CONFIG = Config(os.path.join(self.workbench_dir, 'config.yml'))
 
         return self._CONFIG
 
@@ -168,19 +166,12 @@ class APIv1(APIUtils):
 
     @api_method
     def load_config(self, update=True):
-        path = os.path.join(self.cache_dir, 'config.yml')
+        path = os.path.join(self.workbench_dir, 'config.yml')
         if not os.path.exists(path):
             return {}
         if self._config is None or update:
             self._config = load_yaml(path)
         return self._config
-
-
-
-
-
-
-
 
 
 API = APIv1

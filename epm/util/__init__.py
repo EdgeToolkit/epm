@@ -126,23 +126,15 @@ def symbolize(string):
 
 
 def get_workbench_dir(name=None):
-
-    if name:
-        path = os.path.join(HOME_DIR, name)
-        if not os.path.exists(path):
-            return None
-        return path
-
-    path = os.getenv('EPM_WORKBENCH')
-    if not path:
+    WORKBENCH = os.path.join(HOME_DIR, '.workbench')
+    if not name or name in ['default']:
         return HOME_DIR
 
-    if os.path.isabs(path):
-        return path
-
-    path = os.path.join(HOME_DIR, path)
+    path = os.path.join(WORKBENCH, name)
     if os.path.isfile(path):
-        assert False
+        with open(path) as f:
+            path = f.read().strip()
+            return path
 
     if os.path.isdir(path):
         return path

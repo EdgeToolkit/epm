@@ -145,7 +145,7 @@ class Project(object):
             return None
         if self._profile is None:
             from epm.model.profile import Profile
-            self._profile = Profile(self._profile_name, self.api.cache_dir)
+            self._profile = Profile(self._profile_name, self.api.workbench_dir)
         return self._profile
 
     @property
