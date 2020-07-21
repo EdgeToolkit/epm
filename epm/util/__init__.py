@@ -1,20 +1,10 @@
 import os
 import sys
-import yaml
 import pathlib
+from epm import HOME_DIR
 from epm.enums import Platform, Architecture
 from epm.errors import EException
 
-
-#class ArgparseArgument(object):
-#
-#    def __init__(self, *name, **kwargs):
-#        self.name = name
-#        self.args = kwargs
-#
-#    def add_to_parser(self, parser):
-#        parser.add_argument(*self.name, **self.args)
-#
 
 def windows_arch():
     """
@@ -112,7 +102,7 @@ def sempath(path, prefixes, format='${%s}'):
         elif isinstance(i, tuple):
             name, prefix = i
         else:
-            raise SyntaxError('kwords must be str or tuple.')
+            raise SyntaxError('kwargs must be str or tuple.')
 
         try:
             tail = pathlib.PurePath(path).relative_to(prefix)
@@ -134,3 +124,27 @@ def symbolize(string):
         raise SyntaxError('{} can not be converted to symbol.'.format(string))
     return symbol
 
+
+def get_workbench_dir(name=None):
+
+    if name:
+        path = os.path.join(HOME_DIR, name)
+        if not os.path.exists(path):
+            return None
+        return path
+
+    path = os.getenv('EPM_WORKBENCH')
+    if not path:
+        return HOME_DIR
+
+    if os.path.isabs(path):
+        return path
+
+    path = os.path.join(HOME_DIR, path)
+    if os.path.isfile(path):
+        assert False
+
+    if os.path.isdir(path):
+        return path
+
+    return None

@@ -19,53 +19,34 @@ from epm.worker.download import Downloader
 from epm.util.files import load_yaml
 from conans.client.tools import environment_append
 from epm.model.runner import Output
+from epm import HOME_DIR
+from epm.util import get_workbench_dir
 
+CONAN_FOLDER_NAME = '.conan'
 
 class APIUtils(object):
     _HOME_WORKBENCH = None
-    CONAN_FOLDER_NAME = '.conan'
+    _PACKAGE_NAME = None
 
     workbench_dir = None
     out = None
     user_io = None
 
-    #######
     @staticmethod
-    def get_home_dir(self):
-        return os.path.join(os.path.expanduser('~'), '.epm')
-
-    @staticmethod
-    def get_workbench_dir(self, name=None):
-        if name:
-            path = os.path.join(self.get_home_dir(), name)
-            if not os.path.exists(path):
-                return None
-            return path
-
-        path = os.getenv('EPM_CI_WORKBENCH_DIRECTORY')
-
-        if os.getenv('EPM_CI_WORK_ENVIRONMENT_DIR'):
-            print('EPM_CI_WORK_ENVIRONMENT_DIR was deprecated, please replace with EPM_CI_WORKBENCH_DIRECTORY.')
-            path = os.getenv('EPM_CI_WORK_ENVIRONMENT_DIR')
-
-        return path or self.get_home_dir()
-
-    @staticmethod
-    def initialize_home_workbench(self):
+    def initialize_home_workbench():
         if APIUtils._HOME_WORKBENCH is None:
-            home = self.get_home_dir()
-            conan_home = os.path.jion(home, APIUtils.CONAN_FOLDER_NAME)
+            conan_home = os.path.join(HOME_DIR, CONAN_FOLDER_NAME)
             settings_file = os.path.join(conan_home, 'settings.yml')
             if not os.path.exists(settings_file):
                 filename = os.path.join(DATA_DIR, 'conan', 'settings.yml')
                 mkdir(conan_home)
                 shutil.copy(filename, settings_file)
-            APIUtils._HOME_WORKBENCH = home
+            APIUtils._HOME_WORKBENCH = HOME_DIR
         return APIUtils._HOME_WORKBENCH
 
     @property
     def conan_home(self):
-        return os.path.join(self.workbench_dir, APIUtils.CONAN_FOLDER_NAME)
+        return os.path.join(self.workbench_dir, CONAN_FOLDER_NAME)
 
     @property
     def conan(self):
@@ -75,9 +56,10 @@ class APIUtils(object):
 
     @property
     def conan_storage_path(self):
-        cache_folder = os.path.join(self.workbench_dir, APIUtils.CONAN_FOLDER_NAME)
+        cache_folder = os.path.join(self.workbench_dir, CONAN_FOLDER_NAME)
         conan = ConanAPI(cache_folder)
         return conan.config_get("storage.path", quiet=True)
+
 
 def api_method(f):
     def wrapper(api, *args, **kwargs):
@@ -97,12 +79,13 @@ def api_method(f):
 class APIv1(APIUtils):
     VERSION = '0.9'
 
+
     @classmethod
     def factory(cls):
         return cls()
 
     def __init__(self, cache_dir=None, output=None, user_io=None, color=None, workshop=None):
-        APIUtils.initialize_home_workshop()
+        APIUtils.initialize_home_workbench()
 
         color = color or colorama_initialize()
         self.out = output or Output(sys.stdout, sys.stderr, color)
@@ -110,7 +93,7 @@ class APIv1(APIUtils):
         self.user_io = user_io or UserIO(out=self.out)
 
         workshop = workshop or cache_dir
-        self.workshop_dir = APIUtils.get_workshop_dir(workshop)
+        self.workbench_dir = get_workbench_dir(workshop)
 
         self.cache_dir = cache_dir or get_epm_cache_dir()
 

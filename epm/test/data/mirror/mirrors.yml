@@ -4,14 +4,15 @@ property:
   
 package:
   zlib:
-    {mirror}/zlib/{tarball}:
-    - "https://zlib.net/{tarball}"
-    - "https://downloads.sourceforge.net/project/libpng/zlib/{version}/{tarball}"
+    ${mirror}/zlib/${tarball}:
+    - https://zlib.net/${tarball}
+    - https://downloads.sourceforge.net/project/libpng/zlib/${version}/${tarball}
 
   zlib-x:
     property:
-      version: \d+(\.\d+)*
-    {mirror}/zlib/{tarball}:
-    - "https://zlib.net/{tarball}"
-    - "https://downloads.sourceforge.net/project/libpng/zlib/{version}/{tarball}"
+      version: '\d+(\.\d+)*'
+
+    ${mirror}/zlib/${tarball}':
+    - https://zlib.net/${tarball}
+    - https://downloads.sourceforge.net/project/libpng/zlib/${version}/${tarball}
 

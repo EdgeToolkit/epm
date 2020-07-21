@@ -51,3 +51,7 @@ class Architecture:
     @staticmethod
     def is_arm32(arch):
         return arch in [Architecture.ARM, Architecture.ARMv7, Architecture.ARMv7S]
+
+
+
+

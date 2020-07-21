@@ -4,7 +4,7 @@ import glob
 import fnmatch
 
 from conans.client.tools import environment_append
-
+from conans.errors import ConanException
 from epm.worker import Worker, DockerBase, param_encode
 from epm.model.project import Project
 from epm.errors import EException, EConanException, EDockerException
@@ -107,10 +107,10 @@ class Creator(Worker):
 
                 try:
                     self._exec(project, clear, bool(param.get('sandbox')))
+                except ConanException as e:
+                    raise EConanException('conan error in create', e)
                 except EException as e:
                     raise e
-                except ConanException as e:
-                    raise EConanException('conan error in build', e)
                 except BaseException as e:
                     raise EException('execute build api failure.', exception=e)
 

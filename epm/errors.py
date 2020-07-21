@@ -45,10 +45,10 @@ class EException(Exception):
         return pprint.pformat(self.info)
 
 
-class EConanException(Exception):
+class EConanException(EException):
 
     def __init__(self, msg, conan_exception):
-        super(EConanException, self).__init__(msg)
+        super(EConanException, self).__init__('{}\n[conan] {}\n'.format(msg, str(conan_exception)))
         self.info['__class__'] = type(self)
         if isinstance(conan_exception, ConanException):
             self.info['details'] = str(conan_exception)
