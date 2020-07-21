@@ -8,8 +8,11 @@ from conans.client.tools import net
 def split(txt, keys):
     for key in keys:
         result = txt.split(key, 1)
-        
+
+
 class Mirror(object):
+    Repo = False
+    Packages = set()
 
     def __init__(self, filename):
         self._filename = os.path.abspath(filename)
@@ -19,12 +22,20 @@ class Mirror(object):
             self._package = self._config.get('package', {})
         self._property = self._config.get('property') or dict()
 
+    def find(self, url):
+        for name in self.Packages:
+            result = self.find_package(name, url)
+            if result:
+                return result
+        return None
+
     def find_package(self, name, url):
         rules = self._get_rules(name)
         if not rules:
             return None
 
         for expr, symbols, pattern in rules:
+            print(expr, symbols, pattern, url, '@@')
             m = pattern.match(url)
             if m:
                 try:
@@ -37,6 +48,7 @@ class Mirror(object):
 
     def _get_rules(self, name):
         config = self._package.get(name)
+        print(name, '========', config)
         if not config:
             return None
 
@@ -72,25 +84,34 @@ class Mirror(object):
 
         return rules
 
+    def register(self, name):
+        self.Packages.add(name)
+
     @staticmethod
     def load():
-        from epm import HOME_DIR
-        from epm.util import get_workbench_dir
-        workbench = os.getenv('EPM_WORKBENCH') or HOME_DIR
+        if Mirror.Repo is False:
+            from epm import HOME_DIR
+            from epm.util import get_workbench_dir
+            workbench = os.getenv('EPM_WORKBENCH') or HOME_DIR
 
-        path = os.path.join(get_workbench_dir(workbench), 'mirrors.yml')
-        if os.path.exists(path):
-            try:
-                return Mirror(path)
-            except Exception as e:
-                print(e)
-        return None
+            path = os.path.join(get_workbench_dir(workbench), 'mirrors.yml')
+            if os.path.exists(path):
+                try:
+                    Mirror.Repo = Mirror(path)
+                except Exception as e:
+                    print(e)
+                    Mirror.Repo = None
+
+            if Mirror.Repo:
+                register_mirror(Mirror.Repo)
+
+        return Mirror.Repo
 
 
 conan_download = net.download
 
 
-def register_mirror(mirror, name):
+def register_mirror(mirror):
 
     def download(url, filename, **kwargs):
 
@@ -99,7 +120,7 @@ def register_mirror(mirror, name):
             for i in url:
                 real_url = None
                 try:
-                    real_url = mirror.find_package(name, i)
+                    real_url = mirror.find(i)
                     if real_url:
                         print('[mirror] {} -> {}'.format(i, real_url))
                 except Exception as e:
@@ -107,14 +128,12 @@ def register_mirror(mirror, name):
 
                 urls.append(real_url or i)
         else:
-            assert  False
-            result = mirror.find_package(name, url)
-            if result:
-                urls.append(result)
-                print('[mirror] {} -> {}'.format(i, result))
-            else:
-                urls = url
+            real_url = mirror.find(url)
+            if real_url:
+                print('[mirror] {} -> {}'.format(url, real_url))
+            urls = real_url or url
         conan_download(urls, filename, **kwargs)
+
     net.download = download
 
 

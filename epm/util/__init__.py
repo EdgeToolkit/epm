@@ -126,11 +126,11 @@ def symbolize(string):
 
 
 def get_workbench_dir(name=None):
-    WORKBENCH = os.path.join(HOME_DIR, '.workbench')
+    workbench = os.path.join(HOME_DIR, '.workbench')
     if not name or name in ['default']:
         return HOME_DIR
 
-    path = os.path.join(WORKBENCH, name)
+    path = os.path.join(workbench, name)
     if os.path.isfile(path):
         with open(path) as f:
             path = f.read().strip()

@@ -53,8 +53,7 @@ class ConanFileEx(ConanFile):
 
         mirror = Mirror.load()
         if mirror:
-            register_mirror(mirror, self.name)
-
+            mirror.register(self.name)
 
     @property
     def metainfo(self):
