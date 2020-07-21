@@ -56,10 +56,14 @@ class APIUtils(object):
 
     @property
     def conan_storage_path(self):
-        print(self.workbench_dir, '*******', CONAN_FOLDER_NAME)
+
         cache_folder = os.path.join(self.workbench_dir, CONAN_FOLDER_NAME)
         conan = ConanAPI(cache_folder)
-        return conan.config_get("storage.path", quiet=True)
+
+        with environment_append({'CONAN_USER_HOME': self.conan_home}):
+            path = conan.config_get("storage.path", quiet=True)
+        print(self.workbench_dir, '*******', path)
+        return path
 
 
 def api_method(f):

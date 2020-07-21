@@ -208,13 +208,16 @@ def active(name):
         folder = HOME_DIR
         name = 'default'
 
-    api = API(workshop=name)
+    api = API(workbench=name)
     storage = api.conan_storage_path
     # TODO: add short_path handle
     env_vars = {'CONAN_STORAGE_PATH': storage,
-                'CONAN_USER_HOME': os.path.join(folder, '.conan'),
+                'CONAN_USER_HOME': api.conan_home,
                 'EPM_WORKBENCH': name
                }
+    print('=======================')
+    print(env_vars)
+    print('=======================')
 
     with environment_append(env_vars):
         if PLATFORM == 'Windows':

@@ -66,7 +66,6 @@ class DockerRunner(object):
         self.name = _uname(self._project)
         self.returncode =None
 
-
     def exec(self, commands, config=None):
 
         from conans.client.runner import ConanRunner as Runner
@@ -91,6 +90,8 @@ class DockerRunner(object):
             args += ['-e', '%s=%s' % (name, val)]
 
         args += ['-e', 'EPM_DOCKER_CONTAINER_NAME={}'.format(self.name)]
+        EPM_WORKBENCH = os.environ.get('EPM_WORKBENCH')
+        args += ['-e', 'EPM_WORKBENCH={}'.format(EPM_WORKBENCH)] if EPM_WORKBENCH else []
 
         wd = WD or config.get('home')
         args += ['-w', wd] if wd else []
@@ -102,6 +103,9 @@ class DockerRunner(object):
         docker = Runner(output=out)
         self.command_str = cmd
         self.returncode = docker(cmd)
+        print('------------------------------------------------')
+        print(cmd)
+        print('-----------------%d------------------------------' % self.returncode)
         return self.returncode
 
     def add_volume(self, path, bind, mode='rw'):
