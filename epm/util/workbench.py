@@ -81,7 +81,7 @@ def banner(show='auto'):
     from epm import __version__
     image = os.getenv('EPM_DOCKER_IMAGE') or ''
     logo = _LOGO_DOCKER if image else _LOGO
-    txt = _LOGO.format(epm_version=__version__, docker_image=image)
+    txt = logo.format(epm_version=__version__, docker_image=image)
 
     if show and not os.getenv('EPM_NO_BANNER'):
         print(txt)
