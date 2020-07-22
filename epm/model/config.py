@@ -178,33 +178,34 @@ class MetaInformation(object):
                     deps[name] = ConanFileReference(name, version, user, channel, revision)
         return deps
 
-    def get_scheme(self, scheme, settings):
-        scheme = scheme or 'default'
+    def get_scheme(self, name, settings):
+        name = name or 'default'
+        scheme = self.data.get('scheme', {})
+        metainfo = scheme.get(name)
+        if name == 'default' and isinstance(metainfo, str):
+            name = metainfo
+            metainfo = scheme.get(name)
 
-        info = self.data.get('scheme', {}).get(scheme, None)
-
-        if scheme != 'default' and info is None:
-            raise EMetadataError('scheme <{}> not defined in metadata file'.format(scheme))
+        metainfo = metainfo or dict
+        if not isinstance(metainfo):
+            from epm.errors import ESyntaxError
+            raise ESyntaxError('{} reference an invalid section'.format(name), 'scheme')
 
         import copy
-        if info:
-            info = copy.deepcopy(info)
-        info = info or dict()
 
-        options = dict()
-        if 'options' in info:
-            options = info['options']
-            info.pop('options')
+        metainfo = copy.deepcopy(metainfo)
+        options = metainfo.pop('options', {})
         requirements = self.get_requirements(settings)
         deps = dict()
 
-        for name in requirements.keys():
-            deps[name] = 'default'
+        for pkg in requirements.keys():
+            deps[pkg] = name
 
-        for name, value in info.items():
+        for pkg, expr in metainfo.items():
+            if pkg in deps:
+                sch = self._get_package_scheme(expr, settings)
+                deps[pkg] = sch if sch else name
 
-            if name in deps:
-                deps[name] = self._get_package_scheme(value, settings)
         return options, deps
 
     def _get_package_scheme(self, item, settings):
@@ -222,7 +223,7 @@ class MetaInformation(object):
                 if self.condition_only(conditions, settings):
                     return name
         assert len(default) == 1
-        return default[0] if default else 'default'
+        return default[0] if default else None
 
     def get_options(self, scheme, settings, storage, api):
         package_options = dict()

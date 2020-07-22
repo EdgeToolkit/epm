@@ -74,8 +74,10 @@ class EDockerException(EException):
         super(EDockerException, self).__init__(msg, **details)
 
 
+class ESyntaxError(EException):
 
-
+    def __init__(self, msg, what):
+        pass
 
 
 

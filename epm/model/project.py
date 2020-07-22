@@ -58,7 +58,6 @@ class Record(object):
             yaml.dump(self._data, f)
 
 
-
 class Project(object):
 
     def __init__(self, profile, scheme, api=None, directory='.'):
@@ -95,9 +94,6 @@ class Project(object):
             f.write(text)
             f.flush()
 
-
-
-
     def save(self, info={}):
         save_yaml(os.path.join(self.folder.out, 'buildinfo.yml'), info)
 
@@ -110,6 +106,7 @@ class Project(object):
         if self._record is None:
             self._record = Record(self)
         return self._record
+
     @property
     def api(self):
         if not self._api:
