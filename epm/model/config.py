@@ -146,6 +146,10 @@ class MetaInformation(object):
                 if key == 'compiler':
                     if value != _get(settings, 'compiler'):
                         return False
+                elif key == 'os':
+                    if value != _get(settings, 'os'):
+                        return False
+
         return True
 
     def get_requirements(self, settings):
@@ -181,6 +185,8 @@ class MetaInformation(object):
     def get_scheme(self, name, settings):
         name = name or 'default'
         scheme = self.data.get('scheme', {})
+        if not scheme:
+            return {}, {}
         metainfo = scheme.get(name)
         if name == 'default' and isinstance(metainfo, str):
             name = metainfo
@@ -211,6 +217,7 @@ class MetaInformation(object):
     def _get_package_scheme(self, item, settings):
         if isinstance(item, str):
             return item
+        print(item, '@@@@@@@')
         if not isinstance(item, list):
             raise EMetadataError('Invalid scheme assign', item)
         default = []

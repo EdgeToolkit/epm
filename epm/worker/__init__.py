@@ -89,7 +89,8 @@ class DockerRunner(object):
 
         args += ['-e', 'EPM_DOCKER_IMAGE={}'.format(config['image'])]
         args += ['-e', 'EPM_DOCKER_CONTAINER_NAME={}'.format(self.name)]
-        args += ['-e', 'EPM_NO_BANNER=YES'] if os.getenv('EPM_NO_BANNER') else []
+        banner = os.getenv('EPM_DISPLAY_BANNER') or 'YES'
+        args += [] if banner.lower() in ['no'] else ['-e', 'EPM_NO_BANNER={}'.format(banner)]
 
         workbench = os.environ.get('EPM_WORKBENCH')
         args += ['-e', 'EPM_WORKBENCH={}'.format(workbench)] if workbench else []

@@ -75,15 +75,14 @@ _LOGO_DOCKER = '''
 
 
 
-
-
 def banner(show='auto'):
     from epm import __version__
     image = os.getenv('EPM_DOCKER_IMAGE') or ''
     logo = _LOGO_DOCKER if image else _LOGO
     txt = logo.format(epm_version=__version__, docker_image=image)
 
-    if show and not os.getenv('EPM_NO_BANNER'):
+    banner = os.getenv('EPM_DISPLAY_BANNER') or 'YES'
+    if banner.lower() not in ['no']:
         print(txt)
     return txt
 
