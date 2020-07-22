@@ -187,7 +187,7 @@ class MetaInformation(object):
             metainfo = scheme.get(name)
 
         metainfo = metainfo or dict
-        if not isinstance(metainfo):
+        if not isinstance(metainfo, dict):
             from epm.errors import ESyntaxError
             raise ESyntaxError('{} reference an invalid section'.format(name), 'scheme')
 
