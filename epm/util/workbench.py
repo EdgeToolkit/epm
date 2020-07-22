@@ -58,10 +58,32 @@ _LOGO = '''
 '''
 
 
+
+_LOGO_DOCKER = '''    
+     __________  __  ___  
+    / ____/ __ \/  |/  /  {epm_version:<17} 
+   / __/ / /_/ / /|_/ /   
+  / /___/ ____/ /  / /              ## ## ##        ==          
+ /_____/_/   /_/  /_/            ## ## ## ## ##    ===          
+                             /"""""""""""""""""\___/ ===        
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~ 
+                              \______ o           __/            
+                                \    \         __/               
+                                 \____\_______/ {docker_image:<16}
+'''
+
+
+
+
+
+
 def banner(show='auto'):
     from epm import __version__
-    txt = _LOGO.format(epm_version=__version__)
-    if show:
+    image = os.getenv('EPM_DOCKER_IMAGE') or ''
+    logo = _LOGO_DOCKER if image else _LOGO
+    txt = _LOGO.format(epm_version=__version__, docker_image=image)
+
+    if show and not os.getenv('EPM_NO_BANNER'):
         print(txt)
     return txt
 

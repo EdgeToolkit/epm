@@ -67,9 +67,7 @@ class DockerRunner(object):
         self.returncode =None
 
     def exec(self, commands, config=None):
-
         from conans.client.runner import ConanRunner as Runner
-
         config, WD, volumes, environment = self._preprocess(config)
 
         command = self._command(commands, config, WD, volumes, environment)
@@ -89,9 +87,12 @@ class DockerRunner(object):
         for name, val in environment.items():
             args += ['-e', '%s=%s' % (name, val)]
 
+        args += ['-e', 'EPM_DOCKER_IMAGE={}'.format(config['image'])]
         args += ['-e', 'EPM_DOCKER_CONTAINER_NAME={}'.format(self.name)]
-        EPM_WORKBENCH = os.environ.get('EPM_WORKBENCH')
-        args += ['-e', 'EPM_WORKBENCH={}'.format(EPM_WORKBENCH)] if EPM_WORKBENCH else []
+        args += ['-e', 'EPM_NO_BANNER=YES'] if os.getenv('EPM_NO_BANNER') else []
+
+        workbench = os.environ.get('EPM_WORKBENCH')
+        args += ['-e', 'EPM_WORKBENCH={}'.format(workbench)] if workbench else []
 
         wd = WD or config.get('home')
         args += ['-w', wd] if wd else []
@@ -127,7 +128,6 @@ class DockerRunner(object):
         return command
 
     def _preprocess(self, config):
-        scheme = self._project.scheme
         profile = self._project.profile
 
         config = config or profile.docker.builder
