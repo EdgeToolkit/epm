@@ -52,13 +52,18 @@ _LOGO = '''
      / ____/ __ \/  |/  /        `-'         / /
     / __/ / /_/ / /|_/ /                    / /
    / /___/ ____/ /  / /                    / /
-  /_____/_/   /_/  /_/                    / /
+  /_____/_/   /_/  /_/  {epm_version:<17} / /
  ________________________________________/ /________
 
 '''
 
 
-
+def banner(show='auto'):
+    from epm import __version__
+    txt = _LOGO.format(epm_version=__version__)
+    if show:
+        print(txt)
+    return txt
 
 
 _SetupHint = '''
@@ -105,7 +110,8 @@ def get_all_installed_wenv_info():
 
 def banner(name=None):
     name = name or os.getenv('EPM_WORKBENCH')
-    print(_LOGO)
+    from epm import __version__
+    print(_LOGO.format(epm_version=__version__))
 
 
 

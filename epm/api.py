@@ -62,7 +62,6 @@ class APIUtils(object):
 
         with environment_append({'CONAN_USER_HOME': self.conan_home}):
             path = conan.config_get("storage.path", quiet=True)
-        print(self.workbench_dir, '*******', path)
         return path
 
 
@@ -70,6 +69,8 @@ def api_method(f):
     def wrapper(api, *args, **kwargs):
         old_curdir = os.getcwd()
         try:
+            from epm.util.workbench import banner
+            banner()
             env_vars = api.config.get('environment', {})
             env_vars = dict(api.env_vars, **env_vars)
 
