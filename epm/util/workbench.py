@@ -25,7 +25,7 @@ from conans.client.tools import environment_append
 PLATFORM, ARCH = system_info()
 
 
-_Banner = '''
+_Banner = r'''
                  
       __________  __  ___
      / ____/ __ \/  |/  / WORK ENVIROMENT {name}
@@ -59,7 +59,7 @@ _LOGO = '''
 
 
 
-_LOGO_DOCKER = '''    
+_LOGO_DOCKER = r'''
      __________  __  ___  
     / ____/ __ \/  |/  /  {epm_version:<17} 
    / __/ / /_/ / /|_/ /   
