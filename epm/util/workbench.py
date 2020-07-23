@@ -37,7 +37,6 @@ _LOGO = '''
    / /___/ ____/ /  / /                    / /
   /_____/_/   /_/  /_/  {epm_version:<17} / /
  ________________________________________/ /________
-
 '''
 
 
@@ -54,9 +53,27 @@ _LOGO_DOCKER = r'''
                                \____\_______/ {docker_image:<16}
 '''
 
+
+_DOCKER = r'''
+              
+                EPM: {epm_version:<17}
+              
+                        ## ## ##        ==          
+                     ## ## ## ## ##    ===          
+                 /"""""""""""""""""\___/ ===        
+ ~~~~~~~~~~~~~~ {{~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~ 
+                 \______ o           __/            
+                   \    \         __/               
+                    \____\_______/ {docker_image:<16}
+'''
+
+
+
+
+
 def banner(name=None):
     image = os.getenv('EPM_DOCKER_IMAGE') or ''
-    logo = _LOGO_DOCKER if image else _LOGO
+    logo = _DOCKER if image else _LOGO
 
     name = name or os.getenv('EPM_WORKBENCH')
 
@@ -94,9 +111,6 @@ def _cache(path):
     if not os.path.exists(folder):
         raise Exception('Invalid install path {}'.format(path))
     return folder
-
-
-
 
 
 def install(origin, editable, out=None):
@@ -170,12 +184,9 @@ def active(name):
     storage = api.conan_storage_path
     # TODO: add short_path handle
     env_vars = {'CONAN_STORAGE_PATH': storage,
-                'CONAN_USER_HOME': api.conan_home,
+                'CONAN_USER_HOME': api.workbench_dir,
                 'EPM_WORKBENCH': name
                }
-    print('=======================')
-    print(env_vars)
-    print('=======================')
 
     with environment_append(env_vars):
         win = PLATFORM == 'Windows'
@@ -186,6 +197,12 @@ def active(name):
             with open(filename, 'w') as f:
                 f.write(txt.format(name=name))
                 f.close()
+        banner(name)
+        print('\n')
+        print(' {:>16}: {}'.format('workbench', os.getenv('EPM_WORKBENCH')))
+        print(' {:>16}: {}'.format('home', os.getenv('CONAN_USER_HOME')))
+        print(' {:>16}: {}'.format('storage', os.getenv('CONAN_STORAGE_PATH')))
+        print('\n')
 
         if win:
             subprocess.run(['cmd.exe', '/k', filename])

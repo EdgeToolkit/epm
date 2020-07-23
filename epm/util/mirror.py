@@ -34,12 +34,15 @@ class Mirror(object):
         if not rules:
             return None
 
+        property = {'__name__': name}
+        property.update(self._property)
+
         for expr, symbols, pattern in rules:
             print(expr, symbols, pattern, url, '@@')
             m = pattern.match(url)
             if m:
                 try:
-                    kwargs = dict(self._property, **m.groupdict())
+                    kwargs = dict(property, **m.groupdict())
                     return expr.substitute(kwargs)
                 except:
                     pass
