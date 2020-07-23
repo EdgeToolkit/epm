@@ -61,7 +61,7 @@ _LOGO = '''
 
 _LOGO_DOCKER = r'''
      __________  __  ___  
-    / ____/ __ \/  |/  /  {epm_version:<17} 
+    / ____/ __ \/  |/  / {epm_version:<17} 
    / __/ / /_/ / /|_/ /   
   / /___/ ____/ /  / /              ## ## ##        ==          
  /_____/_/   /_/  /_/            ## ## ## ## ##    ===          
@@ -79,7 +79,11 @@ def banner(show='auto'):
     from epm import __version__
     image = os.getenv('EPM_DOCKER_IMAGE') or ''
     logo = _LOGO_DOCKER if image else _LOGO
+
+    print(logo)
+    print(image, type(image))
     txt = logo.format(epm_version=__version__, docker_image=image)
+
 
     banner = os.getenv('EPM_DISPLAY_BANNER') or 'YES'
     if banner.lower() not in ['no']:
