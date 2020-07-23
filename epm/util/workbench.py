@@ -215,13 +215,14 @@ def install(origin, editable, out=None):
 
 _CMD = '''
 @ECHO OFF
-epm workbench banner
-
 title Workbench - {name}
 prompt $p [workbench - {name}] $_$$
 
 '''
 
+_RCFILE = '''
+export PS1='\[\033[01;32m\]\u@\h - workbench - {name}\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\n\$ '
+'''
 
 def active(name):
     if name:
@@ -253,13 +254,18 @@ def active(name):
     print('=======================')
 
     with environment_append(env_vars):
-        if PLATFORM == 'Windows':
-            filename = os.path.join(folder, 'startup.cmd')
-            if not os.path.exists(filename):
-                with open(filename, 'w') as f:
-                    f.write(_CMD.format(name=name))
-                    f.close()
+        win = PLATFORM == 'Windows'
+        filename = 'startup.cmd' if win else 'bash.rc'
+        filename = os.path.join(folder, filename)
+        txt = _CMD if win else _RCFILE
+        if not os.path.exists(filename):
+            with open(filename, 'w') as f:
+                f.write(txt.format(name=name))
+                f.close()
+
+        if win:
             subprocess.run(['cmd.exe', '/k', filename])
         else:
-            subprocess.run(['/bin/bash', '--rcfile', rcfile])
+            subprocess.run(['/bin/bash', '--rcfile', filename])
+    banner()
 
