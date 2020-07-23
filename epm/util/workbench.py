@@ -1,45 +1,28 @@
 
 import os
 import sys
-import yaml
+
 import urllib
 import shutil
-import tarfile
 import zipfile
 import tempfile
-from jinja2 import PackageLoader, Environment
 import subprocess
 
 from urllib.parse import urlparse
-from jinja2 import Environment, BaseLoader
+from epm import HOME_DIR
 from epm.util import system_info
-from epm.util.files import load_yaml, save_yaml, save, rmdir, mkdir
+from conans.util.files import rmdir, mkdir
 from epm.errors import EException
-from epm.paths import get_epm_cache_dir
 from epm.api import API
-from epm.paths import HOME_EPM_DIR, DATA_DIR
-from conans.tools import environment_append
 from epm.model.runner import Output
 from epm.model.config import Config
 from conans.client.tools import environment_append
+from epm import __version__
+from epm.util import banner_display_mode
+
+
 PLATFORM, ARCH = system_info()
 
-
-_Banner = r'''
-                 
-      __________  __  ___
-     / ____/ __ \/  |/  / WORK ENVIROMENT {name}
-    / __/ / /_/ / /|_/ /  
-   / /___/ ____/ /  / /   Default channel: {channel}
-  /_____/_/   /_/  /_/    
-                               
-  * directory     : {instd}
-  * conan         : {conan}
-  * conan storage : {storage_path}
-  
-  {description}
-
-'''
 _LOGO = '''
 
                                   M
@@ -58,61 +41,18 @@ _LOGO = '''
 '''
 
 
-
 _LOGO_DOCKER = r'''
-     __________  __  ___  
-    / ____/ __ \/  |/  / {epm_version:<17} 
-   / __/ / /_/ / /|_/ /   
-  / /___/ ____/ /  / /              ## ## ##        ==          
- /_____/_/   /_/  /_/            ## ## ## ## ##    ===          
-                             /"""""""""""""""""\___/ ===        
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~ 
-                              \______ o           __/            
-                                \    \         __/               
-                                 \____\_______/ {docker_image:<16}
+     __________  __  ___
+    / ____/ __ \/  |/  /  {epm_version:<17} 
+   / __/ / /_/ / /|_/ / 
+  / /___/ ____/ /  / /            ## ## ##        ==          
+ /_____/_/   /_/  /_/          ## ## ## ## ##    ===          
+                           /"""""""""""""""""\___/ ===        
+ ~~~~~~~~~~~~~~~~~~~~~~~~~ {{~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~ 
+                            \______ o           __/            
+                              \    \         __/               
+                               \____\_______/ {docker_image:<16}
 '''
-
-
-_SetupHint = '''
-Work environment '{name}' setup done, run active script to active
-In Windows
-   $ active.bat
-In Linux
-   $ source ./active.sh
-
-or use epm
-   $ epm wenv shell {name}
-
-'''
-
-
-def load_virtual_environment(path):
-    location = path
-    if os.path.exists(path) and os.path.isfile(path):
-        with open(path) as f:
-            m = yaml.safe_load(f)
-            location = m['location']
-    assert os.path.isdir(location)
-    with open(os.path.join(location, 'config.yml')) as f:
-        config = yaml.safe_load(f)
-        name = config['wenv']['name']
-    return {
-        'name': name,
-        'location': location,
-        'config': config
-    }
-
-
-def get_all_installed_wenv_info():
-    path = os.path.join(HOME_EPM_DIR, 'wenv')
-    if not os.path.exists(path):
-        return {}
-
-    results = {}
-    for name in os.listdir(path):
-        info = load_virtual_environment(os.path.join(path, name))
-        results[info['name']] = info
-    return results
 
 def banner(name=None):
     image = os.getenv('EPM_DOCKER_IMAGE') or ''
@@ -120,16 +60,11 @@ def banner(name=None):
 
     name = name or os.getenv('EPM_WORKBENCH')
 
-    print(logo)
-    print(image, type(image))
-
-    from epm import __version__
     txt = logo.format(epm_version=__version__, docker_image=image, name=name)
-    from epm.util import banner_display_mode
+
     if banner_display_mode() != 'no':
         print(txt)
     return banner
-
 
 
 def _cache(path):
@@ -160,9 +95,9 @@ def _cache(path):
         raise Exception('Invalid install path {}'.format(path))
     return folder
 
-from epm import HOME_DIR
 
-#subprocess.call("(dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell", shell=True)
+
+
 
 def install(origin, editable, out=None):
     from epm.model.config import Config
@@ -212,7 +147,7 @@ prompt $p [workbench - {name}] $_$$
 _RCFILE = r'''
 export PS1='\[\033[01;32m\]\u@\h - workbench - {name}\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\n\$ '
 '''
-
+#subprocess.call("(dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell", shell=True)
 def active(name):
     if name:
 
