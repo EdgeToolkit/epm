@@ -130,9 +130,16 @@ def get_all_installed_wenv_info():
 
 
 def banner(name=None):
+    image = os.getenv('EPM_DOCKER_IMAGE') or ''
+    logo = _LOGO_DOCKER if image else _LOGO
+
     name = name or os.getenv('EPM_WORKBENCH')
     from epm import __version__
-    print(_LOGO.format(epm_version=__version__))
+    logo = logo.format(epm_version=__version__, docker_image=image, name=name)
+    from epm.util import banner_display_mode
+    if banner_display_mode() != 'no':
+        print(logo)
+    return banner
 
 
 

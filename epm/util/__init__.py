@@ -140,3 +140,10 @@ def get_workbench_dir(name=None):
         return path
 
     return None
+
+def banner_display_mode():
+    banner = os.getenv('EPM_BANNER_DISPLAY_MODE') or 'auto'
+    banner = banner.lower()
+    if banner in ['no', 'false', 'off', 'disable']:
+        banner = 'no'
+    return banner

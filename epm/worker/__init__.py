@@ -2,7 +2,7 @@ import os
 import base64
 import json
 
-from epm.util import system_info
+from epm.util import system_info, banner_display_mode
 from epm.errors import EException, APIError
 
 PLATFORM, ARCH = system_info()
@@ -69,6 +69,9 @@ class DockerRunner(object):
     def exec(self, commands, config=None):
         from conans.client.runner import ConanRunner as Runner
         config, WD, volumes, environment = self._preprocess(config)
+        image = config['image']
+        if PLATFORM == 'Windows' and config.get('windows_image'):
+            image = config.get('windows_image')
 
         command = self._command(commands, config, WD, volumes, environment)
         args = ['docker', 'run', '--name', self.name, '--rm']
@@ -87,10 +90,9 @@ class DockerRunner(object):
         for name, val in environment.items():
             args += ['-e', '%s=%s' % (name, val)]
 
-        args += ['-e', 'EPM_DOCKER_IMAGE={}'.format(config['image'])]
+        args += ['-e', 'EPM_DOCKER_IMAGE={}'.format(image)]
         args += ['-e', 'EPM_DOCKER_CONTAINER_NAME={}'.format(self.name)]
-        banner = os.getenv('EPM_DISPLAY_BANNER') or 'YES'
-        args += [] if banner.lower() in ['no'] else ['-e', 'EPM_NO_BANNER={}'.format(banner)]
+        args += ['-e', 'EPM_BANNER_DISPLAY_MODE={}'.format(banner_display_mode())]
 
         workbench = os.environ.get('EPM_WORKBENCH')
         args += ['-e', 'EPM_WORKBENCH={}'.format(workbench)] if workbench else []
@@ -98,7 +100,7 @@ class DockerRunner(object):
         wd = WD or config.get('home')
         args += ['-w', wd] if wd else []
 
-        args += [config['image'], command]
+        args += ['image', command]
         cmd = " ".join(args)
 
         out = self._api.out
