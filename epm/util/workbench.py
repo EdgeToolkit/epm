@@ -73,24 +73,6 @@ _LOGO_DOCKER = r'''
 '''
 
 
-
-
-def banner(show='auto'):
-    from epm import __version__
-    image = os.getenv('EPM_DOCKER_IMAGE') or ''
-    logo = _LOGO_DOCKER if image else _LOGO
-
-    print(logo)
-    print(image, type(image))
-    txt = logo.format(epm_version=__version__, docker_image=image)
-
-
-    banner = os.getenv('EPM_DISPLAY_BANNER') or 'YES'
-    if banner.lower() not in ['no']:
-        print(txt)
-    return txt
-
-
 _SetupHint = '''
 Work environment '{name}' setup done, run active script to active
 In Windows
@@ -132,17 +114,20 @@ def get_all_installed_wenv_info():
         results[info['name']] = info
     return results
 
-
 def banner(name=None):
     image = os.getenv('EPM_DOCKER_IMAGE') or ''
     logo = _LOGO_DOCKER if image else _LOGO
 
     name = name or os.getenv('EPM_WORKBENCH')
+
+    print(logo)
+    print(image, type(image))
+
     from epm import __version__
-    logo = logo.format(epm_version=__version__, docker_image=image, name=name)
+    txt = logo.format(epm_version=__version__, docker_image=image, name=name)
     from epm.util import banner_display_mode
     if banner_display_mode() != 'no':
-        print(logo)
+        print(txt)
     return banner
 
 
