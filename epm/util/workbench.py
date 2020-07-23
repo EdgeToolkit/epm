@@ -213,14 +213,14 @@ def install(origin, editable, out=None):
 
 
 
-_CMD = '''
+_CMD = r'''
 @ECHO OFF
 title Workbench - {name}
 prompt $p [workbench - {name}] $_$$
 
 '''
 
-_RCFILE = '''
+_RCFILE = r'''
 export PS1='\[\033[01;32m\]\u@\h - workbench - {name}\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\n\$ '
 '''
 
