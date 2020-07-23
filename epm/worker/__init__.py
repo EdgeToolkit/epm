@@ -100,7 +100,7 @@ class DockerRunner(object):
         wd = WD or config.get('home')
         args += ['-w', wd] if wd else []
 
-        args += ['image', command]
+        args += [image, command]
         cmd = " ".join(args)
 
         out = self._api.out

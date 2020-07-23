@@ -209,8 +209,7 @@ def install(origin, editable, out=None):
         if remote.username:
             conan.user_set(remote.username, remote.name)
 
-    #out.info(_SetupHint.format(name=config.wenv.name))
-    print(_LOGO)
+    banner(name)
 
 
 
