@@ -1,25 +1,16 @@
 import os
 import yaml
-import pprint
-import copy
-import glob
 import shutil
+import pathlib
 
-import epm
 from conans.client.profile_loader import read_profile
-from conans.model.options import OptionsValues
-from conans.tools import RunEnvironment
 from epm.errors import EException
 from epm.paths import DATA_DIR, get_epm_cache_dir
-from epm.util.files import load_yaml
-#from epm.util import split_plan_name
 
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 
 from epm.util import system_info
 
-
-from conans.client.tools import environment_append
 from epm.util import get_workbench_dir, HOME_DIR
 
 PLATFORM, ARCH = system_info()
@@ -34,7 +25,6 @@ class Profile(object):
     def __init__(self, name, folder):
         self.name = name
         folder = folder or get_workbench_dir(os.getenv('EPM_WORKBENCH'))
-        print('------>', folder)
 
         if not Profile._checked_default_profiles:
             Profile.install_default_profiles()
@@ -123,8 +113,8 @@ class Profile(object):
     @staticmethod
     def install_default_profiles(cached=None):
         cached = cached or HOME_DIR
-        from epm.paths import is_home_epm_dir
-        if not is_home_epm_dir(cached):
+
+        if pathlib.PurePath(os.path.abspath(cached)).as_posix() != pathlib.PurePath(HOME_DIR).as_posix():
             return
 
         pd = os.path.normpath(os.path.join(cached, 'profiles'))

@@ -10,7 +10,7 @@ from epm.model.project import Project
 from epm.errors import EException, EConanException, EDockerException
 from epm.util import is_elf
 from epm.util.files import remove, rmdir
-from epm.paths import HOME_EPM_DIR
+from epm import HOME_DIR
 
 
 def _delete(path):
@@ -93,7 +93,7 @@ class Creator(Worker):
             docker.WD = '$home/project/%s' % project.name
 
             docker.add_volume(project.dir, docker.WD)
-            docker.add_volume(HOME_EPM_DIR, '$home/.epm')
+            docker.add_volume(HOME_DIR, '$home/.epm')
             if storage:
                 docker.environment['CONAN_STORAGE_PATH'] = '%s/%s' % (docker.WD, storage)
             docker.exec('epm api create %s' % param_encode(param))
@@ -113,7 +113,6 @@ class Creator(Worker):
                     raise e
                 except BaseException as e:
                     raise EException('execute build api failure.', exception=e)
-
 
     def _exec(self, project, clear=False, sandbox=True):
 
@@ -157,7 +156,6 @@ class Creator(Worker):
 
         if clear:
             self._clear(project)
-
 
         if dirs:
             result['dirs'] = dirs

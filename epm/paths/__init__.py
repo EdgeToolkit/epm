@@ -26,15 +26,8 @@ TESTBUILDFOLDER = 'test_build'
 PACKAGEFOLDER = 'package'
 PROFILES_FOLDER = 'profiles'
 
-HOME_EPM_DIR = conan_expand_user("~/.epm")
-if not os.path.exists(HOME_EPM_DIR):
-    os.makedirs(HOME_EPM_DIR)
-
 
 import epm
 DATA_DIR = os.path.join(os.path.dirname(epm.__file__), 'data')
 TEST_DATA_DIR = os.path.join(os.path.dirname(epm.__file__), 'test', 'data')
 
-
-def is_home_epm_dir(folder):
-    return os.path.normpath(folder) == os.path.normpath(HOME_EPM_DIR)
