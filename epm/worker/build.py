@@ -4,7 +4,8 @@ from epm.model.project import Project
 from epm.errors import EException, EConanException, EDockerException
 from conans.errors import ConanException
 from conans.tools import environment_append
-from epm.paths import HOME_EPM_DIR
+from epm import HOME_DIR
+
 
 
 class Docker(DockerRunner):
@@ -71,7 +72,7 @@ class Builder(Worker):
             docker.WD = '$home/.project/%s' % project.name
 
             docker.add_volume(project.dir, docker.WD)
-            docker.add_volume(HOME_EPM_DIR, '$home/.epm')
+            docker.add_volume(HOME_DIR, '$home/.epm')
             docker.exec('epm api build %s' % param_encode(param))
             if docker.returncode:
                 raise EDockerException(docker)
