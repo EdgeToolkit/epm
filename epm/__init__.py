@@ -2,7 +2,7 @@
 # to allow refactors
 import os
 
-__version__ = '0.1.0-webkit-17'
+__version__ = '0.1.0-webkit-18'
 
 
 HOME_DIR = os.path.join(os.path.expanduser('~'), '.epm')
