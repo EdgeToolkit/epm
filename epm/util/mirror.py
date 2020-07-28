@@ -34,11 +34,10 @@ class Mirror(object):
         if not rules:
             return None
 
-        property = {'__name__': name}
+        property = {}
         property.update(self._property)
 
         for expr, symbols, pattern in rules:
-            print(expr, symbols, pattern, url, '@@')
             m = pattern.match(url)
             if m:
                 try:
@@ -50,17 +49,22 @@ class Mirror(object):
         return None
 
     def _get_rules(self, name):
+
         config = self._package.get(name)
-        print(name, '========', config)
         if not config:
             return None
 
         if '__rules__' in config:
             return config['__rules__']
+        import copy
+
+        config = copy.deepcopy(config)
+        self._package[name] = config
 
         rules = list()
-
         for expr, urls in config.items():
+
+            expr = expr.replace('${__name__}', name)
 
             if expr in ['property']:
                 continue
@@ -70,6 +74,7 @@ class Mirror(object):
             expr = Template(expr)
 
             for url in urls:
+                url = url.replace('${__name__}', name)
                 keys = set()
                 pattern = ''
                 for txt, symbol in re.findall(r'([\w\-\.\:/]+)|(\$\{[a-z]+\})', url):
@@ -143,9 +148,3 @@ def register_mirror(mirror):
 def unregister_mirror():
     net.download = conan_download
 
-if __name__ == '__main__':
-    m = Mirror(r'E:\WebKit\EPMKit\epm\epm\test\data\mirror\mirrors.yml')
-    url =r'https://downloads.sourceforge.net/project/libpng/zlib/2.1.11/zlib-2.1.11-tar.gz'
-    #url =r'https://zlib.net/zlib-2.1.11-tar.gz'
-    url = m.find_package('zlib', url)
-    print(url)

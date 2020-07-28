@@ -1,18 +1,70 @@
-# [\da-Z]([\w\-\.]*[\da-Z])?
 property:
-  mirror: http://172.16.0.119/archive
+  mirror: http://127.0.0.1/archive
   
 package:
   zlib:
     ${mirror}/zlib/${tarball}:
     - https://zlib.net/${tarball}
     - https://downloads.sourceforge.net/project/libpng/zlib/${version}/${tarball}
+  bzip2:
+    ${mirror}/bzip2/${tarball}:
+    - https://sourceware.org/pub/bzip2/${tarball}
+    
 
-  zlib-x:
-    property:
-      version: '\d+(\.\d+)*'
+  libpng:
+    ${mirror}/libpng/${tarball}:    
+    - https://github.com/glennrp/libpng/archive/${tarball}
 
-    ${mirror}/zlib/${tarball}':
-    - https://zlib.net/${tarball}
-    - https://downloads.sourceforge.net/project/libpng/zlib/${version}/${tarball}
+  pixman:
+    ${mirror}/pixman/${tarball}:
+    - https://www.cairographics.org/releases/${tarball}
 
+  cairo:
+    ${mirror}/cairographics/${tarball}:
+    - https://www.cairographics.org/snapshots/${tarball}
+    - https://www.cairographics.org/releases/${tarball}
+
+  libffi:
+    ${mirror}/libffi/${tarball}:
+    - https://github.com/libffi/libffi/releases/download/v${version}/${tarball}
+
+  ninja:
+    ${mirror}/ninja/${tarball}:
+    - https://github.com/ninja-build/ninja/archive/${tarball}
+
+  pcre: &_pcre
+    ${mirror}/pcre/${tarball}:
+    - https://ftp.pcre.org/pub/pcre/${tarball}
+  pcre2: *_pcre
+
+  libelf:
+    ${mirror}/libelf/${tarball}:
+    - http://repository.timesys.com/buildsources/l/libelf/libelf-${version}/${tarball}
+
+  libmount:
+    ${mirror}/kernel.org/${tarball}:
+    - https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/${version}/${tarball}
+  
+  libselinux:
+    ${mirror}/selinux/libselinux-${version}.tar.gz:
+    - https://github.com/SELinuxProject/selinux/releases/download/20200710/libselinux-${version}.tar.gz
+
+    ${mirror}/selinux/libsepol-${version}.tar.gz:
+    - https://github.com/SELinuxProject/selinux/releases/download/20200710/libsepol-${version}.tar.gz
+
+  meson:
+    ${mirror}/meson/${tarball}:
+    - https://github.com/mesonbuild/meson/archive/${tarball}
+    
+  glib:
+    ${mirror}/glib/${tarball}:
+    - https://download.gnome.org/sources/glib/${version}/${tarball}
+
+  .GNU: &_gnu
+    ${mirror}/gnu/${__name__}/${tarball}:
+    - https://ftp.gnu.org/gnu/${__name__}/${tarball}
+  libiconv: *_gnu
+  libgettext: *_gnu
+  autoconf: *_gnu
+  m4: *_gnu
+  automake: *_gnu
