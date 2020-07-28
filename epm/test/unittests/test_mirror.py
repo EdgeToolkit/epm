@@ -34,6 +34,11 @@ class TestMirror(unittest.TestCase):
                       "https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.bz2",
                       '{}/gnu/m4/m4-1.4.18.tar.bz2'.format(_SERVER)
                       ),
+
+                     ('gperf',
+                      "https://ftp.gnu.org/pub/gnu/gperf/gperf-3.1.tar.gz",
+                      '{}/gnu/gperf/gperf-3.1.tar.gz'.format(_SERVER)
+                      ),
                     ]
 
         for name, url, path in locations:

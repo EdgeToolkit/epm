@@ -76,8 +76,11 @@ package:
   .GNU: &_gnu
     ${mirror}/gnu/${__name__}/${tarball}:
     - https://ftp.gnu.org/gnu/${__name__}/${tarball}
+    - https://ftp.gnu.org/pub/gnu/${__name__}/${tarball}
+
   libiconv: *_gnu
   libgettext: *_gnu
   autoconf: *_gnu
   m4: *_gnu
   automake: *_gnu
+  gperf: *_gnu

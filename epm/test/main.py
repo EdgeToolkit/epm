@@ -35,14 +35,13 @@ def Main(args):
 
         if not fnmatch.fnmatch(i, args.folder):
             continue
-        print(i, '#', args.pattern, '@', path)
 
         suite = unittest.defaultTestLoader.discover(path, pattern=args.pattern, top_level_dir=None)
-        break
-
+        suites.append(suite)
 
     runner = unittest.TextTestRunner(descriptions=_DESCRIPTION, verbosity=2)
-    runner.run(suite)
+    for suite in suites:
+        runner.run(suite)
 
 
 def run():

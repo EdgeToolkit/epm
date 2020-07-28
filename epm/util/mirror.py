@@ -49,7 +49,6 @@ class Mirror(object):
         return None
 
     def _get_rules(self, name):
-
         config = self._package.get(name)
         if not config:
             return None
@@ -77,11 +76,11 @@ class Mirror(object):
                 url = url.replace('${__name__}', name)
                 keys = set()
                 pattern = ''
-                for txt, symbol in re.findall(r'([\w\-\.\:/]+)|(\$\{[a-z]+\})', url):
-                    if symbol:
-                        name = symbol[2:-1]
-                        keys.add(name)
-                        pattern += r'(?P<%s>\w[\w\.\-]+)' % name
+                for txt, var in re.findall(r'([\w\-\.\:/]+)|(\$\{[a-z]+\})', url):
+                    if var:
+                        symbol = var[2:-1]
+                        keys.add(symbol)
+                        pattern += r'(?P<%s>\w[\w\.\-]+)' % symbol
                     else:
                         txt = txt.replace('\\', '\\\\')
                         for i in r'.：*<>-+':
