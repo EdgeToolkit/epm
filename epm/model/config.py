@@ -103,6 +103,11 @@ class MetaInformation(object):
 
             with open(filename) as f:
                 self._data = yaml.safe_load(f)
+        self._normalize(self._data)
+
+    def _normalize(self, data):
+        data['version'] = str(data['version'])
+        return data
 
     @property
     def name(self):
