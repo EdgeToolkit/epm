@@ -60,6 +60,19 @@ package:
     ${mirror}/glib/${tarball}:
     - https://download.gnome.org/sources/glib/${version}/${tarball}
 
+  expat:
+    ${mirror}/${__name__}/${tarball}:
+    - https://github.com/libexpat/libexpat/releases/download/R_2_2_9/${tarball}
+  fontconfig:
+    ${mirror}/${__name__}/${tarball}:
+    - https://www.freedesktop.org/software/fontconfig/release/${tarball}
+  freetype:
+    ${mirror}/${__name__}/${tarball}:
+    - https://download.savannah.gnu.org/releases//freetype/${tarball}
+  libuuid:
+    ${mirror}/${__name__}/${tarball}:
+    - https://downloads.sourceforge.net/project/libuuid/${tarball}
+
   .GNU: &_gnu
     ${mirror}/gnu/${__name__}/${tarball}:
     - https://ftp.gnu.org/gnu/${__name__}/${tarball}

@@ -92,6 +92,9 @@ class MetaInformation(object):
             self._data = filename
             if '__file__' in self.data:
                 self.filename = self._data['__file__']
+            version = self._data['version']
+            self._data['version'] = str(version)
+            
         else:
             if not os.path.exists(filename):
                 raise FileNotFoundError('epm package configure file %s not exits!' % filename)
