@@ -29,20 +29,20 @@ class Helper(object):
         return MetaInfo(self._META_INFO, self)
 
 
+def MetaClass(ConanFileClass=None, manifest=None, test_package=False):
 
-def MetaClass(path=None, ConanFileClass=None, test_package=False):
-
-    path = path or '../package.yml' if test_package else 'package.yml'
-    metainfo = MetaInformation(path)
+    manifest = manifest or '../package.yml' if test_package else 'package.yml'
+    metainfo = MetaInformation(manifest)
     name = metainfo.name
     version = metainfo.version
     user = metainfo.user
-    exports = [path]
-    ClassName = re.sub(r'\W', '_', os.path.basename(os.path.normpath(os.path.abspath(path))))
+    exports = [manifest]
+    ClassName = re.sub(r'\W', '_', os.path.basename(os.path.normpath(os.path.abspath(manifest))))
     ConanFileClass = ConanFileClass or _ConanFile
 
     mirror = Mirror.load()
     if mirror:
+
         mirror.register(name)
 
     member = dict(name=name, version=version, _META_INFO=metainfo)
