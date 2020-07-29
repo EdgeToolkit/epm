@@ -102,3 +102,4 @@ def TestPackager(manifest='../package.yml'):
                       _META_INFO = metainfo,
                       requires=requires))
     return klass
+
