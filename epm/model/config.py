@@ -92,9 +92,6 @@ class MetaInformation(object):
             self._data = filename
             if '__file__' in self.data:
                 self.filename = self._data['__file__']
-            version = self._data['version']
-            self._data['version'] = str(version)
-            
         else:
             if not os.path.exists(filename):
                 raise FileNotFoundError('epm package configure file %s not exits!' % filename)
@@ -106,8 +103,7 @@ class MetaInformation(object):
         self._normalize(self._data)
 
     def _normalize(self, data):
-        data['version'] = str(data['version'])
-        return data
+        pass
 
     @property
     def name(self):
@@ -115,7 +111,7 @@ class MetaInformation(object):
 
     @property
     def version(self):
-        return self._data['version']
+        return str(self._data['version'])
 
     @property
     def user(self):
@@ -182,7 +178,7 @@ class MetaInformation(object):
                             pprint.pprint(option)
                             continue
 
-                    version = option['version']
+                    version = str(option['version'])
                     user = option.get('user', None)
                     channel = get_channel(user=user)
                     channel = option.get('channel', channel)
@@ -225,7 +221,6 @@ class MetaInformation(object):
     def _get_package_scheme(self, item, settings):
         if isinstance(item, str):
             return item
-        print(item, '@@@@@@@')
         if not isinstance(item, list):
             raise EMetadataError('Invalid scheme assign', item)
         default = []
