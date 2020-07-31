@@ -100,6 +100,7 @@ class MetaInformation(object):
 
             with open(filename) as f:
                 self._data = yaml.safe_load(f)
+
         self._normalize(self._data)
 
     def _normalize(self, data):

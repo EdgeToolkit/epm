@@ -9,7 +9,7 @@ import traceback
 from conans.client.output import Color, colorama_initialize
 from epm import commands
 from epm.model.runner import Output
-from epm.errors import EException
+from epm.errors import EException, EDockerException
 
 # Exit codes for conan command:
 SUCCESS = 0                         # 0: Success (done)
@@ -89,43 +89,35 @@ class Main(object):
             sys.exit(res)
 
     def _error(self, e):
-        from epm import __version__ as version
 
-        #if not os.path.exists('.epm'):
-        #    os.makedirs('.epm')
-        #
-        #tb = traceback.format_exc()
-        #msg = str(e)
-        #is_docker = False
+        DOCKER_EXCEPTION_FILENAME = '.epm/docker-exception.yml'
+        if os.getenv('EPM_DOCKER_CONTAINER_NAME'):
+            if not isinstance(e, EException):
+                e = EException('in docker exception', exception=e)
+            e.save(DOCKER_EXCEPTION_FILENAME)
+            return 1
 
-        if isinstance(e, EException):
-            self.out.error(e.message)
-            e.traceback('.epm/traceback.log')
+        if isinstance(e, EDockerException):
+
+            from epm.errors import load_exception
+            if os.path.exists(DOCKER_EXCEPTION_FILENAME):
+                e = load_exception(DOCKER_EXCEPTION_FILENAME)
+
+        elif isinstance(e, EException):
+            e.save('.epm/excetpion.yml')
+            for i in e.attributes['__traceback__']:
+                print(i)
+
+
         else:
+
             print('------------------------')
             print(type(e), str(e))
             import traceback
             traceback.print_tb(e.__traceback__)
-
-
-        #if self.args.command == 'api':
-        #
-        #    info = {'msg': msg,
-        #            'version': version,
-        #            'command': self.args.command,
-        #            'time': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
-        #            'traceback': tb
-        #            }
-        #    with open('.epm/errors.json', 'w') as f:
-        #        json.dump(info, f)
-        #else:
-        #    hint = ' docker epm %s ' % version if is_docker else ''
-        #    hint = '{:=^80s}'.format(hint)
-        #
-        #    self.out.write('\n{}\n'.format(hint))
-        #    self.out.error(msg)
-        #    with open('.epm/traceback.log', 'w') as f:
-        #        f.write(str(tb))
+            return 1
+        self.out.error(e.message)
+        self.out.highlight(e.details)
 
         return 1
 

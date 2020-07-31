@@ -20,6 +20,12 @@ class Mirror(object):
         with open(filename) as f:
             self._config = yaml.safe_load(f)
             self._package = self._config.get('package', {})
+            if isinstance(self._package, str):
+                print('mirror package has been redirect to %s' % self._package)
+                with open(self._package) as f:
+                    data = yaml.safe_load(f)
+                    self._package = data.get('package') or dict()
+
         self._property = self._config.get('property') or dict()
 
     def find(self, url):

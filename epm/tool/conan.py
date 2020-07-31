@@ -32,7 +32,12 @@ class Helper(object):
 def MetaClass(ConanFileClass=None, manifest=None, test_package=False):
 
     manifest = manifest or '../package.yml' if test_package else 'package.yml'
-    metainfo = MetaInformation(manifest)
+    try:
+        metainfo = MetaInformation(manifest)
+        print(metainfo)
+    except BaseException as e:
+        print('==============================================')
+        print(e)
     name = metainfo.name
     version = metainfo.version
     user = metainfo.user

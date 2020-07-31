@@ -1,5 +1,8 @@
 import os
+import sys
+import yaml
 import traceback
+import inspect
 from conans.errors import ConanException
 
 
@@ -7,83 +10,93 @@ class EException(Exception):
     """
          Generic EPM exception
     """
-    def __init__(self, msg, **kwargs):
-        self.info = {'__message__': msg, '__traceback__': []}
-        self.info.update(**kwargs)
-        e = self.info.get('exception')
-        if isinstance(e, BaseException):
-            detail = str(e)
-            if detail:
-                self.info['__message__'] += '\n  + {}'.format(detail)
-            self.info.pop('exception')
-            self.info['__traceback__'].append(e.__traceback__)
+    attributes = {'__traceback__': []}
 
-        super(EException, self).__init__(msg, kwargs)
+    def __init__(self, message, **kwargs):
+        if isinstance(message, dict) and '__class__' in message:
+            self.attributes = message
+            super(EException, self).__init__(message)
+            return
+        self.attributes = dict(message=message, **kwargs)
+        self.attributes['__class__'] = self.__class__.__name__
+        self.attributes['__traceback__'] = [traceback.format_exc()]
+
+        if 'exception' in self.attributes:
+            e = self.attributes['exception']
+            if isinstance(e, BaseException):
+                self.attributes['exception'] = self._format_exception(e)
+                self.attributes['__traceback__'].append(traceback.format_tb(e.__traceback__))
+
+        super(EException, self).__init__(message)
 
     @property
     def message(self):
-        return self.info.get('__message__', '?')
+        return self.attributes.get('message', '?')
 
-    def traceback(self, filename=None):
+    @property
+    def details(self):
+        return ''
 
-        file = None
-        if filename:
-            folder = os.path.dirname(filename)
-            if not os.path.exists(folder):
-                os.makedirs(folder)
-            file = open(filename, 'w')
-
-        traceback.print_tb(self.__traceback__, file=file)
+    @property
+    def traceback(self):
+        txt = ''
         for tb in self.info['__traceback__']:
-            if tb:
-                traceback.print_tb(tb, file=file)
-        if file:
-            file.close()
+            txt += traceback.format_tb(tb) if tb else ''
+        return txt
+
+    def save(self, filename):
+        dir = os.path.dirname(filename)
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        #print(self.attributes['exception'], type(self.attributes['exception']), '######',filename, dir)
+        #return
+
+        with open(filename, 'w') as f:
+            yaml.safe_dump(self.attributes, f)
+
+
+    def _format_exception(self, e):
+        return str(e)
 
     def __str__(self):
+        return self.message
         import pprint
-        return pprint.pformat(self.info)
+        return pprint.pformat(self.attributes)
 
 
 class EConanException(EException):
 
-    def __init__(self, msg, conan_exception):
-        super(EConanException, self).__init__('{}\n[conan] {}\n'.format(msg, str(conan_exception)))
-        self.info['__class__'] = type(self)
-        if isinstance(conan_exception, ConanException):
-            self.info['details'] = str(conan_exception)
-            self.info['__traceback__'].append(conan_exception.__traceback__)
-        elif isinstance(conan_exception, dict):
-            self.info['details'] = str(conan_exception)
+    def __init__(self, message, exception=None):
+        super(EConanException, self).__init__(message, exception=exception)
 
 
 class EDockerException(EException):
 
-    def __init__(self, docker):
-        import os
-        filename = os.path.join('.epm/{}.json'.format(docker.name))
-        details = {'msg': 'execut command in docker failed. no details since no info file.'}
-        if os.path.exists(filename):
-            with open(filename) as f:
-                import json
-                details = json.loads(f)
+    def __init__(self, message, docker=None):
+        from epm.worker import DockerBase
+        if isinstance(docker, DockerBase):
+            docker = {'returncode': docker.returncode,
+                      'command': docker.command_str,
+                      }
 
-        details['docker-exit-code'] = docker.returncode
-        details['docker-command'] = docker.command_str
-        msg = details.pop('msg')
-        super(EDockerException, self).__init__(msg, **details)
+        super(EException, self).__init__(message, docker=docker)
 
 
 class ESyntaxError(EException):
 
-    def __init__(self, msg, what):
-        pass
+    def __init__(self, message):
+        super(EException, self).__init__(message)
 
 
-
-
-
-
+def load_exception(filename):
+    with open(filename) as f:
+        attrs = yaml.safe_load(f)
+    class_name = attrs['__class__']
+    classes = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+    for name, klass in classes:
+        if name == class_name:
+            return klass(attrs)
+    return EException(attrs)
 
 
 

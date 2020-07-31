@@ -70,6 +70,13 @@ class Runner(object):
 
     def exec(self, command, argv):
         filename = os.path.normpath(os.path.join(self._project.folder.out, 'sandbox', command))
+        if PLATFORM == 'Windows':
+            if not os.path.exists(filename):
+                for ext in ['.cmd', '.bat', '.ps1']:
+                    if os.path.exists(filename + ext):
+                        filename += ext
+                        break
+
         conan_storage = os.path.normpath(self._api.conan_storage_path)
 
         env = {'CONAN_STORAGE_PATH': conan_storage}
