@@ -80,6 +80,7 @@ class Builder(Worker):
     def _configure(self, project):
         scheme = project.scheme
         profile = project.profile
+
         conan = self.api.conan
         folder = os.path.join(project.dir, project.folder.build)
         project.initialize()

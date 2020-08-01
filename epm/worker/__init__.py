@@ -3,7 +3,6 @@ import base64
 import json
 
 from epm.util import system_info, banner_display_mode
-from epm.errors import EException, APIError
 
 PLATFORM, ARCH = system_info()
 

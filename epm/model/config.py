@@ -1,6 +1,6 @@
 import os
 import yaml
-from epm.util.files import save_yaml, load_yaml
+from epm.util.files import load_yaml
 from collections import namedtuple, OrderedDict
 from epm.errors import EMetadataError
 from conans.model.ref import ConanFileReference, get_reference_fields
@@ -20,7 +20,8 @@ class Config(object):
         self._data = {}
         self._filename = filename
         if os.path.exists(self._filename):
-            self._data = load_yaml(self._filename)
+            with open(self._filename) as f:
+                self._data = yaml.safe_load(f)
         self._data = dict({'wenv': {},
                            'registry': {}
                            }, **self._data)
@@ -85,6 +86,7 @@ class MetaInformation(object):
     _text = None
     _filename = None
     _conanfile = None
+
 
     def __init__(self, filename):
 
@@ -157,7 +159,7 @@ class MetaInformation(object):
 
         return True
 
-    def get_requirements(self, settings):
+    def get_requirements(self, settings, options=None):
         from epm.tools.conan import get_channel
         dependencies = self.data.get('dependencies', [])
 
@@ -171,6 +173,11 @@ class MetaInformation(object):
 
             elif isinstance(packages, dict):
                 for name, option in packages.items():
+                    expr = option.get('if')
+                    if expr and not If(expr, settings, options):
+                        print('package <%s> excluded requirements according rules.\n\t if: %s ' % (name, expr))
+                        continue
+
                     cond = option.get('only')
                     if cond and settings:
                         if not self.condition_only(cond, settings):
@@ -220,6 +227,28 @@ class MetaInformation(object):
         return options, deps
 
     def _get_package_scheme(self, item, settings):
+        '''
+
+        scheme:
+            shared:
+                options:
+                    xxxxxx
+                package1: shared
+                package2:
+                - static: <expr> settings.os == 'Windows' and settings.compiler == 'Visual Studio'
+                - shared: <expr> settings.compiler == 'gcc'
+                (default is shared that is same as current scheme, if all the rule not matched)
+        '''
+        if isinstance(item, str):
+            return item
+        if isinstance(item, list):
+            for rules in item:
+                for name, expr in rules.items():
+                    if If(expr):
+                        return name
+        return None
+
+    def _get_package_scheme_deplicated(self, item, settings):
         if isinstance(item, str):
             return item
         if not isinstance(item, list):
@@ -313,10 +342,16 @@ class MetaInformation(object):
 
         return result
 
+    def pkg_config(self):
+        if 'pkg-config' not in self._data:
+            return None
+        return True
 
 
+def If(expr, settings, options):
+    vars = {'options': options}
+    for k, v in settings.items():
+        vars[k] = v
 
-
-
-
+    return eval(expr, {}, vars)
 
