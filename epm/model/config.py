@@ -87,7 +87,6 @@ class MetaInformation(object):
     _filename = None
     _conanfile = None
 
-
     def __init__(self, filename):
 
         if isinstance(filename, dict):
@@ -341,11 +340,6 @@ class MetaInformation(object):
                                    param, argv, ports, privileged)
 
         return result
-
-    def pkg_config(self):
-        if 'pkg-config' not in self._data:
-            return None
-        return True
 
 
 def If(expr, settings, options):
