@@ -1,15 +1,15 @@
 import os
 import unittest
-from unittest import mock
-from epm.util.mirror import Mirror
 
-from epm.test.utils import DATA_DIR
+from epm.utils.mirror import Mirror
+from epm.tests.helpers import DATA_DIR
 
-from epm.util import mirror
 
 _SERVER = 'http://127.0.0.1/archive'
 
 mirror = Mirror(os.path.join(DATA_DIR, 'mirror', 'mirrors.yml'))
+
+
 class TestMirror(unittest.TestCase):
 
     def test_basic(self):
