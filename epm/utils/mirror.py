@@ -25,7 +25,6 @@ class Mirror(object):
                 with open(self._package) as f:
                     data = yaml.safe_load(f)
                     self._package = data.get('package') or dict()
-        print('*************', self._package.get('libsoap'))
 
         self._property = self._config.get('property') or dict()
 
@@ -46,8 +45,6 @@ class Mirror(object):
 
         for expr, symbols, pattern in rules:
             m = pattern.match(url)
-            print("[%s] :" % name, expr, symbols, pattern)
-            print('m=', m, 'url:', url)
             if m:
                 try:
                     kwargs = dict(property, **m.groupdict())

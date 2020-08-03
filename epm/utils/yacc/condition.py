@@ -1,5 +1,5 @@
 from ply import lex, yacc
-
+from epm.errors import ESyntaxError
 class Lex(object):
     # List of token names.   This is always required
     tokens = ('STRING', 'QSTRING', 'SQSTRING',
@@ -87,19 +87,21 @@ class Yacc(Lex):
         elif op == '<=':
             p[0] = value <= p[3]
 
-
     # Error rule for syntax errors
     def p_error(self, p):
-        print("Syntax error in input!")
+        raise ESyntaxError('expr error: %s' % self._expr)
+        #print("Syntax error in input!")
 
-    def __init__(self, vars, none='None'):
+    def __init__(self, vars, none='None', debug=False):
         # Build the parser
+        self._expr = None
         self._vars = vars or dict()
         self._None = none
         self._lexer = lex.lex(module=self)
-        self._parser = yacc.yacc(module=self, write_tables=False)
+        self._parser = yacc.yacc(module=self, write_tables=debug, debug=debug)
 
     def parse(self, expr):
+        self._expr = expr
         return self._parser.parse(expr)
 
 

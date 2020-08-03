@@ -1,0 +1,83 @@
+gcc5:
+  docker:
+    builder:
+      image: epmkit/gcc5
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+
+  profiles:
+    gcc5:
+      description: |
+        GNU GCC 5 build profile for x86_64 Linux.
+    gcc5-debug:
+      aliase: gcc5d
+      description: |
+        GNU GCC 5 build profile for x86_64 Linux (DEBUG).
+
+gcc5-x86:
+  docker:
+    builder:
+      image: epmkit/gcc5-x86
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: i386/ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+
+  profiles:
+    gcc5-x86:
+      description: |
+        GNU GCC 5 build profile for x86 Linux.
+    gcc5-x86-debug:
+      aliase: gcc5-x86d
+      description: |
+        GNU GCC 5 build profile for x86 Linux (DEBUG).
+
+
+gcc8:
+  docker:
+    builder:
+      image: epmkit/gcc8:webkit
+      windows_image: epmkit/gcc8:webkit
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+
+  profiles:
+    gcc8:
+      description: |
+        GNU GCC 8 build profile for x86_64 Linux.
+    gcc8-debug:
+      aliase: gcc8d
+      description: |
+        GNU GCC 8 build profile for x86_64 Linux (DEBUG).
+
+
+gcc8-x86:
+  docker:
+    builder:
+      image: epmkit/gcc8-x86:webkit
+      windows_image: epmkit/gcc8-x86:webkit
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: i386/ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+
+  profiles:
+    gcc8-x86:
+      description: |
+        GNU GCC 8 build profile for x86 Linux.
+    gcc8-x86-debug:
+      aliase: gcc8-x86d
+      description: |
+        GNU GCC 8 build profile for x86 Linux (DEBUG).

@@ -1,0 +1,33 @@
+
+hisiv300:
+  docker:
+    builder:
+      image: epmkit/hisiv300
+      windows_image: epmkit/hisiv400-win:webkit
+      shell: /bin/bash
+      home: /home/conan
+
+  profiles:
+    v300:
+      description: |
+        HUAWEI HiSilicon GCC 4.8 build profile for ARMv7 Linux with uCLib.
+    v300.d:
+      description: |
+        HUAWEI HiSilicon GCC 4.8 build profile for ARMv7 Linux with uCLib (DEBUG).
+
+
+hisiv400:
+  docker:
+    builder:
+      image: epmkit/hisiv400:webkit
+      windows_image: epmkit/hisiv400-win:webkit
+      shell: /bin/bash
+      home: /home/conan
+
+  profiles:
+    v400:
+      description: |
+        HUAWEI HiSilicon GCC 4.8 build profile for ARMv7 Linux with GLibc.
+    v400.d:
+      description: |
+        HUAWEI HiSilicon GCC 4.8 build profile for ARMv7 Linux with GLibc (DEBUG).

@@ -1,8 +1,9 @@
 import os
 import unittest
 
+from epm.test.helpers import DATA_DIR
 from epm.utils.mirror import Mirror
-from epm.tests.helpers import DATA_DIR
+
 
 
 _SERVER = 'http://127.0.0.1/archive'
