@@ -1,6 +1,9 @@
 import os
 import sys
 import pathlib
+import yaml
+from conans.client.conan_api import ConanAPIV1 as ConanAPI
+
 from epm import HOME_DIR
 from epm.enums import Platform, Architecture
 from epm.errors import EException
@@ -148,3 +151,17 @@ def banner_display_mode():
     if banner in ['no', 'false', 'off', 'disable']:
         banner = 'no'
     return banner
+
+
+def conanfile_inspect(path, attributes=None):
+    if not os.path.exists(path):
+        return None
+    attributes = attributes or ['generators', 'exports', 'settings', 'options', 'default_options',
+                                '__meta_information__']
+    conan = ConanAPI()
+    return conan.inspect(path, attributes)
+
+
+def load_yaml(path):
+    with open(path) as f:
+        return yaml.safe_load(f)

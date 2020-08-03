@@ -57,6 +57,7 @@ class Record(object):
         with open(path, 'w') as f:
             yaml.dump(self._data, f)
 
+from collections import namedtuple
 
 class Project(object):
 
@@ -66,18 +67,29 @@ class Project(object):
         :param scheme: the name of Scheme
         :param api:
         """
-        self._profile_name = profile
-        self._scheme_name = scheme
+        #self._profile_name = profile
+        #self._scheme_name = scheme
+        self._api = api
+        self._dir = pathlib.PurePath(os.path.abspath(directory)).as_posix()
+
         self._scheme = None
         self._profile = None
+        self.__meta_information__ = None
 
-        self._manifest = None # to be replaced by metainfo
-        self._metainfo = None
-        self._conan_meta = None
-        self._api = api
+        #self._manifest = None # to be replaced by metainfo
+        #self._metainfo = None
+        #self._conan_meta = None
+
         self._conan_storage_path = None
         self._record = None
-        self.dir = pathlib.PurePath(os.path.abspath(directory)).as_posix()
+        self._dir = pathlib.PurePath(os.path.abspath(directory)).as_posix()
+        Attribute = namedtuple('Attribute', ['profile', 'scheme'])
+        self.attribute = Attribute(profile, scheme)
+        self.__meta_information__ = load_yaml(os.path.join(self.dir, 'package.yml'))
+
+    @property
+    def dir(self):
+        return self._dir
 
     def initialize(self):
         rmdir(self.folder.out)
@@ -85,7 +97,7 @@ class Project(object):
         self._generate_layout()
 
     def _generate_layout(self):
-        manifest = self.metainfo.data
+        manifest = self.__meta_information__ or dict()
         template = manifest.get('conan.layout', DEFALT_CONAN_LAYOUT)
         layout = Template(template)
 
@@ -114,17 +126,28 @@ class Project(object):
             self._api = API()
         return self._api
 
+    def _minfo(self, *args):
+        value = None
+        m = self.__meta_information__ or dict()
+        n = len(args)
+        for k in args:
+            n -= 1
+            if isinstance(m, dict):
+                m = m.get(k)
+                continue
+        return m if n == 0 else None
+
     @property
     def name(self):
-        return self.metainfo.name
+        return self._minfo('name')
 
     @property
     def version(self):
-        return self.metainfo.version
+        return self._minfo('version')
 
     @property
     def user(self):
-        return self.metainfo.user
+        return self._minfo('user')
 
     @property
     def channel(self):
@@ -138,18 +161,18 @@ class Project(object):
 
     @property
     def profile(self):
-        if self._profile_name is None:
+        if self.attribute.profile is None:
             return None
         if self._profile is None:
             from epm.model.profile import Profile
-            self._profile = Profile(self._profile_name, self.api.workbench_dir)
+            self._profile = Profile(self.attribute.profile, self.api.workbench_dir)
         return self._profile
 
     @property
     def scheme(self):
         if self._scheme is None:
             from epm.model.scheme import Scheme
-            self._scheme = Scheme(self._scheme_name, self)
+            self._scheme = Scheme(self)
 
         return self._scheme
 
@@ -158,11 +181,10 @@ class Project(object):
         Folder = namedtuple('Folder', ['cache', 'out', 'build', 'package', 'test', 'name'])
         cache = '.epm'
         out = build = package = test = None
-        basename = self._profile_name
-        if self._scheme_name:
-            assert basename
-            if self._scheme_name and self._scheme_name not in ['default', 'None']:
-                basename += '@%s' % self._scheme_name
+        basename = self.attribute.profile
+        scheme = self.attribute.scheme
+        if scheme and scheme not in ['default', 'None']:
+            basename += '@%s' % scheme
 
         if basename:
             out = '%s/%s' % (cache, basename)
@@ -175,13 +197,3 @@ class Project(object):
     @property
     def layout(self):
         return '%s/conan.layout' % self.folder.out
-
-    @property
-    def metainfo(self):
-        if self._metainfo is None:
-            path = os.path.join(self.dir, 'package.yml')
-            from epm.model.config import MetaInformation
-            self._metainfo = MetaInformation(path)
-
-        return self._metainfo
-

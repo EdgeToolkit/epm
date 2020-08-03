@@ -7,7 +7,6 @@ from conans.tools import environment_append
 from epm import HOME_DIR
 
 
-
 class Docker(DockerRunner):
 
     def __init__(self, api, project):
@@ -78,8 +77,16 @@ class Builder(Worker):
                 raise EDockerException(docker)
 
     def _configure(self, project):
+
+
+
+
+
         scheme = project.scheme
         profile = project.profile
+        print('---------------- Profile.settings --------------------')
+        print(profile.settings)
+        assert False
 
         conan = self.api.conan
         folder = os.path.join(project.dir, project.folder.build)
