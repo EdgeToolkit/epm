@@ -1,5 +1,5 @@
 
-hisiv300:
+himix200:
   docker:
     builder:
       image: epmkit/himix200
@@ -9,8 +9,14 @@ hisiv300:
   profiles:
     himix200:
       description: |
-        HUAWEI HiSilicon GCC 7.3 build profile for ARMv8 Linux with 
+        HUAWEI HiSilicon GCC 7.3 build profile for ARMv8 Linux with
+
     himix200-debug:
       aliase: himix200d
       description: |
         HUAWEI HiSilicon GCC 7.3 build profile for ARMv8 Linux with  (DEBUG).
+        
+  meson:
+    native-file:
+    cross-file:
+

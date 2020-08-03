@@ -1,8 +1,0 @@
-{%- set symbol = name.replace('-','_') -%}
-{%- set SYMBOL = symbol.upper() -%}
-#include <{{ name }}/{{ name }}.h>
-
-{{ SYMBOL }}_C_EXPORT const char* {{ symbol }}_version()
-{
-    return "{{ version }}";
-}
