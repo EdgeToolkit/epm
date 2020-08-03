@@ -3,6 +3,7 @@ conan>=1.24.0
 distro>=1.0.2, <1.2.0
 paramiko>=2.5
 meson>=0.55
+ply>=3.11
 #scp >=0.13.2
 #pysmb
 
