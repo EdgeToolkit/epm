@@ -2,18 +2,73 @@ import os
 import yaml
 import shutil
 import pathlib
-
-from conans.client.profile_loader import read_profile
-from epm.errors import EException
-from epm.paths import DATA_DIR, get_epm_cache_dir
-
+import glob
 from collections import namedtuple
 
-from epm.util import system_info
+from conans.tools import mkdir
 
-from epm.util import get_workbench_dir, HOME_DIR
+from conans.client.profile_loader import read_profile
+
+from epm.errors import EException
+from epm import HOME_DIR, DATA_DIR
+from epm.utils import get_workbench_dir, system_info, load_yaml
 
 PLATFORM, ARCH = system_info()
+
+
+def install_buildin_profiles(cached=None):
+    cached = cached or HOME_DIR
+
+    def _(x): pathlib.PurePath(x).as_posix()
+
+    if _(os.path.abspath(cached)) != _(HOME_DIR):
+        return
+
+    path = os.path.join(cached, '.conan', 'settings.yml')
+    if not os.path.exists(path):
+        mkdir(os.path.dirname(path))
+        shutil.copyfile(os.path.join(DATA_DIR, 'conan', 'settings.yml'), path)
+
+    # only install for empty folder
+    if glob.glob('%s/profiles/*.yml' % cached):
+        return
+
+    pr_dir = os.path.join(cached, 'profiles')
+    mkdir(pr_dir)
+    buildin = os.path.join(DATA_DIR, 'profiles')
+    for path in glob.glob('%s/*' % buildin):
+        name = os.path.basename(path)
+        dst = os.path.join(pr_dir, name)
+        if os.path.isfile(path):
+            shutil.copy(path, dst)
+        else:
+            shutil.copytree(path, dst)
+
+
+def load_manifest(pr_dir):
+    manifest = {}
+
+    for path in glob.glob('%s/*.yml' % pr_dir):
+
+        meta = load_yaml(path)
+        family = os.path.basename(path)[:-4]
+        for group, metadata in meta.items():
+            profiles = metadata.pop('profiles')
+            for name, pr in profiles.items():
+                aliase = pr.get('aliase') or []
+                if isinstance(aliase, str):
+                    aliase = [aliase]
+
+                description = pr.get('description', '')
+
+                for i in [name] + aliase:
+                    assert i not in manifest, 'profile <%s> duplicated' %i
+                    manifest[i] = {'family': family,
+                                   'group': group,
+                                   'name': name,
+                                   'description': description,
+                                   'metadata': metadata}
+    return manifest
 
 
 class Profile(object):
@@ -21,60 +76,53 @@ class Profile(object):
 
     """
     _checked_default_profiles = False
+    _profile = None
+    MANIFEST_CACHE = {}
 
     def __init__(self, name, folder):
         self.name = name
         folder = folder or get_workbench_dir(os.getenv('EPM_WORKBENCH'))
 
         if not Profile._checked_default_profiles:
-            Profile.install_default_profiles()
+            install_buildin_profiles(folder)
             Profile._checked_default_profiles = True
 
-        self._filename = os.path.join(folder, 'profiles', name)
-        manifest = os.path.join(os.path.dirname(self._filename), 'manifest.yml')
-        if not os.path.exists(manifest):
-            raise EException('Can not find manifest.yml in profile <{}> folder {}.' % (
-                             os.path.dirname(self._filename), name))
+        self._directory = os.path.normpath(os.path.abspath(os.path.join(folder, 'profiles')))
 
-        if not os.path.exists(self._filename):
-            raise EException('Can not find profile <%s>.' % name)
-
-        with open(manifest) as f:
-            self._manifest = yaml.safe_load(f)
-
-        self._meta = None
-
-        for family, value in self._manifest.items():
-            for name, spec in value['profiles'].items():
-                if name == os.path.basename(self.name):
-                    self._meta = dict(value, **spec)
-                    del self._meta['profiles']
-                    break
-        if self._meta is None:
-            raise EException('No properties defined for profile %s' % self.name)
-
-        name = os.path.basename(self.name)
-        folder = os.path.dirname(self._filename)
-        self._profile, _ = read_profile(name, folder, folder)
+        if self._directory not in self.MANIFEST_CACHE:
+            profiles = load_manifest(self._directory)
+        else:
+            profiles = self.MANIFEST_CACHE[self._directory]
+        if name not in profiles:
+            raise EException('%name is not defined profile.')
+        self._manifest = profiles[name]
 
     @property
     def docker(self):
         Docker = namedtuple('Docker', ['builder', 'runner'])
-        docker = self._meta.get('docker')
+        meta = self._manifest['metadata']
+        docker = meta.get('docker')
         runner = docker.get('runner') if docker else None
         builder = docker.get('builder') if docker else None
 
         return Docker(builder, runner)
 
     def save(self, filename):
-        folder = os.path.dirname(filename)
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-        shutil.copyfile(self._filename, filename)
+        mkdir(os.path.dirname(filename))
+        path = os.path.join(self._directory, self._manifest['group'], self._manifest['name'])
+        shutil.copyfile(path, filename)
+
+    @property
+    def profile(self):
+        if self._profile is None:
+            name = self._manifest['name']
+            folder = os.path.join(self._directory, self._manifest['family'])
+            self._profile, _ = read_profile(name, folder, folder)
+        return self._profile
 
     @property
     def settings(self):
-        return self._profile.settings
+        return self.profile.settings
 
     @property
     def is_running_native(self):
@@ -93,7 +141,6 @@ class Profile(object):
     @property
     def builders(self):
 
-        arch = self.settings['arch']
         platform = self.settings['os']
 
         if PLATFORM == 'Windows':
@@ -109,28 +156,4 @@ class Profile(object):
     @property
     def is_cross_build(self):
         return PLATFORM != self.settings['os'] or ARCH != self.settings['arch']
-
-    @staticmethod
-    def install_default_profiles(cached=None):
-        cached = cached or HOME_DIR
-
-        if pathlib.PurePath(os.path.abspath(cached)).as_posix() != pathlib.PurePath(HOME_DIR).as_posix():
-            return
-
-        pd = os.path.normpath(os.path.join(cached, 'profiles'))
-        if not os.path.exists(pd):
-            os.makedirs(pd)
-
-        manifest = os.path.join(pd, 'manifest.yml')
-        if not os.path.exists(manifest):
-            buildin = os.path.normpath(os.path.join(DATA_DIR, 'profiles'))
-            with open(os.path.join(buildin, 'manifest.yml')) as f:
-                m = yaml.safe_load(f)
-            files = ['manifest.yml']
-
-            for _, family in m.items():
-                files += family.get('profiles', {}).keys() or []
-
-            for j in files:
-                shutil.copy(os.path.join(buildin, j), os.path.join(pd, j))
 

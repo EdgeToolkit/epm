@@ -6,3 +6,5 @@ __version__ = '0.1.0-webkit-29'
 
 
 HOME_DIR = os.path.join(os.path.expanduser('~'), '.epm')
+DATA_DIR = os.path.normpath('%s/data' % os.path.dirname(__file__))
+

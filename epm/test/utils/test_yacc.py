@@ -1,7 +1,7 @@
-import os
+
 import unittest
 
-from epm.test.helpers import DATA_DIR
+
 from epm.utils.yacc.condition import Yacc as ConditionYacc
 
 

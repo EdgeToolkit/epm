@@ -7,7 +7,6 @@
 vs2019:
   profiles:
     vs2019:
-      aliase: vs2019
       description: |
         Microsoft Visual Studio 2019 profile for x86_64.
         use the multithread-specific and DLL-specific version of the run-time library.
@@ -18,7 +17,6 @@ vs2019:
         use the debug multithread-specific and DLL-specific version of the run-time library
         
     vs2019mt:
-      aliase: vs2019mt
       description: |
         Microsoft Visual Studio 2019 profile for x86_64.
         use the multithread, static version of the run-time library.
@@ -30,7 +28,6 @@ vs2019:
 vs2019-x86:
   profiles:
     vs2019-x86:
-      aliase: vs2019-x86
       description: |
         Microsoft Visual Studio 2019 profile for x86.
         use the multithread-specific and DLL-specific version of the run-time library.
@@ -40,7 +37,6 @@ vs2019-x86:
         Microsoft Visual Studio 2019 profile for x86 (DEBUG).
         use the debug multithread-specific and DLL-specific version of the run-time library
     vs2019mt-x86:
-      aliase: vs2019mt-x86
       description: |
         Microsoft Visual Studio 2019 profile for x86.
         use the multithread, static version of the run-time library.

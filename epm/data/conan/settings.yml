@@ -55,7 +55,8 @@ compiler:
         threads: [None, posix, win32] #  Windows MinGW
         exception: [None, dwarf2, sjlj, seh] # Windows MinGW
         cppstd: [None, 98, gnu98, 11, gnu11, 14, gnu14, 17, gnu17, 20, gnu20]
-        toolchain: [None, arm-hisiv300-linux, arm-hisiv500-linux]
+        toolchain: [None, arm-hisiv300-linux, arm-hisiv400-linux, arm-hisiv500-linux, arm-hisiv600-linux,
+                    aarch64-himix100-linux, aarch64-himix200-linux, aarch64-himix300-linux, aarch64-himix400-linux]
     Visual Studio:
         runtime: [MD, MT, MTd, MDd]
         version: ["8", "9", "10", "11", "12", "14", "15", "16"]

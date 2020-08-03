@@ -14,34 +14,15 @@ def Main(args):
     parser = argparse.ArgumentParser(description=_DESCRIPTION,
                                      formatter_class=commands.SmartFormatter)
 
-    parser.add_argument('-f', '--folder', type=str, default='*',
-                        help='pattern of the the test file to run.')
-
     parser.add_argument('-p', '--pattern', type=str, default='test_*.py',
                         help='pattern of the the test file to run.')
 
     args = parser.parse_args(args)
 
-
-    suites = []
-    for i in os.listdir(_DIR):
-        path = os.path.join(_DIR, i)
-
-        if not os.path.isdir(path):
-            continue
-
-        if i in ['data', '__pycache__']:
-            continue
-
-        if not fnmatch.fnmatch(i, args.folder):
-            continue
-
-        suite = unittest.defaultTestLoader.discover(path, pattern=args.pattern, top_level_dir=None)
-        suites.append(suite)
+    cases =unittest.defaultTestLoader.discover(_DIR, pattern=args.pattern, top_level_dir=None)
 
     runner = unittest.TextTestRunner(descriptions=_DESCRIPTION, verbosity=2)
-    for suite in suites:
-        runner.run(suite)
+    return runner.run(cases)
 
 
 def run():
