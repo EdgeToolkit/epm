@@ -2,8 +2,10 @@ import os
 import pathlib
 from collections import namedtuple
 from string import Template
-from epm.util import system_info
-import yaml
+from epm.utils import system_info, save_yaml, load_yaml
+from epm.utils import conanfile_inspect
+from epm.tools import create_requirements
+
 from epm.util.files import rmdir, mkdir, save, load_yaml, save_yaml
 
 PLATFORM, ARCH = system_info()
@@ -32,14 +34,11 @@ class Record(object):
     def __init__(self, project):
         self._project = project
         self._data = None
+        self._filename = os.path.join(self._project.folder.out, self._FILENAME)
 
     def get(self, name, default=None):
         if self._data is None:
-            path = os.path.join(self._project.folder.out, Record._FILENAME)
-            if os.path.exists(path):
-                with open(path, 'r') as f:
-                    self._data = yaml.safe_load(f)
-            self._data = dict()
+            self._data = load_yaml(self._filename, {})
         return self._data.get(name, default)
 
     def set(self, key, value):
@@ -53,11 +52,8 @@ class Record(object):
                 return
         else:
             self._data[key] = value
-        path = os.path.join(self._project.folder.out, Record._FILENAME)
-        with open(path, 'w') as f:
-            yaml.dump(self._data, f)
+        save_yaml(self._data, self._filename)
 
-from collections import namedtuple
 
 class Project(object):
 
@@ -67,22 +63,20 @@ class Project(object):
         :param scheme: the name of Scheme
         :param api:
         """
-        #self._profile_name = profile
-        #self._scheme_name = scheme
         self._api = api
         self._dir = pathlib.PurePath(os.path.abspath(directory)).as_posix()
+
+        self._requirements = None
 
         self._scheme = None
         self._profile = None
         self.__meta_information__ = None
-
-        #self._manifest = None # to be replaced by metainfo
-        #self._metainfo = None
-        #self._conan_meta = None
+        self._conanfile_attributes = None
 
         self._conan_storage_path = None
         self._record = None
         self._dir = pathlib.PurePath(os.path.abspath(directory)).as_posix()
+
         Attribute = namedtuple('Attribute', ['profile', 'scheme'])
         self.attribute = Attribute(profile, scheme)
         self.__meta_information__ = load_yaml(os.path.join(self.dir, 'package.yml'))
@@ -127,7 +121,6 @@ class Project(object):
         return self._api
 
     def _minfo(self, *args):
-        value = None
         m = self.__meta_information__ or dict()
         n = len(args)
         for k in args:
@@ -151,7 +144,7 @@ class Project(object):
 
     @property
     def channel(self):
-        from epm.tools.conan import get_channel
+        from epm.tools import get_channel
         return get_channel(user=self.user)
 
     @property
@@ -197,3 +190,16 @@ class Project(object):
     @property
     def layout(self):
         return '%s/conan.layout' % self.folder.out
+
+    @property
+    def conanfile_attributes(self):
+        if self._conanfile_attributes is None:
+            self._conanfile_attributes = conanfile_inspect(os.path.join(self.dir, 'conanfile.py'))
+        return self._conanfile_attributes
+
+
+
+
+
+
+
