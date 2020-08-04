@@ -2,9 +2,8 @@ import os
 import base64
 import json
 
-from epm.util import system_info, banner_display_mode
+from epm.utils import PLATFORM, ARCH, banner_display_mode
 
-PLATFORM, ARCH = system_info()
 
 def param_encode(param):
     if not param:

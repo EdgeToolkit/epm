@@ -5,8 +5,8 @@ import re
 import pathlib
 from conans import ConanFile
 from epm.model.config import MetaInformation
-from epm.util.mirror import Mirror,register_mirror
-from epm.util import symbolize
+from epm.utils.mirror import Mirror,register_mirror
+from epm.utils import symbolize
 
 def get_channel(user=None, channel=None):
 

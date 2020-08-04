@@ -1,12 +1,41 @@
 import sys
 import os
 import shutil
-
-from epm.util.files import cache
-from epm.util import system_info
-from epm.worker import Worker
+import subprocess
 from conans.client.tools import ConanRunner
-PLATFORM, ARCH = system_info()
+from conans.tools import rmdir
+
+
+from epm.worker import Worker
+
+
+def cache(path):
+    url = urlparse(path)
+    folder = path
+    download_dir = tempfile.mkdtemp(suffix='epm.wenv')
+
+    if url.scheme in ['http', 'https']:
+        filename = os.path.join(download_dir, os.path.basename(path))
+        urllib.request.urlretrieve(path, filename)
+        folder = os.path.join(download_dir, 'wenv.config')
+        zfile = zipfile.ZipFile(filename)
+        zfile.extractall(folder)
+    elif url.scheme.startswith('git+'):
+        url = path[4:]
+        fields = url.split('@')
+        options = ['--depth', '1']
+        if len(fields) > 1:
+            url = fields[0]
+            branch = fields[-1]
+            options += ['-b', branch]
+
+        subprocess.run(['git', 'clone', url, download_dir] + options)
+        rmdir(os.path.join(download_dir, '.git'))
+        folder = download_dir
+
+    if not os.path.exists(folder):
+        raise Exception('Invalid install path {}'.format(path))
+    return folder
 
 
 class Runner(object):

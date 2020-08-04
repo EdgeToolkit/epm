@@ -3,7 +3,7 @@ import sys
 import pathlib
 import yaml
 from conans.client.conan_api import ConanAPIV1 as ConanAPI
-
+from conans.tools import mkdir
 from epm import HOME_DIR
 from epm.enums import Platform, Architecture
 from epm.errors import EException
@@ -74,24 +74,14 @@ def system_info():
     return platform, arch
 
 
+PLATFORM, ARCH = system_info()
+
 
 def is_elf(filename):
     with open(filename, 'rb') as f:
         return f.read(4) == b'\x7fELF'
 
     return False
-
-
-def XSym(filename):
-    with open(filename) as f:
-        line = f.readline(256).replace('\n', '')
-        if line == 'XSym':
-            f.readline(256)
-            f.readline(256)
-            line = f.readline(256).replace('\n', '')
-            return line if line else None
-    return None
-
 
 def sempath(path, prefixes, format='${%s}'):
     """ semantic path, replace path prefix with folders value and return the met one
@@ -154,6 +144,7 @@ def banner_display_mode():
 
 
 def conanfile_inspect(path, attributes=None):
+    print('**', path)
     if not os.path.exists(path):
         return None
     attributes = attributes or ['generators', 'exports', 'settings', 'options', 'default_options',
@@ -161,10 +152,6 @@ def conanfile_inspect(path, attributes=None):
     conan = ConanAPI()
     return conan.inspect(path, attributes)
 
-
-def load_yaml(path):
-    with open(path) as f:
-        return yaml.safe_load(f)
 
 
 def load_yaml(path, default=None):
@@ -178,7 +165,11 @@ def load_yaml(path, default=None):
 
 
 def save_yaml(data, path):
+    print('----------------->', path)
+    mkdir(os.path.dirname(path))
     with open(path, 'w') as f:
         yaml.safe_dump(data, f)
 
 
+def translate(txt):
+    return txt

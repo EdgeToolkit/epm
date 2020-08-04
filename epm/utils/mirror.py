@@ -4,6 +4,10 @@ import yaml
 from string import Template
 from conans.client.tools import net
 
+from epm import HOME_DIR
+from epm.utils import get_workbench_dir
+
+
 
 def split(txt, keys):
     for key in keys:
@@ -103,8 +107,6 @@ class Mirror(object):
     @staticmethod
     def load():
         if Mirror.Repo is False:
-            from epm import HOME_DIR
-            from epm.util import get_workbench_dir
             workbench = os.getenv('EPM_WORKBENCH') or HOME_DIR
 
             path = os.path.join(get_workbench_dir(workbench), 'mirrors.yml')

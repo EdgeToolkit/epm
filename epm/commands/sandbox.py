@@ -47,8 +47,7 @@ class Sandbox(Command):
         steps = steps or None
 
         from epm.worker.sandbox import Builder as SB
-        from epm.model.project import Project
-        project = Project(args.PROFILE, args.SCHEME, api=api)
+        project = api.project(args.PROFILE, args.SCHEME)
         sb = SB(project)
         sb.exec(program, steps)
 

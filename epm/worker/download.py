@@ -29,7 +29,7 @@ class Downloader(Worker):
 
         conan = self.api.conan
 
-        project = Project(param.get('PROFILE'), param.get('SCHEME'), self.api)
+        project = self.api.project(param.get('PROFILE'), param.get('SCHEME'))
         profile = project.profile
         scheme = project.scheme
         profile_name = os.path.join(storage, 'profile')

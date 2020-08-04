@@ -43,7 +43,7 @@ def get_runner_config(profile, scheme, runner, api=None):
         return {'.type': 'shell'}
 
     api = api or API()
-    project = Project(profile, scheme, api)
+    project = api.project(profile, scheme)
     profile = project.profile
 
     if runner in [None, 'auto', 'docker']:
@@ -553,7 +553,7 @@ class Sandbox(object):
     def __init__(self, profile=None, scheme=None, runner=None, api=None):
         from epm.api import API
         self._api = api or API()
-        self._project = Project(profile, scheme, self._api)
+        self._project = self.api.project(profile, scheme)
         self._runner = runner
         self._profile = profile
         self._scheme = scheme

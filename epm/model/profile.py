@@ -109,7 +109,8 @@ class Profile(object):
 
     def save(self, filename):
         mkdir(os.path.dirname(filename))
-        path = os.path.join(self._directory, self._manifest['group'], self._manifest['name'])
+        path = os.path.join(self._directory, self._manifest['family'], self._manifest['name'])
+        print(path, '--->', filename)
         shutil.copyfile(path, filename)
 
     @property

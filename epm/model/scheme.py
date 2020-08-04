@@ -1,11 +1,10 @@
 import os
 from conans.model.options import OptionsValues
-from epm.util import system_info
-from epm.utils import conanfile_inspect
+
+from epm.utils import conanfile_inspect, PLATFORM, ARCH
 from epm.tools import create_requirements
 from epm.tools import If, parse_multi_expr
 
-PLATFORM, ARCH = system_info()
 
 '''
 scheme:
@@ -113,7 +112,7 @@ class Scheme(object):
     @property
     def options(self):
         if self._options is None:
-            self._options, _ = parse_options(self._mdata.get('options'),
+            self._options, _ = parse_options(self._mdata.get('options', {}),
                                              self._project.profile.settings,
                                              self.default_options)
         return self._options
@@ -140,7 +139,7 @@ class Scheme(object):
 
         :return:
         """
-        if self._deps is None
+        if self._deps is None:
             settings = self._project.profile.settings
             options = {k: self.options.get(k, v) for k, v in self.default_options.items()}
             requires = create_requirements(self._manifest, settings, options)

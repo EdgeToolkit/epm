@@ -1,28 +1,28 @@
 import sys
 import os
-import pathlib
 import shutil
 
-from epm.paths import DATA_DIR
 from conans.util.files import mkdir
-
 from conans.client.conan_api import ConanAPIV1 as ConanAPI
 from conans.client.output import colorama_initialize
 from conans.client.userio import UserIO as UserIO
-from epm.paths import get_epm_cache_dir
+from conans.client.tools import environment_append
+
 from epm.worker.build import Builder
 from epm.worker.create import Creator
 from epm.worker.sandbox import Sandbox
 from epm.worker.runit import Runit
 from epm.worker.upload import Uploader
 from epm.worker.download import Downloader
-from epm.util.files import load_yaml
-from conans.client.tools import environment_append
+
+
+from epm import HOME_DIR, DATA_DIR
 from epm.model.runner import Output
-from epm import HOME_DIR
-from epm.util import get_workbench_dir
+
+
 
 CONAN_FOLDER_NAME = '.conan'
+
 
 class APIUtils(object):
     _HOME_WORKBENCH = None
@@ -66,11 +66,10 @@ class APIUtils(object):
 
 
 def api_method(f):
+
     def wrapper(api, *args, **kwargs):
         old_curdir = os.getcwd()
         try:
-            from epm.util.workbench import banner
-            banner()
             env_vars = api.config.get('environment', {})
             env_vars = dict(api.env_vars, **env_vars)
 
@@ -90,6 +89,8 @@ class APIv1(APIUtils):
         return cls()
 
     def __init__(self, workbench=None, output=None, user_io=None, color=None):
+        from epm.utils import get_workbench_dir
+
         APIUtils.initialize_home_workbench()
 
         color = color or colorama_initialize()
@@ -170,6 +171,7 @@ class APIv1(APIUtils):
 
     @api_method
     def load_config(self, update=True):
+        from epm.utils import load_yaml
         path = os.path.join(self.workbench_dir, 'config.yml')
         if not os.path.exists(path):
             return {}

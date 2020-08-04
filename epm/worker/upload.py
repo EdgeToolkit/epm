@@ -1,6 +1,5 @@
 import os
 from epm.worker import Worker
-from epm.model.project import Project
 from conans.tools import environment_append
 from epm.errors import EConanException
 
@@ -16,8 +15,8 @@ class Uploader(Worker):
         storage = param.get('storage')
         storage = os.path.abspath(storage) if storage else self.api.conan_storage_path
 
-        project = Project(profile, scheme, self.api)
-        package_id = project.buildinfo['package_id']
+        project = self.api.project(profile, scheme)
+        package_id = project.record.get('package_id')
         reference = str(project.reference)
 
         remote = param.get('remote', None)

@@ -14,14 +14,15 @@ class Config(object):
 
     @property
     def workbench(self):
-        Workbench = namedtuple('Workbench', ['name'])
+        Workbench = namedtuple('Workbench', ['name', 'default_scheme'])
 
         value = self._data.get('workbench')
 
         if value is None or value.get('name') is None:
             return None
+        default_scheme = value.get('default_scheme') or None
 
-        return Workbench(value['name'])
+        return Workbench(value['name'], default_scheme)
 
     @property
     def environment(self):

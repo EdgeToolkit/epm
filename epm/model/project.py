@@ -2,13 +2,11 @@ import os
 import pathlib
 from collections import namedtuple
 from string import Template
-from epm.utils import system_info, save_yaml, load_yaml
+
+from conans.tools import rmdir, mkdir, save
+
+from epm.utils import save_yaml, load_yaml
 from epm.utils import conanfile_inspect
-from epm.tools import create_requirements
-
-from epm.util.files import rmdir, mkdir, save, load_yaml, save_yaml
-
-PLATFORM, ARCH = system_info()
 
 DEFALT_CONAN_LAYOUT = '''
 [includedirs]
@@ -76,10 +74,17 @@ class Project(object):
         self._conan_storage_path = None
         self._record = None
         self._dir = pathlib.PurePath(os.path.abspath(directory)).as_posix()
+        self.__meta_information__ = load_yaml(os.path.join(self.dir, 'package.yml'))
+        if api and scheme is None:
+            workbench = api.config.workbench
+            default_scheme = workbench.default_scheme if workbench else None
+            mdata = self.__meta_information__ or {}
+            if default_scheme and default_scheme in mdata.get('scheme', {}):
+                scheme = default_scheme
+                api.out.warn('scheme not specified, use configured default_scheme <%s>.' %scheme)
 
         Attribute = namedtuple('Attribute', ['profile', 'scheme'])
         self.attribute = Attribute(profile, scheme)
-        self.__meta_information__ = load_yaml(os.path.join(self.dir, 'package.yml'))
 
     @property
     def dir(self):
@@ -100,12 +105,12 @@ class Project(object):
             f.write(text)
             f.flush()
 
-    def save(self, info={}):
-        save_yaml(os.path.join(self.folder.out, 'buildinfo.yml'), info)
+    #def save(self, info={}):
+    #    save_yaml(info, os.path.join(self.folder.out, 'buildinfo.yml'))
 
-    @property
-    def buildinfo(self):
-        return load_yaml(os.path.join(self.folder.out, 'buildinfo.yml'))
+    #@property
+    #def buildinfo(self):
+    #    return load_yaml(os.path.join(self.folder.out, 'buildinfo.yml'))
 
     @property
     def record(self):

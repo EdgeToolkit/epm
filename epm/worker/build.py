@@ -1,6 +1,5 @@
 import os
 from epm.worker import Worker, DockerRunner, param_encode
-from epm.model.project import Project
 from epm.errors import EException, EConanException, EDockerException
 from conans.errors import ConanException
 from conans.tools import environment_append
@@ -47,7 +46,7 @@ class Builder(Worker):
     def exec(self, param):
         if 'PROFILE' not in param:
             raise EException('PROFILE required for build.')
-        project = Project(param['PROFILE'], param.get('SCHEME'), self.api)
+        project = self.api.project(param['PROFILE'], param.get('SCHEME'))
         runner = param.get('RUNNER') or 'auto'
         if runner == 'auto':
             runner = 'docker' if project.profile.docker.builder else 'shell'
@@ -77,17 +76,8 @@ class Builder(Worker):
                 raise EDockerException(docker)
 
     def _configure(self, project):
-
-
-
-
-
         scheme = project.scheme
         profile = project.profile
-        print('---------------- Profile.settings --------------------')
-        print(profile.settings)
-        assert False
-
         conan = self.api.conan
         folder = os.path.join(project.dir, project.folder.build)
         project.initialize()
@@ -95,7 +85,8 @@ class Builder(Worker):
         filename = os.path.join(project.dir, project.folder.out, 'profile')
         profile.save(filename)
 
-        options = ['%s=%s' % (k, v) for (k, v) in scheme.options.as_list()]
+        options = ['%s=%s' % (k, v) for k, v in scheme.options.items()]
+        options += ['%s=%s' % (k, v) for k, v in scheme.reqs_options.items()]
 
         info = conan.install(path=project.dir,
                              name=project.name,

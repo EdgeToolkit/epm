@@ -13,7 +13,7 @@ import subprocess
 from urllib.parse import urlparse
 from jinja2 import Environment, BaseLoader
 from epm.util import system_info
-from epm.util.files import load_yaml, save_yaml, save, rmdir, mkdir
+#from epm.util.files import load_yaml, save_yaml, save, rmdir, mkdir
 from epm.errors import EException
 from epm.paths import get_epm_cache_dir
 from epm.api import API
@@ -155,7 +155,7 @@ def install(origin, to=None, out=None):
             f.close()
         instd = to
 
-    from epm.util.files import rmdir, mkdir
+    #from epm.util.files import rmdir, mkdir
     rmdir(instd)
 
     # copy files

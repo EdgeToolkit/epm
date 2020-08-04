@@ -7,21 +7,22 @@ import shutil
 import zipfile
 import tempfile
 import subprocess
-
 from urllib.parse import urlparse
-from epm import HOME_DIR
-from epm.util import system_info
+
 from conans.util.files import rmdir, mkdir
+from conans.client.tools import environment_append
+
+
+from epm import __version__, HOME_DIR
+from epm.utils import PLATFORM, banner_display_mode
+
 from epm.errors import EException
 from epm.api import API
 from epm.model.runner import Output
 from epm.model.config import Config
-from conans.client.tools import environment_append
-from epm import __version__
-from epm.util import banner_display_mode
 
 
-PLATFORM, ARCH = system_info()
+
 
 _LOGO = '''
 
@@ -113,7 +114,7 @@ def _cache(path):
     return folder
 
 
-def install(origin, editable, out=None):
+def install(origin, editable=False, out=None):
     from epm.model.config import Config
     mkdir(os.path.join(HOME_DIR, '.workbench'))
     out = out or Output(sys.stdout, sys.stderr, color=True)

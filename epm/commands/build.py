@@ -45,6 +45,7 @@ class Build(Command):
             Command.__init__(self, args)
 
     def run(self, args, api):
+
         steps = []
         steps += ['configure'] if args.configure else []
         steps += ['make'] if args.make else []

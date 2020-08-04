@@ -5,7 +5,7 @@ import traceback
 import inspect
 from conans.errors import ConanException
 
-
+from epm import logger
 class EException(Exception):
     """
          Generic EPM exception
@@ -23,6 +23,10 @@ class EException(Exception):
 
         if 'exception' in self.attributes:
             e = self.attributes['exception']
+            message += str(e)
+
+            logger.error("{}\n{}".format(message, "".join(traceback.format_tb(e.__traceback__))))
+
             if isinstance(e, BaseException):
                 self.attributes['exception'] = self._format_exception(e)
                 self.attributes['__traceback__'].append(traceback.format_tb(e.__traceback__))
@@ -67,7 +71,7 @@ class EException(Exception):
 class EConanException(EException):
 
     def __init__(self, message, exception=None):
-        super(EConanException, self).__init__(message, exception=exception)
+        super(EConanException, self).__init__(message + str(exception or ''), exception=exception)
 
 
 class EDockerException(EException):

@@ -1,28 +1,19 @@
-import sys
 import os
-import yaml
-import re
 import stat
 import fnmatch
 import pathlib
 from pathlib import PurePath
 from string import Template
-from jinja2 import PackageLoader, Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader
 
 from epm.errors import EException, ENotFoundError
-
-
-from epm.util.files import mkdir
-
-from epm.util import system_info, is_elf, sempath
-from epm.enums import Platform, Architecture
-
 from conans.client.generators.text import TXTGenerator
 from conans.util.files import load
-from conans.model.info import ConanInfo
-from epm.paths import DATA_DIR
+from conans.tools import mkdir
 
-PLATFORM, ARCH = system_info()
+from epm import DATA_DIR
+from epm.utils import PLATFORM, sempath
+from epm.enums import Platform
 
 
 # http://www.pixelbeat.org/programming/linux_binary_compatibility.html
@@ -34,14 +25,6 @@ def conanbuildinfo(folder):
         return cpp
     return None
 
-
-#def conaninfo(folder):
-#    return ConanInfo.load_from_package(folder)
-#
-#
-#P_PATH = re.compile(r'(?P<folder>(build|package))/(?P<relpath>\S+)')
-#P_PREFIX = re.compile(r'(?P<prefix>\.test/[\w\-\.]+)/(?P<path>\S+)')
-#P_PATH = re.compile(r'(?P<prefix>[\w\-\.]+)?/(?P<folder>(build|package))/(?P<relpath>\S+)')
 
 HOST_FOLDER = '@host'
 PROJECT_FOLDER = '%s/project' % HOST_FOLDER

@@ -3,14 +3,16 @@ import os
 import glob
 import fnmatch
 
+from conans.util.files import remove, rmdir
 from conans.client.tools import environment_append
 from conans.errors import ConanException
-from epm.worker import Worker, DockerBase, param_encode
-from epm.model.project import Project
-from epm.errors import EException, EConanException, EDockerException
-from epm.util import is_elf
-from epm.util.files import remove, rmdir
+
 from epm import HOME_DIR
+from epm.worker import Worker, DockerBase, param_encode
+from epm.errors import EException, EConanException, EDockerException
+from epm.utils import is_elf
+
+
 
 
 def _delete(path):
@@ -79,7 +81,7 @@ class Creator(Worker):
         super(Creator, self).__init__(api)
 
     def exec(self, param):
-        project = Project(param['PROFILE'], param.get('SCHEME'), self.api)
+        project = self.api.project(param['PROFILE'], param.get('SCHEME'))
         runner = param.get('RUNNER') or 'auto'
         clear = param.get('clear', False)
         storage = param.get('storage', None)
@@ -125,7 +127,9 @@ class Creator(Worker):
         filename = os.path.join(project.dir, project.folder.out, 'profile')
         profile.save(filename)
 
-        options = ['%s=%s' % (k, v) for (k, v) in scheme.options.as_list()]
+        options = ['%s=%s' % (k, v) for k, v in scheme.options.items()]
+        options += ['%s=%s' % (k, v) for k, v in scheme.reqs_options.items()]
+
 
         for i in conan.editable_list():
             conan.editable_remove(i)
@@ -147,7 +151,7 @@ class Creator(Worker):
 
         result = {'id': id}
         dirs = None
-        project.save({'package_id': id})
+        project.record.set('package_id', id)
 
         if sandbox:
             from epm.worker.sandbox import Builder as SB

@@ -1,6 +1,8 @@
 import re
 import os
-from conans.model.requires import Requirement
+import pathlib
+from collections import namedtuple
+from conans.model.requires import Requirements
 from conans.model.ref import ConanFileReference
 from conans.model.settings import Settings
 from conans.model.options import OptionsValues
@@ -49,8 +51,6 @@ def parse_multi_expr(m, settings, options):
     return None
 
 
-
-
 def create_requirements(minfo, settings=None, options=None):
     ''' create requirements (conan reference order dict name: reference)
 
@@ -59,7 +59,7 @@ def create_requirements(minfo, settings=None, options=None):
     :param options:
     :return:
     '''
-    requires = Requirement()
+    requires = Requirements()
     if not minfo:
         return requires
     any = settings is None and options is None
@@ -77,3 +77,40 @@ def create_requirements(minfo, settings=None, options=None):
                     ref = ConanFileReference(name, version, user, channel)
                     requires.add_ref(ref)
     return requires
+
+
+def parse_sandbox(manifest):
+    _P_PROJECT = r'(?P<project>\w[\w\-]+)/'
+    _P_TYPE = r'((?P<project>\w[\w\-]+)/)?(?P<type>(build|package))/'
+    _P_FOLDER = r'(?P<folder>bin)?'
+    _P_PROGRAM = r'/(?P<program>\w[\w\-]+)'
+    _SANDBOX_PATTERN = re.compile(_P_TYPE + _P_FOLDER + _P_PROGRAM + r'$')
+
+    Sandbox = namedtuple('Sandbox', 'content name directory type folder program param argv ports privileged')
+    result = {}
+    ports = []
+    privileged = False
+    for name, item in manifest.get('sandbox', {}).items():
+        cmdstr = item
+        if isinstance(item, dict):
+            cmdstr = item['command']
+            ports = item.get('ports', []) or []
+            if isinstance(ports, int):
+                ports = [ports]
+            privileged = item.get('privileged', False)
+
+        parts = cmdstr.split(' ', 1)
+        command = parts[0]
+        command = pathlib.PurePath(command).as_posix()
+        param = None if len(parts) < 2 else parts[1].strip()
+        argv = param.split() if param else []
+        m = _SANDBOX_PATTERN.match(command)
+        if not m:
+            raise Exception('sandbox {} invalid'.format(name))
+
+        result[name] = Sandbox(item, name,
+                               m.group('project'), m.group('type'),
+                               m.group('folder'), m.group('program'),
+                               param, argv, ports, privileged)
+
+    return result

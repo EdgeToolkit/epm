@@ -1,8 +1,6 @@
 
 from conans.client.output import ConanOutput
-from epm.util import system_info
-PLATFORM, ARCH = system_info()
-
+from epm.utils import PLATFORM
 
 
 class Output(ConanOutput):

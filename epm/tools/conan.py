@@ -1,61 +1,17 @@
-from epm.errors import EException
-from epm.tools.conan import get_channel
-from epm.util import conanfile_inspect
-from epm.util import load_yaml
+import re
+import os
+import pathlib
+
+from conans.client.tools.env import environment_append, no_op
+from conans.client.build.meson import Meson as _Meson
+from conans.client.generators.pkg_config import PkgConfigGenerator as _PkgConfigGenerator
+from conans import ConanFile
 from conans.client.generators import registered_generators
 
-
-import os
-import re
-from conans import ConanFile
-from conans.model.requires import Requirement
-from conans.model.ref import ConanFileReference
-
-
-from epm.util.mirror import Mirror, register_mirror
-from conans.client.conan_api import ConanAPIV1 as ConanAPI
-
-
-def If(expr, settings, options):
-    if not expr:
-        return True
-    vars = {'options': options}
-    for k, v in settings.items():
-        vars[k] = v
-
-    return eval(expr, {}, vars)
-
-
-def create_requirements(minfo, settings=None, options=None):
-    ''' create requirements (conan reference order dict name: reference)
-
-    :param minfo: meta information dict
-    :param settings:
-    :param options:
-    :return:
-    '''
-    requires = Requirement()
-    if not minfo:
-        return requires
-    any = settings is None and options is None
-    packages = minfo.get('dependencies') or []
-    for package in packages:
-        assert isinstance(attr, dict)
-        for name, attr in package.items():
-            if isinstance(attr, str):
-                requires.add(attr)
-            else:
-                assert isinstance(attr, dict)
-                if any or If(attr.get('if', settings, options)):
-                    version = attr['version']
-                    user = attr.get('user')
-                    channel = attr.get('channel')
-                    ref = ConanFileReference(name, version, user, channel)
-                    requires.add_ref(ref)
-    return requires
-
-def create_options(minfo, scheme, settings, default_options):
-    pass
+from epm.enums import Platform
+from epm.tools import get_channel, create_requirements
+from epm.utils import PLATFORM, load_yaml
+from epm.utils.mirror import Mirror
 
 def MetaClass(ConanFileClass=None, manifest=None, test_package=False):
 
@@ -93,9 +49,11 @@ def MetaClass(ConanFileClass=None, manifest=None, test_package=False):
         class CoanFileEx(ConanFileClass):
 
             def requirements(self):
-                self.requires = create_requirements()
+                self.requires = create_requirements(self.__meta_information__,
+                                                    self.settings,
+                                                    self.options)
 
-    return type(ClassName, CoanFileEx, member)
+    return type(ClassName, (CoanFileEx,), member)
 
 
 def delete(fn):
@@ -104,17 +62,6 @@ def delete(fn):
         getattr(this, fn.__name__)(*args)
     return _wrapper
 
-
-######################### MESON HACK #################################
-import os
-from conans.client.tools.env import environment_append, no_op
-
-
-from epm.enums import Platform
-from epm.util import system_info
-from conans.client.build.meson import Meson as _Meson
-
-PLATFORM, ARCH = system_info()
 
 class Meson(_Meson):
 
@@ -128,13 +75,6 @@ class Meson(_Meson):
 
         with environment_append({"PKG_CONFIG_PATH":pc_paths}) if not pc_paths else no_op():
             super(Meson, self)._run(command)
-
-
-
-############################ PKG-CONFIG ########################################
-from conans.client.generators.pkg_config import PkgConfigGenerator as _PkgConfigGenerator
-
-import pathlib
 
 
 class PkgConfigGenerator(_PkgConfigGenerator):

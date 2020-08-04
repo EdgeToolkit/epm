@@ -1,6 +1,7 @@
 import os
 from epm.commands import Command, register_command, ArgparseArgument
-
+from epm.utils import translate as _
+from epm.errors import EException
 _install_args = [
 
     ArgparseArgument("location", type=str,
@@ -30,16 +31,16 @@ _uninstall_args = [
 ]
 
 
-class WorkEnvironment(Command):
+class Workbench(Command):
     """
     EPM workbench management command
     """
     name = 'workbench'
-    help = 'Workbench environment.'
+    help = _('Workbench environment manipulate command.')
 
     def __init__(self):
 
-        args = {
+        argsx = {
             'install': {
                 'help': 'Install epm work environment.',
                 'args': _install_args
@@ -71,10 +72,45 @@ class WorkEnvironment(Command):
 
             }
         }
+
+        args = [
+            ArgparseArgument("name", type=str, nargs='?',
+                             help=_("name of the workbench.")),
+
+            ArgparseArgument("--action", type=str, default='active',
+                             choices=['install', 'uninstall', 'list', 'show', 'active'],
+                             help=_("action for specified workbench"))
+
+        ]
+
         Command.__init__(self, args)
 
     def run(self, args, api=None):
-        from epm.util.workbench import install, active, banner
+        from epm.utils import workbench
+
+
+        if args.action == 'active':
+            workbench.active(args.name)
+        elif args.action == 'install':
+            if not args.name:
+
+                raise EException('Not specified location of workbench tarball/path')
+            workbench.install(args.name)
+        elif args.action == 'list':
+            info = workbench.get_all_installed_wenv_info()
+            print('{:19s} {:40s}'.format('name', 'location'))
+            print('{:19s} {:40s}'.format('-' * 19, '-' * 40))
+            for name, value in info.items():
+                print('{:19s} {:40s}'.format(name, os.path.normpath(value['location'])))
+
+
+
+
+
+
+
+        return
+        from epm.utils.workbench import install, active, banner
         if args.sub_command == 'install':
             install(args.location, args.editable)
         elif args.sub_command == 'shell':
@@ -98,4 +134,4 @@ class WorkEnvironment(Command):
                 print('%s not installed.' % args.name)
 
 
-register_command(WorkEnvironment)
+register_command(Workbench)

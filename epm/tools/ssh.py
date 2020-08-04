@@ -5,8 +5,7 @@ import subprocess
 import paramiko
 
 from epm.model.runner import Output
-from epm.util import is_elf, system_info
-PLATFORM, ARCH = system_info()
+from epm.utils import PLATFORM
 
 class SSH(object):
 

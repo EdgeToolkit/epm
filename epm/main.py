@@ -1,12 +1,12 @@
 import sys
-import json
 import os
-import time
 import errno
 import argparse
-import traceback
+
 
 from conans.client.output import Color, colorama_initialize
+
+from epm import set_logger, logger
 from epm import commands
 from epm.model.runner import Output
 from epm.errors import EException, EDockerException
@@ -30,6 +30,9 @@ _RUNNER_HELP = 'Runner of the command used to execute/process'
 class Main(object):
 
     def __init__(self, args, out=None):
+        set_logger('.epm/{}epm.log'.format('docker-' if os.getenv('EPM_DOCKER_IMAGE') else ''))
+        logger.info("COMMAND: %s" % " ".join(args))
+
         color = colorama_initialize()
         self.out = out or Output(sys.stdout, sys.stderr, color)
         self.create_parser()
@@ -84,11 +87,14 @@ class Main(object):
                 raise
         except Exception as e:
             res = self._error(e)
+        finally:
+            set_logger(None)
 
         if res:
             sys.exit(res)
 
     def _error(self, e):
+        import traceback
 
         DOCKER_EXCEPTION_FILENAME = '.epm/docker-exception.yml'
         if os.getenv('EPM_DOCKER_CONTAINER_NAME'):
@@ -105,17 +111,14 @@ class Main(object):
 
         elif isinstance(e, EException):
             e.save('.epm/excetpion.yml')
-            for i in e.attributes['__traceback__']:
-                print(i)
-
 
         else:
+            print("=======================")
 
-            print('------------------------')
-            print(type(e), str(e))
-            import traceback
-            traceback.print_tb(e.__traceback__)
+            logger.error("\n{}\n{}".format(e, "".join(traceback.format_tb(e.__traceback__))))
+
             return 1
+        print('xxxxxxxxx')
         self.out.error(e.message)
         self.out.highlight(e.details)
 

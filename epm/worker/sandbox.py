@@ -3,48 +3,12 @@ import pathlib
 from epm.errors import EConanException, EException
 from epm.worker import Worker
 from epm.model.sandbox import Program
-from epm.util import system_info
+from epm.utils import PLATFORM
 from conans.client.tools import ConanRunner
 from epm.tools.ssh import SSH
+from epm.tools import parse_sandbox
 from conans.tools import environment_append
 
-
-PLATFORM, ARCH = system_info()
-
-#class Remoter(SSH):
-#
-#    def __init__(self, localhost, machine):
-#        self._localhost = localhost
-#        self._machine = machine
-#        super(Remoter, self).__init__(hostname=self._machine['hostname'],
-#                                      username=self._machine['ssh']['username'],
-#                                      password=self._machine['ssh']['password'],
-#                                      port=self._machine['ssh'].get('port'))
-#
-#    def mount(self, source, directory, host):
-#        if not pathlib.PurePath(directory).is_absolute():
-#            directory = os.path.join(self.WD, directory)
-#
-#        source = pathlib.PurePosixPath(source).as_posix()
-#        directory = pathlib.PurePosixPath(directory).as_posix()
-#
-#        try:
-#            self.call('[[ -d {0} ]] && umount {0}'.format(directory))
-#        except:
-#            pass
-#        formatter = 'mount -t nfs -o nolock {hostname}:{source} {directory}'
-#
-#        if PLATFORM == 'Windows':
-#            source = source.replace(':', '')
-#            formatter = 'mount -t cifs -o user={username},pass={password},noserverino //{hostname}/{source} {directory}'
-#
-#        cmd = formatter.format(hostname=self._localhost['hostname'],
-#                               username=self._localhost['username'],
-#                               password=self._localhost['password'],
-#                               source=source,
-#                               directory=directory)
-#        self.call(cmd, check=True)
-#
 
 class Runner(object):
 
@@ -160,8 +124,8 @@ class Builder(object):
         self._is_create_method = is_create_method
 
     def exec(self, program=None, steps=None):
-        metainfo = self._project.metainfo
-        sandbox = metainfo.get_sandbox()
+        scheme = self._project.scheme
+        sandbox = parse_sandbox(self._project.__meta_information__)
         steps = steps or ['configure', 'make']
         program = program or sandbox.keys()
         if isinstance(program, str):
@@ -183,7 +147,9 @@ class Builder(object):
         if 'configure' in steps:
             self._project.profile.save(profile)
         conan = self._api.conan
-        options = ['%s=%s' % (k, v) for k, v in self._project.scheme.package_options.as_list()]
+
+        options = ['%s:%s=%s' % (self._project.name, k, v) for k, v in scheme.options.items()]
+        options += ['%s=%s' % (k, v) for k, v in scheme.reqs_options.items()]
 
         for folder, sbs in candidate.items():
             if folder:
