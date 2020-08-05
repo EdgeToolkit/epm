@@ -167,7 +167,7 @@ class Scheme(object):
         return self._default_options
 
     def as_list(self, test_package=False):
-        prefix = '%s:' % self.name if test_package else ''
+        prefix = '%s:' % self._project.name if test_package else ''
         options = ['%s%s=%s' % (prefix, k, v) for k, v in self.options.items()]
         for pkg, opts in self.reqs_options.items():
             options += ['%s:%s=%s' % (pkg, k, v) for k, v in opts.items()]

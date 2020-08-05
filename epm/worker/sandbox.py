@@ -148,9 +148,6 @@ class Builder(object):
             self._project.profile.save(profile)
         conan = self._api.conan
 
-        options = ['%s:%s=%s' % (self._project.name, k, v) for k, v in scheme.options.items()]
-        options += ['%s=%s' % (k, v) for k, v in scheme.reqs_options.items()]
-
         for folder, sbs in candidate.items():
             if folder:
                 conanfile_path = os.path.join(folder, 'conanfile.py')
@@ -169,7 +166,7 @@ class Builder(object):
                 info = conan.install(conanfile_path,
                                      name=name,
                                      settings=None,  # should be same as profile
-                                     options=options,
+                                     options=scheme.as_list(True),
                                      profile_names=[profile],
                                      install_folder=build_folder)
                 if info['error']:

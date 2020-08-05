@@ -127,12 +127,6 @@ class Creator(Worker):
         filename = os.path.join(project.dir, project.folder.out, 'profile')
         profile.save(filename)
 
-        options = ['%s=%s' % (k, v) for k, v in scheme.options.items()]
-        for pkg, opts in scheme.reqs_options.items():
-            options += ['%s:%s=%s' % (pkg, k, v) for k, v in opts.items())]
-
-
-
         for i in conan.editable_list():
             conan.editable_remove(i)
 
