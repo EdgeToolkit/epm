@@ -9,7 +9,7 @@ from conans import ConanFile
 from conans.client.generators import registered_generators
 
 from epm.enums import Platform
-from epm.tools import get_channel, create_requirements
+from epm.tools import get_channel, create_requirements, add_build_requirements
 from epm.utils import PLATFORM, load_yaml
 from epm.utils.mirror import Mirror
 
@@ -19,7 +19,7 @@ def MetaClass(ConanFileClass=None, manifest=None, test_package=False):
     minfo = load_yaml(manifest)
 
     name = minfo.get('name')
-    version = minfo.get('version')
+    version = str(minfo.get('version'))
     user = minfo.get('user')
     exports = [manifest]
     ClassName = re.sub(r'\W', '_', os.path.basename(os.path.normpath(os.path.abspath(manifest))))
@@ -29,7 +29,7 @@ def MetaClass(ConanFileClass=None, manifest=None, test_package=False):
 
     if mirror:
         mirror.register(name)
-    registered_generators.add('pkg_config', PkgConfigGenerator, custom=True)
+    #registered_generators.add('pkg_config', PkgConfigGenerator, custom=True)
 
     member = dict(name=name, version=version, __meta_information__=minfo)
     if test_package:
@@ -54,13 +54,30 @@ def MetaClass(ConanFileClass=None, manifest=None, test_package=False):
                                                     self.settings,
                                                     self.options)
 
-    return type(ClassName, (CoanFileEx,), member)
+            def build_requirements(self):
+                add_build_requirements(self.build_requires, self.__meta_information__, self.settings, self.options)
 
+
+    return type(ClassName, (CoanFileEx,), member)
 
 def delete(fn):
     def _wrapper(self, *args):
         this = super(self.__class__, self)
-        getattr(this, fn.__name__)(*args)
+        f = getattr(this, fn.__name__, None)
+        return None if f is None else f(*args)
+    return _wrapper
+
+
+def replace(fn, new_fn):
+    def _wrapper(self, *args):
+
+        if callable(new_fn):
+            return new_fn(self, *args)
+        elif isinstance(new_fn, str):
+            f = getattr(self, new_fn, None)
+            return None if f is None else f(*args)
+        else:
+            raise Exception('Invalid new_fn (%s) to replace %s' % (type(new_fn), fn.__name__))
     return _wrapper
 
 

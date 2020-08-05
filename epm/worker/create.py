@@ -128,7 +128,9 @@ class Creator(Worker):
         profile.save(filename)
 
         options = ['%s=%s' % (k, v) for k, v in scheme.options.items()]
-        options += ['%s=%s' % (k, v) for k, v in scheme.reqs_options.items()]
+        for pkg, opts in scheme.reqs_options.items():
+            options += ['%s:%s=%s' % (pkg, k, v) for k, v in opts.items())]
+
 
 
         for i in conan.editable_list():
@@ -140,7 +142,7 @@ class Creator(Worker):
                                  user=project.user,
                                  channel=project.channel,
                                  settings=None,
-                                 options=options,
+                                 options=scheme.as_list(),
                                  profile_names=[filename],
                                  test_folder=False)
         if info['error']:

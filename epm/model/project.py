@@ -141,7 +141,7 @@ class Project(object):
 
     @property
     def version(self):
-        return self._minfo('version')
+        return str(self._minfo('version'))
 
     @property
     def user(self):

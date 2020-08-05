@@ -180,7 +180,7 @@ def active(name):
         name = 'default'
     config = Config(os.path.join(folder, 'config.yml'))
     api = API(workbench=name)
-    storage = api.conan_storage_path
+    storage = config.conan.storage or api.conan_storage_path
     # TODO: add short_path handle
     env_vars = {'CONAN_STORAGE_PATH': storage,
                 'CONAN_USER_HOME': api.workbench_dir,

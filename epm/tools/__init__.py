@@ -5,7 +5,8 @@ from collections import namedtuple
 from conans.model.requires import Requirements
 from conans.model.ref import ConanFileReference
 from conans.model.settings import Settings
-from conans.model.options import OptionsValues
+from conans.model.options import Options, PackageOptionValues, OptionsValues
+
 
 def get_channel(user):
     if user is None:
@@ -21,12 +22,13 @@ def If(expr, settings, options):
 
     vars = {}
     if isinstance(settings, Settings):
-        settings = settings.values_list()
+        settings = {k: v for(k, v) in settings.values_list}
 
     vars.update(settings or {})
-    if isinstance(options, OptionsValues):
-        for (k, v) in options.as_list():
-            vars['options.%s' % k] = v
+
+    if isinstance(options, Options):
+        options = {'options.%s' % k: v for (k, v) in options.values.as_list()}
+    vars.update(options or {})
 
     from epm.utils.yacc.condition import Yacc
     yacc = Yacc(vars)
@@ -43,6 +45,7 @@ def parse_multi_expr(m, settings, options):
     :param options:
     :return:
     """
+    print(m, '@@@@@@@@@@@@@@@@@@@@@@@------')
     for exprs in m if isinstance(m, list) else [m]:
         for name, expr in exprs.items():
             assert isinstance(name, (str, float, int)) and isinstance(expr, str)
@@ -63,21 +66,58 @@ def create_requirements(minfo, settings=None, options=None):
     if not minfo:
         return requires
     any = settings is None and options is None
-    packages = minfo.get('dependencies') or []
-    for package in packages:
-        for name, attr in package.items():
-            if isinstance(attr, str):
-                requires.add(attr)
-            else:
-                assert isinstance(attr, dict)
-                if any or If(attr.get('if', settings, options)):
-                    version = attr['version']
-                    user = attr.get('user')
-                    channel = attr.get('channel')
-                    ref = ConanFileReference(name, version, user, channel)
-                    requires.add_ref(ref)
+    packages = minfo.get('dependencies') or {}
+    for name, attr in packages.items():
+        if isinstance(attr, (str, int, float)):
+            ref = ConanFileReference(name, str(attr), '_', '_')
+            requires.add_ref(ref)
+        else:
+            assert isinstance(attr, dict)
+            if any or If(attr.get('if', settings, options)):
+                version = str(attr['version'])
+                user = attr.get('user')
+                channel = attr.get('channel') or get_channel(user)
+                ref = ConanFileReference(name, version, user, channel)
+                requires.add_ref(ref)
     return requires
 
+
+def add_build_requirements(requires, minfo, settings=None, options=None):
+    ''' create requirements (conan reference order dict name: reference)
+
+    :param minfo: meta information dict
+    :param settings:
+    :param options:
+    :return:
+    '''
+    if not minfo:
+        return requires
+
+    default_user = 'build-tools'
+    default_channel = 'public'
+
+    any = settings is None and options is None
+    packages = minfo.get('build-tools') or {}
+
+    for name, attr in packages.items():
+
+        if isinstance(attr, (str, int, float)):
+            ref = ConanFileReference(name, str(attr), default_user, default_channel)
+            requires(ref)
+        else:
+            assert isinstance(attr, dict)
+
+
+            if any or If(attr.get('if'), settings, options):
+                print(name, attr, '~~~~~~~~~~~', options, settings)
+
+                version = str(attr['version'])
+                user = attr.get('user') or default_user
+                channel = attr.get('channel') or default_channel
+                ref = ConanFileReference(name, version, user, channel)
+
+                requires(ref)
+    return requires
 
 def parse_sandbox(manifest):
     _P_PROJECT = r'(?P<project>\w[\w\-]+)/'

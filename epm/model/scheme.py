@@ -31,17 +31,21 @@ def parse_dep_scheme(default, scheme, requires, settings, options):
 
     :return:
     """
+
     result = {}
-    for ref in requires:
-        expr = scheme.get(ref.name)
+    for requirement in requires.values():
+        name = requirement.ref.name
+        expr = scheme.get(name)
+
         if not expr:
-            result[ref.name] = default
+            result[name] = default
         elif isinstance(expr, str):
-            result[ref.name] = expr
+            result[name] = expr
         elif isinstance(expr, (list, dict)):
-            result[ref.name] = parse_multi_expr(expr, settings, options) or default
+            result[name] = parse_multi_expr(expr, settings, options) or default
         else:
             raise NotImplementedError('not support ')
+
     return result
 
 
@@ -73,10 +77,14 @@ def parse_scheme_options(scheme, reference, settings, conan, requires=None):
         return options, {}
 
     reqs_options = {}
-    deps = parse_dep_scheme(mdata, scheme, requires, settings, opts)
+    deps = parse_dep_scheme(scheme, mdata, requires, settings, opts)
 
     for name, sch in deps.items():
-        o, po = parse_scheme_options(sch, requires[name], settings, conan)
+        ref = requires[name]
+        from conans.model.requires import Requirement
+        if isinstance(ref, Requirement):
+            ref = str(ref.ref)
+        o, po = parse_scheme_options(sch, ref, settings, conan)
         reqs_options[name] = o
         reqs_options.update(po)
 
@@ -85,11 +93,15 @@ def parse_scheme_options(scheme, reference, settings, conan, requires=None):
 
 def parse_options(mdata, settings, default_options):
     options = {}
+    print('+0+++++', mdata)
     for name, expr in mdata.items():
-        value = expr if isinstance(expr, str) else parse_multi_expr(expr, settings, None)
-        if not isinstance(value, str):
+        print('parse_options +1:', name, expr)
+        value = expr if isinstance(expr, (str, bool)) else parse_multi_expr(expr, settings, None)
+        if not isinstance(value, (str, bool)):
             raise Exception("option <%s> not able to parse" % name)
         options[name] = value
+        print('parse_options +2:', name, value)
+    print('parse_options +3:', options)
     return options, {k: options.get(k, v) for k, v in default_options.items()}
 
 
@@ -100,6 +112,7 @@ class Scheme(object):
         self._project = project
         self._manifest = project.__meta_information__ or {}
         self._mdata = self._manifest.get('scheme') or {}
+        self._mdata = self._mdata.get(self._name) or {}
         self._deps = None
         self._options = None
         self._reqs_options = None
@@ -152,6 +165,15 @@ class Scheme(object):
             conanfile = self._project.conanfile_attributes
             self._default_options = conanfile.get('default_options') or {}
         return self._default_options
+
+    def as_list(self, test_package=False):
+        prefix = '%s:' % self.name if test_package else ''
+        options = ['%s%s=%s' % (prefix, k, v) for k, v in self.options.items()]
+        for pkg, opts in self.reqs_options.items():
+            options += ['%s:%s=%s' % (pkg, k, v) for k, v in opts.items()]
+        return options
+
+
 
 
 

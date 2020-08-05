@@ -23,7 +23,7 @@ class EException(Exception):
 
         if 'exception' in self.attributes:
             e = self.attributes['exception']
-            message += str(e)
+            message = '{}\n +{}'.format(message, str(e))
 
             logger.error("{}\n{}".format(message, "".join(traceback.format_tb(e.__traceback__))))
 
