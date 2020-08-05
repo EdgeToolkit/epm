@@ -3,7 +3,7 @@
 import os
 import logging
 
-__version__ = '0.1.0-webkit-100'
+__version__ = '0.1.0-webkit-101'
 
 
 HOME_DIR = os.path.join(os.path.expanduser('~'), '.epm')
@@ -20,6 +20,8 @@ def set_logger(filename, level=logging.INFO):
         if _file_handler:
             _file_handler.close()
         return
+    from conans.tools import mkdir
+    mkdir(os.path.dirname(filename))
 
     logger.setLevel(level=level)
     handler = logging.FileHandler(filename)

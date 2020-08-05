@@ -5,7 +5,7 @@ from string import Template
 from conans.client.tools import net
 
 from epm import HOME_DIR
-from epm.utils import get_workbench_dir
+from epm.utils import get_workbench_dir, load_yaml
 
 
 
@@ -21,14 +21,13 @@ class Mirror(object):
     def __init__(self, filename):
         self._filename = os.path.abspath(filename)
 
-        with open(filename) as f:
-            self._config = yaml.safe_load(f)
-            self._package = self._config.get('package', {})
-            if isinstance(self._package, str):
-                print('mirror package has been redirect to %s' % self._package)
-                with open(self._package) as f:
-                    data = yaml.safe_load(f)
-                    self._package = data.get('package') or dict()
+        self._config = load_yaml(filename)
+        self._package = self._config.get('package') or dict()
+        #if isinstance(self._package, str):
+        #    print('mirror package has been redirect to %s' % self._package)
+        #    with open(self._package) as f:
+        #        data = yaml.safe_load(f)
+        #        self._package = data.get('package') or dict()
 
         self._property = self._config.get('property') or dict()
 
@@ -110,6 +109,7 @@ class Mirror(object):
             workbench = os.getenv('EPM_WORKBENCH') or HOME_DIR
 
             path = os.path.join(get_workbench_dir(workbench), 'mirrors.yml')
+            print(path)
             if os.path.exists(path):
                 try:
                     Mirror.Repo = Mirror(path)

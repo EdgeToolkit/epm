@@ -118,7 +118,6 @@ class Main(object):
             logger.error("\n{}\n{}".format(e, "".join(traceback.format_tb(e.__traceback__))))
 
             return 1
-        print('xxxxxxxxx')
         self.out.error(e.message)
         self.out.highlight(e.details)
 

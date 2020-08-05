@@ -28,17 +28,27 @@ class Config(object):
     def environment(self):
         return self._data.get('environment', {})
 
-    @property
-    def remotes(self):
+    def _parse_remotes(self, data):
         Remote = namedtuple('Remote', ['name', 'url', 'username', 'password'])
         remotes = []
-        for item in self._data.get('remotes', []):
+        for item in data or []:
             for name, r in item.items():
                 url = r['url']
                 username = r.get('username', None)
                 password = r.get('password', None)
                 remotes.append(Remote(name, url, username, password))
         return remotes
+
+    @property
+    def conan(self):
+        Conan = namedtuple('Conan', ['storage', 'short_path', 'remotes'])
+        conan = self._data.get('conan', {})
+        storage = conan.get('storage') or None
+        short_path = conan.get('short_path') or None
+        remotes = self._parse_remotes(conan.get('remotes'))
+        return Conan(storage, short_path, remotes)
+
+
 
     @property
     def env_vars(self):

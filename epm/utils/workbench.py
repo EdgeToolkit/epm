@@ -175,19 +175,20 @@ def active(name):
                 folder = f.read().strip()
                 if not os.path.isdir(folder):
                     raise EException('the actual installed folder %s not exists.' % folder)
-
-        config = Config(os.path.join(folder, 'config.yml'))
     else:
         folder = HOME_DIR
         name = 'default'
-
+    config = Config(os.path.join(folder, 'config.yml'))
     api = API(workbench=name)
     storage = api.conan_storage_path
     # TODO: add short_path handle
     env_vars = {'CONAN_STORAGE_PATH': storage,
                 'CONAN_USER_HOME': api.workbench_dir,
-                'EPM_WORKBENCH': name
+                'EPM_WORKBENCH': name,
+                'CONAN_USER_HOME_SHORT': config.conan.short_path
                }
+
+    env_vars.update(config.environment)
 
     with environment_append(env_vars):
         win = PLATFORM == 'Windows'
@@ -203,6 +204,7 @@ def active(name):
         print(' {:>16}: {}'.format('workbench', os.getenv('EPM_WORKBENCH')))
         print(' {:>16}: {}'.format('home', os.getenv('CONAN_USER_HOME')))
         print(' {:>16}: {}'.format('storage', os.getenv('CONAN_STORAGE_PATH')))
+        print(' {:>16}: {}'.format('short', os.getenv('CONAN_USER_HOME_SHORT')))
         print('\n')
 
         if win:

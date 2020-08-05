@@ -26,6 +26,7 @@ def MetaClass(ConanFileClass=None, manifest=None, test_package=False):
     ConanFileClass = ConanFileClass or ConanFile
 
     mirror = Mirror.load()
+
     if mirror:
         mirror.register(name)
     registered_generators.add('pkg_config', PkgConfigGenerator, custom=True)

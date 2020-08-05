@@ -18,7 +18,7 @@ from epm.worker.download import Downloader
 
 from epm import HOME_DIR, DATA_DIR
 from epm.model.runner import Output
-
+from epm.errors import EException
 
 
 CONAN_FOLDER_NAME = '.conan'
@@ -81,6 +81,16 @@ def api_method(f):
     return wrapper
 
 
+def request_profile(f):
+
+    def wrapper(api, *args, **kwargs):
+        param = args[0]
+        if 'PROFILE' not in param:
+            raise EException('%s required `profile` missed.' % f.__name__)
+        return f(api, *args, **kwargs)
+    return wrapper
+
+
 class APIv1(APIUtils):
     VERSION = '0.9'
 
@@ -120,16 +130,21 @@ class APIv1(APIUtils):
         return Project(profile, scheme, self)
 
     @api_method
+    @request_profile
     def build(self, param):
         worker = Builder(self)
         worker.exec(param)
 
     @api_method
+    @request_profile
     def sandbox_build(self, param):
         worker = SandboxBuilder(self)
         worker.exec(param)
 
+
+
     @api_method
+    @request_profile
     def create(self, param):
         worker = Creator(self)
         worker.exec(param)
@@ -145,6 +160,7 @@ class APIv1(APIUtils):
         worker.exec(param)
 
     @api_method
+    @request_profile
     def sandbox(self, param):
         project = self.project(param['PROFILE'], param.get('SCHEME'))
         sandbox = Sandbox(project, self)
