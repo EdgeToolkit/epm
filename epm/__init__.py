@@ -3,7 +3,7 @@
 import os
 import logging
 
-__version__ = '0.1.0-webkit-101'
+__version__ = '0.1.0-webkit-102'
 
 
 HOME_DIR = os.path.join(os.path.expanduser('~'), '.epm')
