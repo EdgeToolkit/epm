@@ -124,6 +124,45 @@ class Builder(object):
         self._is_create_method = is_create_method
 
     def exec(self, program=None, steps=None):
+        if 'sandbox' not in self._project.__meta_information__:
+            conanfile_path = os.path.join(self._project.dir, 'test_package', 'coanfile.py')
+            if os.path.isfile(conanfile_path):
+                print('===== Build TEST_PACKAGE')
+                self._configure(conanfile_path)
+                self._build(conanfile_path)
+        else:
+            self._exec(program, steps)
+
+    def _configure(self, conanfile_path, name='test_package'):
+        conan = self._project.api.conan
+        scheme = self._project.scheme
+        build_folder = os.path.join(self._project.folder.out, name, 'build')
+        info = conan.install(conanfile_path,
+                             name=name,
+                             settings=None,  # should be same as profile
+                             options=scheme.as_list(True),
+                             profile_names=[self._profile],
+                             install_folder=build_folder)
+        if info['error']:
+            raise EConanException('configure sandbox <{}> failed.'.format(name), info)
+
+    def _build(self, conanfile_path, name='test_package'):
+        conan = self._project.api.conan
+        build_folder = os.path.join(self._project.folder.out, name, 'build')
+        conan.build(conanfile_path,
+                    build_folder=build_folder,
+                    install_folder=build_folder
+                    )
+
+
+    @property
+    def _profile(self):
+        profile = os.path.join(self._project.folder.out, 'profile')
+        if not os.path.exists(profile):
+            self._project.profile.save(profile)
+        return profile
+
+    def _exec(self, program=None, steps=None):
         scheme = self._project.scheme
         sandbox = parse_sandbox(self._project.__meta_information__)
         steps = steps or ['configure', 'make']
@@ -180,8 +219,7 @@ class Builder(object):
                             )
 
             if 'make' in steps:
-
-                for sb in sbs:
+                for sb in sbs or []:
 
                     subpath = build_folder if folder else os.path.join(self._project.folder.out, sb.type)
                     if self._is_create_method and not folder:
@@ -193,3 +231,80 @@ class Builder(object):
                     program = Program(self._project, sb, subpath)
                     program.generate(sb.name)
 
+
+
+class _TODEL_Builder(object):
+
+    def __init__(self, project, is_create_method=False):
+        self._project = project
+        self._api = project.api
+        self._is_create_method = is_create_method
+
+    def exec(self, program=None, steps=None):
+        scheme = self._project.scheme
+        sandbox = parse_sandbox(self._project.__meta_information__)
+        steps = steps or ['configure', 'make']
+        program = program or sandbox.keys()
+        if isinstance(program, str):
+            program = [program]
+
+        undef = set(program).difference(sandbox.keys())
+        if undef:
+            raise EException('{} NOT valid sandbox item'.format(",".join(undef)))
+
+        candidate = {}
+        for name in program:
+            sb = sandbox[name]
+            directory = sb.directory if sb.directory else ''
+            if sb.directory not in candidate:
+                candidate[directory] = []
+            candidate[directory].append(sb)
+
+        profile = os.path.join(self._project.folder.out, 'profile')
+        if 'configure' in steps:
+            self._project.profile.save(profile)
+        conan = self._api.conan
+
+        for folder, sbs in candidate.items():
+            if folder:
+                conanfile_path = os.path.join(folder, 'conanfile.py')
+                build_folder = os.path.join(self._project.folder.out, folder, 'build')
+
+                name = '{}-{}'.format(self._project.name, folder.replace('-', '_'))
+
+            def _(step):
+                self._api.out.highlight('[%s sandbox program] %s. project folder  %s'
+                                       % (step, ",".join([x.name for x in sbs]), folder))
+
+            _('Build')
+
+            if 'configure' in steps and folder:
+                _('configure')
+                info = conan.install(conanfile_path,
+                                     name=name,
+                                     settings=None,  # should be same as profile
+                                     options=scheme.as_list(True),
+                                     profile_names=[profile],
+                                     install_folder=build_folder)
+                if info['error']:
+                    raise EConanException('configure sandbox <{}> failed.'.format(folder), info)
+
+            if 'make' in steps and folder:
+                _('make')
+                conan.build(conanfile_path,
+                            build_folder=build_folder,
+                            install_folder=build_folder
+                            )
+
+            if 'make' in steps:
+                for sb in sbs or []:
+
+                    subpath = build_folder if folder else os.path.join(self._project.folder.out, sb.type)
+                    if self._is_create_method and not folder:
+                        id = self._project.record.get('package_id')
+
+                        subpath = os.path.join(os.getenv('CONAN_STORAGE_PATH'), self._project.reference.dir_repr(),
+                                               sb.type, id)
+
+                    program = Program(self._project, sb, subpath)
+                    program.generate(sb.name)

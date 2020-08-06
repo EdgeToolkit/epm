@@ -7,6 +7,7 @@ from conans.tools import rmdir, mkdir, save
 
 from epm.utils import save_yaml, load_yaml
 from epm.utils import conanfile_inspect
+from epm.errors import EException
 
 DEFALT_CONAN_LAYOUT = '''
 [includedirs]
@@ -75,13 +76,19 @@ class Project(object):
         self._record = None
         self._dir = pathlib.PurePath(os.path.abspath(directory)).as_posix()
         self.__meta_information__ = load_yaml(os.path.join(self.dir, 'package.yml'))
+        mdata = self.__meta_information__ or {}
         if api and scheme is None:
             workbench = api.config.workbench
             default_scheme = workbench.default_scheme if workbench else None
-            mdata = self.__meta_information__ or {}
-            if default_scheme and default_scheme in mdata.get('scheme', {}):
+
+            mdata = mdata.get('scheme') or {}
+            if not mdata:
+                api.out.info('No scheme defined in this package.')
+            elif default_scheme and default_scheme in mdata:
                 scheme = default_scheme
-                api.out.warn('scheme not specified, use configured default_scheme <%s>.' %scheme)
+                api.out.highlight('scheme not specified, use configured default_scheme <%s>.' % scheme)
+        if scheme and scheme not in mdata:
+            raise EException('Specified scheme <%s> not defined.' % scheme)
 
         Attribute = namedtuple('Attribute', ['profile', 'scheme'])
         self.attribute = Attribute(profile, scheme)

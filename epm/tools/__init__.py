@@ -45,7 +45,6 @@ def parse_multi_expr(m, settings, options):
     :param options:
     :return:
     """
-    print(m, '@@@@@@@@@@@@@@@@@@@@@@@------')
     for exprs in m if isinstance(m, list) else [m]:
         for name, expr in exprs.items():
             assert isinstance(name, (str, float, int)) and isinstance(expr, str)
@@ -73,12 +72,15 @@ def create_requirements(minfo, settings=None, options=None):
             requires.add_ref(ref)
         else:
             assert isinstance(attr, dict)
-            if any or If(attr.get('if', settings, options)):
+            if any or If(attr.get('if'), settings, options):
                 version = str(attr['version'])
                 user = attr.get('user')
                 channel = attr.get('channel') or get_channel(user)
+                private = attr.get('private') is True
+                override = attr.get('override') is True
+
                 ref = ConanFileReference(name, version, user, channel)
-                requires.add_ref(ref)
+                requires.add_ref(ref, private=private, override=override)
     return requires
 
 
@@ -131,6 +133,7 @@ def parse_sandbox(manifest):
     ports = []
     privileged = False
     for name, item in manifest.get('sandbox', {}).items():
+
         cmdstr = item
         if isinstance(item, dict):
             cmdstr = item['command']
