@@ -1,0 +1,139 @@
+# ================================================
+#          GNU GCC 5
+# ================================================
+gcc5: &_gcc5
+  docker:
+    builder:
+      image: epmkit/gcc5
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+  description: |
+    GNU GCC 5 build profile for x86_64 Linux.
+  profile_host: gcc/5/release
+  profile_build: gcc/5/release
+
+gcc5d:
+  docker:
+    builder:
+      image: epmkit/gcc5
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+  description: |
+    GNU GCC 5 build profile for x86_64 Linux (DEBUG).
+  profile_host: gcc/5/debug
+  profile_build: gcc/5/release
+
+gcc5-x86: &_gcc5_x86
+  docker:
+    builder:
+      image: epmkit/gcc5-x86
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: i386/ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+
+  description: |
+    GNU GCC 5 build profile for x86 Linux.
+
+  profile_host: gcc/5/x86-release
+  profile_build: gcc/5/x86-release
+
+gcc5-x86d:
+  docker:
+    builder:
+      image: epmkit/gcc5-x86
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: i386/ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+
+  description: |
+    GNU GCC 5 build profile for x86 Linux.
+
+  profile_host: gcc/5/x86-debug
+  profile_build: gcc/5/x86-release
+
+
+
+
+# ================================================
+#          GNU GCC 8
+# ================================================
+gcc8:
+  docker:
+    builder:
+      image: epmkit/gcc8
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+  description: |
+    GNU GCC 8 build profile for x86_64 Linux.
+  profile_host: gcc/8/release
+  profile_build: gcc/8/release
+
+gcc8d:
+  docker:
+    builder:
+      image: epmkit/gcc8
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+  description: |
+    GNU GCC 8 build profile for x86_64 Linux (DEBUG).
+  profile_host: gcc/8/debug
+  profile_build: gcc/8/release
+
+gcc8-x86:
+  docker:
+    builder:
+      image: epmkit/gcc8-x86
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: i386/ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+
+  description: |
+    GNU GCC 8 build profile for x86 Linux.
+
+  profile_host: gcc/8/x86-release
+  profile_build: gcc/8/x86-release
+
+
+gcc8-x86d:
+  docker:
+    builder:
+      image: epmkit/gcc8-x86
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: i386/ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+
+  description: |
+    GNU GCC 8 build profile for x86 Linux.
+
+  profile_host: gcc/8/x86-debug
+  profile_build: gcc/8/x86-release
+
+

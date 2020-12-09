@@ -1,0 +1,17 @@
+/.PY3
+/epm/__pycache__
+/epm/__pycache__/*.pyc
+__pycache__
+/epm.egg-info
+.idea
+/site
+/dist
+/venv
+/.coverage
+/debug.yml
+epm.test.temp
+.vscode
+/Dockerfile
+/Dockerfile-*
+/.epm
+epm.log
