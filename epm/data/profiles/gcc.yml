@@ -1,10 +1,10 @@
 # ================================================
 #          GNU GCC 5
 # ================================================
-gcc5: &_gcc5
+gcc5:
   docker:
     builder:
-      image: epmkit/gcc5
+      image: edgetoolkit/gcc5
       shell: /bin/bash
       home: /home/conan
     runner:
@@ -13,13 +13,13 @@ gcc5: &_gcc5
       home: /tmp
   description: |
     GNU GCC 5 build profile for x86_64 Linux.
-  profile_host: gcc/5/release
-  profile_build: gcc/5/release
+  profile_host: gcc/5/x86_64
+  profile_build: gcc/5/x86_64
 
 gcc5d:
   docker:
     builder:
-      image: epmkit/gcc5
+      image: edgetoolkit/gcc5
       shell: /bin/bash
       home: /home/conan
     runner:
@@ -28,13 +28,13 @@ gcc5d:
       home: /tmp
   description: |
     GNU GCC 5 build profile for x86_64 Linux (DEBUG).
-  profile_host: gcc/5/debug
-  profile_build: gcc/5/release
+  profile_host: gcc/5/debug/x86_64
+  profile_build: gcc/5/x86_64
 
-gcc5-x86: &_gcc5_x86
+gcc5-x86:
   docker:
     builder:
-      image: epmkit/gcc5-x86
+      image: edgetoolkit/gcc5-x86
       shell: /bin/bash
       home: /home/conan
     runner:
@@ -45,13 +45,13 @@ gcc5-x86: &_gcc5_x86
   description: |
     GNU GCC 5 build profile for x86 Linux.
 
-  profile_host: gcc/5/x86-release
-  profile_build: gcc/5/x86-release
+  profile_host: gcc/5/x86
+  profile_build: gcc/5/x86
 
 gcc5-x86d:
   docker:
     builder:
-      image: epmkit/gcc5-x86
+      image: edgetoolkit/gcc5-x86
       shell: /bin/bash
       home: /home/conan
     runner:
@@ -62,8 +62,8 @@ gcc5-x86d:
   description: |
     GNU GCC 5 build profile for x86 Linux.
 
-  profile_host: gcc/5/x86-debug
-  profile_build: gcc/5/x86-release
+  profile_host: gcc/5/debug/x86
+  profile_build: gcc/5/x86
 
 
 
@@ -74,7 +74,7 @@ gcc5-x86d:
 gcc8:
   docker:
     builder:
-      image: epmkit/gcc8
+      image: edgetoolkit/gcc8
       shell: /bin/bash
       home: /home/conan
     runner:
@@ -83,13 +83,13 @@ gcc8:
       home: /tmp
   description: |
     GNU GCC 8 build profile for x86_64 Linux.
-  profile_host: gcc/8/release
-  profile_build: gcc/8/release
+  profile_host: gcc/8/x86_64
+  profile_build: gcc/8/x86_64
 
 gcc8d:
   docker:
     builder:
-      image: epmkit/gcc8
+      image: edgetoolkit/gcc8
       shell: /bin/bash
       home: /home/conan
     runner:
@@ -98,13 +98,13 @@ gcc8d:
       home: /tmp
   description: |
     GNU GCC 8 build profile for x86_64 Linux (DEBUG).
-  profile_host: gcc/8/debug
-  profile_build: gcc/8/release
+  profile_host: gcc/8/debug/x86_64
+  profile_build: gcc/8/x86_64
 
 gcc8-x86:
   docker:
     builder:
-      image: epmkit/gcc8-x86
+      image: edgetoolkit/gcc8-x86
       shell: /bin/bash
       home: /home/conan
     runner:
@@ -115,14 +115,14 @@ gcc8-x86:
   description: |
     GNU GCC 8 build profile for x86 Linux.
 
-  profile_host: gcc/8/x86-release
-  profile_build: gcc/8/x86-release
+  profile_host: gcc/8/x86
+  profile_build: gcc/8/x86
 
 
 gcc8-x86d:
   docker:
     builder:
-      image: epmkit/gcc8-x86
+      image: edgetoolkit/gcc8-x86
       shell: /bin/bash
       home: /home/conan
     runner:
@@ -133,7 +133,70 @@ gcc8-x86d:
   description: |
     GNU GCC 8 build profile for x86 Linux.
 
-  profile_host: gcc/8/x86-debug
-  profile_build: gcc/8/x86-release
+  profile_host: gcc/8/debug/x86
+  profile_build: gcc/8/x86
+
+
+
+
+
+# ================================================
+#          GNU GCC 8 ARMv7
+# ================================================
+gcc8-arm:
+  docker:
+    builder:
+      image: edgetoolkit/gcc8-arm
+      shell: /bin/bash
+      home: /home/conan
+  description: |
+    GNU GCC 8 build profile for ARMv7 Linux.
+  profile_host: gcc/8/arm
+  profile_build: gcc/8/x86_64
+
+gcc8-arm-d:
+  docker:
+    builder:
+      image: edgetoolkit/gcc8-arm
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+  description: |
+    GNU GCC 8 build profile for ARMv7 Linux (DEBUG).
+  profile_host: gcc/8/debug/arm
+  profile_build: gcc/8/x86_64
+
+
+# ================================================
+#          GNU GCC 8 ARMv8
+# ================================================
+gcc8-aarch64:
+  docker:
+    builder:
+      image: edgetoolkit/gcc8-aarch64
+      shell: /bin/bash
+      home: /home/conan
+  description: |
+    GNU GCC 8 build profile for aarch64 Linux.
+  profile_host: gcc/8/aarch64
+  profile_build: gcc/8/x86_64
+
+gcc8-aarch64d:
+  docker:
+    builder:
+      image: edgetoolkit/gcc8-aarch64
+      shell: /bin/bash
+      home: /home/conan
+    runner:
+      image: ubuntu:xenial
+      shell: /bin/bash
+      home: /tmp
+  description: |
+    GNU GCC 8 build profile for aarch64 Linux (DEBUG).
+  profile_host: gcc/8/debug/aarch64
+  profile_build: gcc/8/x86_64
 
 
