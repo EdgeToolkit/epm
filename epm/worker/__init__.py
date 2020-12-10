@@ -47,7 +47,7 @@ def _uname(prj):
     import time
     name = '%s_%s_%s' % (prj.name, prj.scheme.name, time.time())
     for i in "@:/":
-        name = name.replace(i,'-')
+        name = name.replace(i, '-')
     return name
 
 _DOCKER_COMMAND_HINT = """Executing command in docker

@@ -51,8 +51,6 @@ class Config(object):
         remotes = self._parse_remotes(conan.get('remotes'))
         return Conan(storage, short_path, remotes)
 
-
-
     @property
     def env_vars(self):
         '''

@@ -4,6 +4,7 @@
 __pycache__
 /epm.egg-info
 .idea
+.epm
 /site
 /dist
 /venv
@@ -15,3 +16,4 @@ epm.test.temp
 /Dockerfile-*
 /.epm
 epm.log
+/docker-tools/config.yml
