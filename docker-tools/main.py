@@ -33,8 +33,8 @@ pip:
 """
 
 _NAMEs = ['conan-hisiv300', 'conan-hisiv400',
-'gcc5', 'gcc5-x86', 'gcc5-arm', 'gcc5-aarch64',
-'gcc8', 'gcc8-x86', 'gcc8-arm', 'gcc8-aarch64',
+'gcc5', 'gcc5-x86', 'gcc5-armv7', 'gcc5-armv8',
+'gcc8', 'gcc8-x86', 'gcc8-armv7', 'gcc8-armv8',
 ]
 
 def match(patterns):
@@ -114,9 +114,10 @@ def Main():
     parser.add_argument('--version', type=str, help="version of the image to build instead read from epm module.")
     parser.add_argument('--build', default=False, action="store_true", help="execute image build")
     parser.add_argument('--clear', default=False, action="store_true", help="clear exist image, if build")
-    parser.add_argument('-c', '--config', default="config.yml", help="config file path. YAML format example\n")
+    parser.add_argument('-c', '--config', default="~/config/docker-tools/config.yml", help="config file path. YAML format example\n")
     args = parser.parse_args()
 #    name = args.name[0]
+    args.config = os.path.expanduser(args.config)
     targets = match(args.name)
     print("Build ", ",".join(targets))
     if not targets:

@@ -210,8 +210,8 @@ def active(name):
         print('\n')
 
         if win:
-            #subprocess.run(['cmd.exe', '/k', filename])
-            subprocess.run([filename], shell=True)
+            subprocess.run(['cmd.exe', '/k', filename])
+            #subprocess.run([filename], shell=True)
         else:
             subprocess.run(['/bin/bash', '--rcfile', filename])
     #banner()
