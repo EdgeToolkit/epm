@@ -152,7 +152,7 @@ def get_scheme_options(scheme, reference, settings, conan, requires=None, profil
     '''
 
     assert isinstance(reference, str), reference
-    conanfile, instance = conanfile_instance(conan, reference)
+    conanfile, instance = conanfile_instance(conan, reference, settings)
     manifest = getattr(conanfile, '__meta_information__', None)
     if not manifest:
         return {k: v for k, v in instance.options.items()}
@@ -162,11 +162,15 @@ def get_scheme_options(scheme, reference, settings, conan, requires=None, profil
 
     options = {k: scheme_options.get(k, v) for k, v in instance.options.items()}
     requires = requires or create_requirements(manifest, settings, options)
+    print("- options:", reference, [k for k, v in instance.options.items()])
+    print("- default_options:", reference, [k for k, v in instance.default_options.items()])
+
     if not requires:
         return options, {}
 
     reqs_options = {}
     deps = get_dep_scheme(scheme, mdata, requires, settings, options, profile=profile)
+    print("#.deps", reference, '->', deps)
 
     for name, sch in deps.items():
         ref = requires[name]
@@ -174,6 +178,9 @@ def get_scheme_options(scheme, reference, settings, conan, requires=None, profil
         if isinstance(ref, Requirement):
             ref = str(ref.ref)
         o, po = get_scheme_options(sch, ref, settings, conan, profile=profile)
+        print("*", ref)
+        print("|- ", o)
+        print("|- ", po)
         reqs_options[name] = o
         reqs_options.update(po)
 

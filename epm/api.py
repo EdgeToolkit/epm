@@ -213,7 +213,7 @@ class APIv1(APIUtils):
         return self._config
 
 @conan_api_method
-def conanfile_instance(conan, path):
+def conanfile_instance(conan, path, settings=None):
     from conans.model.ref import ConanFileReference, PackageReference, check_valid_ref
     from conans.errors import ConanException
     from conans.client.recorder.action_recorder import ActionRecorder

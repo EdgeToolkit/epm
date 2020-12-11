@@ -58,7 +58,6 @@ class Creator(Worker):
 
             storage_path = os.path.join(project.dir, storage, 'data') if storage else self.api.conan_storage_path
             env_vars = {'CONAN_STORAGE_PATH': storage_path}
-            short_home = None
             if PLATFORM == 'Windows' and storage:
                 short_home = os.path.join(project.dir, storage, 'short')
                 env_vars['CONAN_USER_HOME_SHORT'] = short_home
@@ -78,7 +77,6 @@ class Creator(Worker):
             if clear:
                 clearer = Cleaner(project, storage)
                 clearer.clear(storage=bool(storage))
-
 
     def _exec(self, project):
 
