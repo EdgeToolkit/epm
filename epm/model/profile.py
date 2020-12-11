@@ -125,7 +125,7 @@ class Profile(object):
     def build(self):
         if self._profile_build is None:
 
-            self._profile_build = ProfileData(profiles=[self.path('profile_build')],
+            self._profile_build = ProfileData(profiles=[self.path.build],
                                               settings=None, options=None, env=None)
         return self._profile_build
 
@@ -148,7 +148,7 @@ class Profile(object):
         host = self.config['profile_host']
         build = self.config['profile_build']
         folder = os.path.dirname(self.config['__file__'])
-        return namedtuple("ProfilePath", "host buildd")(
+        return namedtuple("ProfilePath", "host build")(
             os.path.join(folder, host), os.path.join(folder, build))
 
 

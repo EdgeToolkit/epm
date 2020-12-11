@@ -22,7 +22,7 @@ class Scheme(object):
         self._conanfile_options = None
         self._conanfile_settings = None
 
-        self.conanfile, self.instance = conanfile_instance(self._project.api.conan, self._project.dir)
+        self.conanfile, self.instance = conanfile_instance(self._project.api.conan, self._project.dir, project.profile)
 
     @property
     def name(self):
@@ -55,6 +55,7 @@ class Scheme(object):
 
     @property
     def dep_options(self):
+        print('~~~~~~~~~~~~~~~~~~~')
 
         if self._reqs_options is None:
             self._reqs_options = {}
@@ -65,6 +66,7 @@ class Scheme(object):
             settings = self._project.profile.host.settings
             for name, scheme in self.deps.items():
                 ref = str(self.requires.get(name))
+                print(self._project.profile, '+++++++++++++')
                 options, deps = get_scheme_options(scheme, ref, settings, conan, profile=self._project.profile)
                 self._reqs_options[name] = options
                 self._reqs_options.update(deps)

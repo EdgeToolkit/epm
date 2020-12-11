@@ -214,6 +214,8 @@ class APIv1(APIUtils):
 
 @conan_api_method
 def conanfile_instance(conan, path, profile=None):
+
+
     from conans.model.ref import ConanFileReference, PackageReference, check_valid_ref
     from conans.errors import ConanException
     from conans.client.recorder.action_recorder import ActionRecorder
@@ -225,6 +227,7 @@ def conanfile_instance(conan, path, profile=None):
     except ConanException:
         conanfile_path = os.path.join(path, 'conanfile.py')
         conanfile = conan.app.loader.load_named(conanfile_path, None, None, None, None)
+        ref = ConanFileReference(conanfile.name, conanfile.version, None, None)
     else:
         update = False
         result = conan.app.proxy.get_recipe(ref, update, update, remotes, ActionRecorder())
@@ -233,9 +236,27 @@ def conanfile_instance(conan, path, profile=None):
         conanfile.name = ref.name
         conanfile.version = str(ref.version) \
             if os.environ.get(CONAN_V2_MODE_ENVVAR, False) else ref.version
-    conan.cache.default_profile = profile.path.host
-    instance = conan.app.graph_manager.load_consumer_conanfile(conanfile_path, conanfile_path)
-    print('+++++++++', instance.settings.os, instance.settings.arch)
+
+    #conan.app.cache.default_profile = profile.path.host
+#    import tempfile
+#    mkdir(".epm/tmp/profiles")
+#    pdir = tempfile.mkdtemp(dir=".epm/tmp/profiles")
+#    from conans.model.graph_info import GraphInfo
+#    from conans.model.graph_lock import GraphLockFile
+
+#    GraphInfo(profile.host, root_ref=ref).save(pdir)
+#    GraphLockFile(profile.host, None).save(pdir)
+    instance = conan.app.graph_manager.load_consumer_conanfile(conanfile_path, None)
+#    print('+++++++++', instance.settings.os, instance.settings.arch)
+#    instance.settings = profile.settings
+    from conans.model.settings import Settings
+    from conans.tools import load
+    settings = Settings.loads(load(os.path.join(conan.app.cache_folder, 'settings.yml')))
+    settings.os = profile.host.settings['os']
+    settings.arch = profile.host.settings['arch']
+    settings.compiler = profile.host.settings['compiler']
+    settings.compiler.version = profile.host.settings['compiler.version']
+
     if hasattr(instance, 'configure'):
         instance.configure()
 

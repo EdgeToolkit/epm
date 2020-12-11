@@ -118,11 +118,11 @@ class Project(object):
         mkdir(self.folder.out)
         self._generate_layout()
 
-        shutil.copy(self.profile.path('profile_host'), self.abspath.profile_host)
-        shutil.copy(self.profile.path('profile_build'), self.abspath.profile_build)
-        cross_file = self.profile.path('cross_file')
-        if cross_file:
-            shutil.copy(cross_file, self.abspath.cross_file)
+        shutil.copy(self.profile.path.host, self.abspath.profile_host)
+        shutil.copy(self.profile.path.build, self.abspath.profile_build)
+        #cross_file = self.profile.path('cross_file')
+        #if cross_file:
+        #    shutil.copy(cross_file, self.abspath.cross_file)
 
     def _generate_layout(self):
         manifest = self.__meta_information__ or dict()
