@@ -256,6 +256,7 @@ def conanfile_instance(conan, path, profile=None):
     settings.arch = profile.host.settings['arch']
     settings.compiler = profile.host.settings['compiler']
     settings.compiler.version = profile.host.settings['compiler.version']
+    instance.settings = settings
 
     if hasattr(instance, 'configure'):
         instance.configure()
