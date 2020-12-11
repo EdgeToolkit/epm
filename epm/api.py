@@ -235,6 +235,9 @@ def conanfile_instance(conan, path, settings=None):
             if os.environ.get(CONAN_V2_MODE_ENVVAR, False) else ref.version
 
     instance = conan.app.graph_manager.load_consumer_conanfile(conanfile_path, conanfile_path)
+    if settings:
+        instance.settings.constraint(settings)
+        print('+++++++++', instance.settings.os, instance.settings.arch)
     if hasattr(instance, 'configure'):
         instance.configure()
 
