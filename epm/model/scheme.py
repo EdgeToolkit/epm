@@ -152,7 +152,7 @@ def get_scheme_options(scheme, reference, settings, conan, requires=None, profil
     '''
 
     assert isinstance(reference, str), reference
-    conanfile, instance = conanfile_instance(conan, reference, settings)
+    conanfile, instance = conanfile_instance(conan, reference, profile)
     manifest = getattr(conanfile, '__meta_information__', None)
     if not manifest:
         return {k: v for k, v in instance.options.items()}

@@ -213,7 +213,7 @@ class APIv1(APIUtils):
         return self._config
 
 @conan_api_method
-def conanfile_instance(conan, path, settings=None):
+def conanfile_instance(conan, path, profile=None):
     from conans.model.ref import ConanFileReference, PackageReference, check_valid_ref
     from conans.errors import ConanException
     from conans.client.recorder.action_recorder import ActionRecorder
@@ -233,11 +233,9 @@ def conanfile_instance(conan, path, settings=None):
         conanfile.name = ref.name
         conanfile.version = str(ref.version) \
             if os.environ.get(CONAN_V2_MODE_ENVVAR, False) else ref.version
-
+    conan.cache.default_profile = profile.path.host
     instance = conan.app.graph_manager.load_consumer_conanfile(conanfile_path, conanfile_path)
-    if settings:
-        instance.settings.constraint(settings)
-        print('+++++++++', instance.settings.os, instance.settings.arch)
+    print('+++++++++', instance.settings.os, instance.settings.arch)
     if hasattr(instance, 'configure'):
         instance.configure()
 

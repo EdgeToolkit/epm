@@ -143,19 +143,30 @@ class Profile(object):
             self._profile_host, _ = read_profile(name, folder, folder)
         return self._profile_host
 
-    def path(self, target):
+    @property
+    def path(self):
+        host = self.config['profile_host']
+        build = self.config['profile_build']
         folder = os.path.dirname(self.config['__file__'])
-        filename = None
-        if target in ['profile_host']:
-            filename = self.config['profile_host']
+        return namedtuple("ProfilePath", "host buildd")(
+            os.path.join(folder, host), os.path.join(folder, build))
 
-        elif target in ['profile_build']:
-            if 'profile_build' in self.config:
-                filename = self.config['profile_build']
-            else:
-                syslog.info(f'{self.name} not explicit setting profile_build, use profile_host')
-                filename = self.config['profile_host']
-        elif target in ['cross_file']:
-            if 'cross_file' in self.config:
-                filename = self.config['cross_file']
-        return os.path.join(folder, filename) if filename else None
+
+
+    #def path(self, target):
+    #    folder = os.path.dirname(self.config['__file__'])
+    #    filename = None
+    #    if target in ['profile_host']:
+    #        filename = self.config['profile_host']
+    #
+    #    elif target in ['profile_build']:
+    #        if 'profile_build' in self.config:
+    #            filename = self.config['profile_build']
+    #        else:
+    #            syslog.info(f'{self.name} not explicit setting profile_build, use profile_host')
+    #            filename = self.config['profile_host']
+    #    elif target in ['cross_file']:
+    #        if 'cross_file' in self.config:
+    #            filename = self.config['cross_file']
+    #    return os.path.join(folder, filename) if filename else None
+    #
