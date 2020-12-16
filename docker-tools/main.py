@@ -33,10 +33,60 @@ pip:
 """
 
 _NAMEs = ['conan-hisiv300', 'conan-hisiv400',
-'gcc5', 'gcc5-x86', 'gcc5-armv7', 'gcc5-armv8',
+'gcc5', 'gcc5-armv7', 'gcc5-armv8',
 'gcc8', 'gcc8-x86', 'gcc8-armv7', 'gcc8-armv8',
 ]
 # 'gcc5-x86', NOT WORK
+
+
+
+class ObjectView(object):
+    """Object view of a dict, updating the passed in dict when values are set
+    or deleted. "ObjectView" the contents of a dict...: """
+
+    def __init__(self, d):
+        # since __setattr__ is overridden, self.__dict = d doesn't work
+        object.__setattr__(self, '_ObjectView__dict', d)
+
+    # Dictionary-like access / updates
+    def __getitem__(self, name):
+        value = self.__dict[name]
+        if isinstance(value, dict):  # recursively view sub-dicts as objects
+            value = ObjectView(value)
+        elif isinstance(value, (list, tuple, set)):
+            value = []
+            for i in self.__dict[name]:
+                if isinstance(i, dict):
+                    value.append(ObjectView(i))
+                else:
+                    value.append(i)
+
+        return value
+
+    def __iter__(self):
+        return iter(self._ObjectView__dict)
+
+    def __setitem__(self, name, value):
+        self.__dict[name] = value
+
+    def __delitem__(self, name):
+        del self.__dict[name]
+
+    # Object-like access / updates
+    def __getattr__(self, name):
+        return self[name] if name in self else None
+
+    def __setattr__(self, name, value):
+        self[name] = value
+
+    def __delattr__(self, name):
+        del self[name]
+
+    def __repr__(self):
+        return "%s(%r)" % (type(self).__name__, self.__dict)
+
+    def __str__(self):
+        return str(self.__dict)
 
 
 def match(patterns):
@@ -98,13 +148,14 @@ def build(name, version, config):
     elif name.startswith('hi'):
         filename = 'HiSi'
     
+    
     txt = render(name, version, f"{filename}.j2", config)
     
     
     with open(f".epm/{name}.Dockerfile", 'w') as f:
         f.write(txt)
     command = ['docker', 'build', '-f', f"{name}.Dockerfile", '-t', f'edgetoolkit/{name}:{version}', '.']
-    print(command)
+    print(" ".join(command))
     subprocess.run(command, check=True, cwd='.epm')
 
 #
@@ -115,7 +166,7 @@ def Main():
     parser.add_argument('name', nargs='+', help="name of the docker image to build.")
     parser.add_argument('--version', type=str, help="version of the image to build instead read from epm module.")
     parser.add_argument('--build', default=False, action="store_true", help="execute image build")
-    parser.add_argument('--clear', default=False, action="store_true", help="clear exist image, if build")
+    parser.add_argument('--clear', default=False, action="store_true", help="clear exist image, if build")    
     parser.add_argument('-c', '--config', default="~/config/docker-tools/config.yml", help="config file path. YAML format example\n")
     args = parser.parse_args()
 #    name = args.name[0]
@@ -128,14 +179,21 @@ def Main():
 
     with open(args.config) as f:
         data = yaml.safe_load(f)
+        
         data = dict({'pip':{'proxy': None, 'index-url': None, 'trusted-host': None}}, **data)
-    if not os.path.exists(".epm"):
-        os.makedirs(".epm")
-    CWD = os.path.abspath('.')
-    print(CWD, '-----', _EPM_DIR)
-    subprocess.run(['git', 'archive', '--format', 'tar.gz', '--output',
-                    f'{CWD}/.epm/epm.tar.gz', 'HEAD '], cwd=_EPM_DIR)    
+
+    #CWD = os.path.abspath('.')    
+    #if not os.path.exists(f"{CWD}/.epm"):
+    #    os.makedirs(f"{CWD}/.epm")
+    #from conans.tools import chdir
+    
+    #command = ['git', 'archive', '--format=tar.gz', '--output', f'{CWD}/.epm/epm.tar.gz', 'HEAD ']
+    #print(" ".join(command), f"EPMDIR:{_EPM_DIR}")
+    #with chdir(_EPM_DIR):
+    #    subprocess.run(command) 
+    #sys.exit(0)
     config = dict2obj(data)
+    #config = ObjectView(data)
     for name in targets:
         if name.startswith('conan-'):
             version = config.conan.version
@@ -143,7 +201,8 @@ def Main():
             version = args.version or VERSION
 
         if args.clear:
-            subprocess.run(['docker', 'rmi', f'edgetoolkit/{name}:{version}'], check=False)
+            command = ['docker', 'rmi', f'edgetoolkit/{name}:{version}']
+            subprocess.run(command, check=False)
         if args.build:
             build(name, version, config)
 

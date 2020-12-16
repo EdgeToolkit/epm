@@ -16,7 +16,6 @@ class Scheme(object):
         self._options = None
         self._full_options = None
         self._reqs_options = None
-        self._default_options = None
         self._requires = None
         self._tools = None
         self._conanfile_options = None
@@ -55,8 +54,6 @@ class Scheme(object):
 
     @property
     def dep_options(self):
-        print('~~~~~~~~~~~~~~~~~~~')
-
         if self._reqs_options is None:
             self._reqs_options = {}
             if not self.deps:
@@ -66,7 +63,6 @@ class Scheme(object):
             settings = self._project.profile.host.settings
             for name, scheme in self.deps.items():
                 ref = str(self.requires.get(name))
-                print(self._project.profile, '+++++++++++++')
                 options, deps = get_scheme_options(scheme, ref, settings, conan, profile=self._project.profile)
                 self._reqs_options[name] = options
                 self._reqs_options.update(deps)
@@ -164,9 +160,6 @@ def get_scheme_options(scheme, reference, settings, conan, requires=None, profil
 
     options = {k: scheme_options.get(k, v) for k, v in instance.options.items()}
     requires = requires or create_requirements(manifest, settings, options)
-    print("- settings.os:", instance.settings.os)
-    print("- options:", reference, [k for k, v in instance.options.items()])
-    print("- default_options:", reference, [k for k, v in instance.default_options.items()])
 
     if not requires:
         return options, {}

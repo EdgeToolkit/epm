@@ -40,6 +40,7 @@ class Creator(Worker):
 
         if runner == 'auto':
             runner = 'docker' if project.profile.docker.builder else 'shell'
+        
 
         if runner == 'docker':
             param['RUNNER'] = 'shell'

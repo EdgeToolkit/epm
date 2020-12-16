@@ -1,5 +1,5 @@
-RUN sudo pip install --upgrade pip \
-    && sudo pip uninstall -y conan conan-package-tools \
+#sudo pip install --upgrade pip
+RUN sudo pip uninstall -y conan conan-package-tools \
     && mkdir /tmp/epm \
     && tar -xvzf /tmp/epm.tar.gz -C /tmp/epm \
     && sudo pip install {{pip_options}} /tmp/epm \

@@ -81,9 +81,6 @@ class DockerRunner(object):
         command = self._command(commands, config, WD, volumes, environment)
         args = ['--name', self.name, '--rm']
 
-        if PLATFORM == 'Linux' and os.getuid():
-            args = ['sudo'] + args
-
         for path, value in volumes.items():
             mode = value.get('mode', 'rw')
             bind = value['bind']
@@ -105,7 +102,12 @@ class DockerRunner(object):
         wd = WD or config.get('home')
         args += ['-w', wd] if wd else []
 
-        cmd = ['docker', 'run'] + args + [image, command]
+        sudo = []
+
+        if PLATFORM == 'Linux' and os.getuid():
+            sudo = ['sudo', '-E']
+
+        cmd = sudo + ['docker', 'run'] + args + [image, command]
         cmd = " ".join(cmd)
 
         self._log_docker_command(args, image, command, cmd)
