@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 import sys
 import jinja2
@@ -36,6 +36,8 @@ _NAMEs = ['conan-hisiv300', 'conan-hisiv400',
 'gcc5', 'gcc5-x86', 'gcc5-armv7', 'gcc5-armv8',
 'gcc8', 'gcc8-x86', 'gcc8-armv7', 'gcc8-armv8',
 ]
+# 'gcc5-x86', NOT WORK
+
 
 def match(patterns):
     if isinstance(patterns, str):
@@ -130,7 +132,9 @@ def Main():
     if not os.path.exists(".epm"):
         os.makedirs(".epm")
     CWD = os.path.abspath('.')
-    subprocess.run(f'git archive --format tar.gz --output {CWD}/.epm/epm.tar.gz HEAD ', cwd=_EPM_DIR)    
+    print(CWD, '-----', _EPM_DIR)
+    subprocess.run(['git', 'archive', '--format', 'tar.gz', '--output',
+                    f'{CWD}/.epm/epm.tar.gz', 'HEAD '], cwd=_EPM_DIR)    
     config = dict2obj(data)
     for name in targets:
         if name.startswith('conan-'):
