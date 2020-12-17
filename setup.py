@@ -26,7 +26,15 @@ def get_requires(filename):
     return requirements
 
 
-project_requirements = get_requires("epm/requirements.txt")
+project_requirements = get_requires("epm/requirements_core.txt")
+EPM_INSTALLATION_OPTIONS = os.environ.get('EPM_INSTALLATION_OPTIONS')
+if 'disable-extend' != EPM_INSTALLATION_OPTIONS:
+    project_requirements = get_requires("epm/requirements_extend.txt")
+else:
+    print('===================================================')
+    print('This epm only do build in native.')
+    print('===================================================')
+
 if platform.system() == "Darwin":
     project_requirements.extend(get_requires("epm/requirements_osx.txt"))
 dev_requirements = get_requires("epm/requirements_dev.txt")
