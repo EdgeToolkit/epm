@@ -75,8 +75,7 @@ class DockerRunner(object):
         from conans.client.runner import ConanRunner as Runner
         config, WD, volumes, environment = self._preprocess(config)
         image = config['image']
-        if PLATFORM == 'Windows' and config.get('windows_image'):
-            image = config.get('windows_image')
+
 
         command = self._command(commands, config, WD, volumes, environment)
         args = ['--name', self.name, '--rm']
@@ -106,6 +105,7 @@ class DockerRunner(object):
 
         if PLATFORM == 'Linux' and os.getuid():
             sudo = ['sudo', '-E']
+        self._pull_images_if_not_present(image, sudo)
 
         cmd = sudo + ['docker', 'run'] + args + [image, command]
         cmd = " ".join(cmd)
@@ -181,6 +181,21 @@ class DockerRunner(object):
             save(path, content)
         except:
             pass
+
+    def pull_images_if_not_present(self, image, sudo):
+        token = image.split(':')
+        name = token[0]
+        tag = 'latest' if len(token) == 1 else token[1]
+        import subprocess
+        command = sudo + ['docker', 'images', '-q', f"{name}:{tag}"]
+        proc = subprocess.run(command)
+        if proc.returncode or not proc.stdout:
+            self._api.out.info(f'docker image {image} not exits, pull it now.')
+            command = sudo + ['docker', 'pull', image]
+            subprocess.run(command, check=True)
+
+
+
 
 
 DockerBase = DockerRunner
