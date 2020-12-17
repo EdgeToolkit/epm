@@ -33,7 +33,7 @@ pip:
 """
 
 _NAMEs = ['conan-hisiv300', 'conan-hisiv400',
-'gcc5', 'gcc5-armv7', 'gcc5-armv8',
+'gcc5', 'gcc5-x86', 'gcc5-armv7', 'gcc5-armv8',
 'gcc8', 'gcc8-x86', 'gcc8-armv7', 'gcc8-armv8',
 ]
 # 'gcc5-x86', NOT WORK
