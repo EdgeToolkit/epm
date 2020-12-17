@@ -143,7 +143,7 @@ gcc8-x86d:
 # ================================================
 #          GNU GCC 8 ARMv7
 # ================================================
-gcc8-arm7:
+gcc8-armv7:
   docker:
     builder:
       image: edgetoolkit/gcc8-armv7
@@ -154,7 +154,7 @@ gcc8-arm7:
   profile_host: gcc/8/armv7
   profile_build: gcc/8/x86_64
 
-gcc8-arm7d:
+gcc8-armv7d:
   docker:
     builder:
       image: edgetoolkit/gcc8-armv7
@@ -170,7 +170,7 @@ gcc8-arm7d:
 # ================================================
 #          GNU GCC 8 ARMv8 (aarch64)
 # ================================================
-gcc8-aarch64:
+gcc8-armv8:
   docker:
     builder:
       image: edgetoolkit/gcc8-armv8
@@ -181,7 +181,7 @@ gcc8-aarch64:
   profile_host: gcc/8/armv8
   profile_build: gcc/8/x86_64
 
-gcc8-aarch64d:
+gcc8-armv8:
   docker:
     builder:
       image: edgetoolkit/gcc8-armv8
@@ -198,7 +198,7 @@ gcc8-aarch64d:
 # ================================================
 #          GNU GCC 5 ARMv7
 # ================================================
-gcc5-arm7:
+gcc5-armv7:
   docker:
     builder:
       image: edgetoolkit/gcc8-armv7
@@ -209,7 +209,7 @@ gcc5-arm7:
   profile_host: gcc/5/armv7
   profile_build: gcc/5/x86_64
 
-gcc5-arm7d:
+gcc5-armv7d:
   docker:
     builder:
       image: edgetoolkit/gcc5-armv7
@@ -224,7 +224,7 @@ gcc5-arm7d:
 # ================================================
 #          GNU GCC 5 ARMv8 (aarch64)
 # ================================================
-gcc5-aarch64:
+gcc5-armv8:
   docker:
     builder:
       image: edgetoolkit/gcc5-armv8
@@ -235,7 +235,7 @@ gcc5-aarch64:
   profile_host: gcc/5/armv8
   profile_build: gcc/5/x86_64
 
-gcc5-aarch64d:
+gcc5-armv8d:
   docker:
     builder:
       image: edgetoolkit/gcc5-armv8
