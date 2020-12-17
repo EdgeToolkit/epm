@@ -2,7 +2,6 @@ import subprocess
 import threading
 import time
 import os
-import psutil
 from epm.utils.cache import Cache
 from conans.tools import environment_append
 
@@ -94,6 +93,7 @@ class Process(object):
         return self._proc.poll()
 
     def _term(self):
+        import psutil
         for proc in psutil.process_iter():
             p = proc.parent()
             if p and p.pid == self._proc.pid:

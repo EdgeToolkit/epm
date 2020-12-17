@@ -2,8 +2,6 @@ import os
 import sys
 import pathlib
 import subprocess
-import paramiko
-
 from epm.model.runner import Output
 from epm.utils import PLATFORM
 
@@ -22,6 +20,7 @@ class SSH(object):
         self.LD_LIBRARY_PATH = None
 
     def open(self):
+        import paramiko
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=self._hostname, port=self._port, username=self._username, password=self._password)
