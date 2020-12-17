@@ -1,10 +1,4 @@
-{%- if profile.endswith('-arm') -%}
-{%- set name=profile.replace('-arm', '-armv7') -%}
-{%- elif profile.endswith('-aarch64') %}
-{%- set name=profile.replace('-aarch64', '-armv8') -%}
-{%- else -%}
 {%- set name=profile -%}
-{%- endif -%}
 FROM conanio/{{name}}:{{config.conan.version}}
 
 {% include "label.j2" %}
