@@ -182,13 +182,13 @@ class DockerRunner(object):
         except:
             pass
 
-    def pull_images_if_not_present(self, image, sudo):
+    def _pull_images_if_not_present(self, image, sudo):
         token = image.split(':')
         name = token[0]
         tag = 'latest' if len(token) == 1 else token[1]
         import subprocess
         command = sudo + ['docker', 'images', '-q', f"{name}:{tag}"]
-        proc = subprocess.run(command)
+        proc = subprocess.run(command, stdout=subprocess.PIPE)
         if proc.returncode or not proc.stdout:
             self._api.out.info(f'docker image {image} not exits, pull it now.')
             command = sudo + ['docker', 'pull', image]
