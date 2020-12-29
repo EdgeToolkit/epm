@@ -145,7 +145,6 @@ def conanfile_inspect(path, attributes=None):
     return conan.inspect(path, attributes)
 
 
-
 def dict_get(value, *args):
     _types = (dict, OrderedDict)
     if not value or not isinstance(value, _types):
