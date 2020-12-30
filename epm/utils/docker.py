@@ -69,6 +69,6 @@ class BuildDocker(_Docker):
     def run(self, command):
         import subprocess
         filename = self.generate(command)
-        proc = subprocess.run(['/bin/bash', filename], stdout=subprocess.PIPE)
+        proc = subprocess.run(['/bin/bash', filename])
         return proc
 
