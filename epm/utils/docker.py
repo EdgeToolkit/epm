@@ -35,12 +35,14 @@ class BuildDocker(_Docker):
         super().__init__()
         self.workbench = workbench or os.environ['EPM_WORKBENCH']
         self.project = project
-        self.cwd = f"{self.home}/project"
+
 
         docker = self.project.profile.docker.builder
         self.home = docker['home']
         self.image = docker['image']
         self.shell = docker['shell']
+        self.cwd = f"{self.home}/project"
+
         src = os.path.expanduser('~/.epm')
         dst = f"{self.home}/.epm"
         if self.workbench:
@@ -55,7 +57,8 @@ class BuildDocker(_Docker):
         out_dir = self.project.abspath.out
         mkdir(out_dir)
         context = {'docker': self, 'workbench': self.workbench,
-                   'script_dir': self.project.folder.out}
+                   'script_dir': self.project.folder.out,
+                   'command': command}
 
         script = f"{out_dir}/build_docker.sh"
 

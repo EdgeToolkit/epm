@@ -46,7 +46,7 @@ class Creator(Worker):
             from epm.utils.docker import BuildDocker
             docker = BuildDocker(project)
 
-            command = f"epm --runner shell --profile {project.profile.name}"
+            command = f"epm --runner shell --profile {project.profile.name} create "
             if project.scheme.name:
                 command += f"{command} --scheme {project.scheme.name}"
 
