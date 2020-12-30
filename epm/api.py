@@ -212,6 +212,7 @@ class APIv1(APIUtils):
                 self._config = yaml.safe_load(f)
         return self._config
 
+
 @conan_api_method
 def conanfile_instance(conan, path, profile=None):
 
@@ -235,19 +236,7 @@ def conanfile_instance(conan, path, profile=None):
         conanfile.name = ref.name
         conanfile.version = str(ref.version) \
             if os.environ.get(CONAN_V2_MODE_ENVVAR, False) else ref.version
-
-    #conan.app.cache.default_profile = profile.path.host
-#    import tempfile
-#    mkdir(".epm/tmp/profiles")
-#    pdir = tempfile.mkdtemp(dir=".epm/tmp/profiles")
-#    from conans.model.graph_info import GraphInfo
-#    from conans.model.graph_lock import GraphLockFile
-
-#    GraphInfo(profile.host, root_ref=ref).save(pdir)
-#    GraphLockFile(profile.host, None).save(pdir)
     instance = conan.app.graph_manager.load_consumer_conanfile(conanfile_path, None)
-#    print('+++++++++', instance.settings.os, instance.settings.arch)
-#    instance.settings = profile.settings
     from conans.model.settings import Settings
     from conans.tools import load
     settings = Settings.loads(load(os.path.join(conan.app.cache_folder, 'settings.yml')))

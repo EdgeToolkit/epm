@@ -150,23 +150,3 @@ class Profile(object):
         folder = os.path.dirname(self.config['__file__'])
         return namedtuple("ProfilePath", "host build")(
             os.path.join(folder, host), os.path.join(folder, build))
-
-
-
-    #def path(self, target):
-    #    folder = os.path.dirname(self.config['__file__'])
-    #    filename = None
-    #    if target in ['profile_host']:
-    #        filename = self.config['profile_host']
-    #
-    #    elif target in ['profile_build']:
-    #        if 'profile_build' in self.config:
-    #            filename = self.config['profile_build']
-    #        else:
-    #            syslog.info(f'{self.name} not explicit setting profile_build, use profile_host')
-    #            filename = self.config['profile_host']
-    #    elif target in ['cross_file']:
-    #        if 'cross_file' in self.config:
-    #            filename = self.config['cross_file']
-    #    return os.path.join(folder, filename) if filename else None
-    #
