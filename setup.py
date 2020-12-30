@@ -29,7 +29,7 @@ def get_requires(filename):
 project_requirements = get_requires("epm/requirements_core.txt")
 EPM_INSTALLATION_OPTIONS = os.environ.get('EPM_INSTALLATION_OPTIONS')
 if 'disable-extend' != EPM_INSTALLATION_OPTIONS:
-    project_requirements = get_requires("epm/requirements_extend.txt")
+    project_requirements += get_requires("epm/requirements_extend.txt")
 else:
     print('===================================================')
     print('This epm only do build in native.')
