@@ -76,7 +76,6 @@ class DockerRunner(object):
         config, WD, volumes, environment = self._preprocess(config)
         image = config['image']
 
-
         command = self._command(commands, config, WD, volumes, environment)
         args = ['--name', self.name, '--rm']
 

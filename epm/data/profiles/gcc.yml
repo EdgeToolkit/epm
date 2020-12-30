@@ -181,7 +181,7 @@ gcc8-armv8:
   profile_host: gcc/8/armv8
   profile_build: gcc/8/x86_64
 
-gcc8-armv8:
+gcc8-armv8d:
   docker:
     builder:
       image: edgetoolkit/gcc8-armv8

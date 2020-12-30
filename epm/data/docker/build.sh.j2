@@ -1,0 +1,19 @@
+set -e
+sudo -E docker run --rm \
+{% for v in docker.volume %}
+    -v {{v.volume}} \
+{% endfor %}
+    -e EPM_WORKBENCH=${EPM_WORKBENCH}
+    -e EPM_DOCKER_IMAGE={{docker.image}}
+
+{% for name, value in docker.enviroment.items() %}
+    -e {{name}}:{{value}} \
+{% endfor %}
+    -w {{docker.cwd}} \
+    {{docker.image}} \
+    {{docker.shell}} {{script_dir}}/docker_build_command.sh
+
+{% for v in docker.volume %}
+{% if not v.option or 'rw' in v.option %}
+sudo chown -R $(id -u):$(id -g) -v {{v.source}} \
+{% endfor %}

@@ -43,6 +43,25 @@ class Creator(Worker):
         
 
         if runner == 'docker':
+            from epm.utils.docker import BuildDocker
+            docker = BuildDocker(project)
+
+            command = f"epm --runner shell --profile {project.profile.name}"
+            if project.scheme.name:
+                command += f"{command} --scheme {project.scheme.name}"
+
+            if storage:
+                docker.environment['CONAN_STORAGE_PATH'] = '%s/%s' % (docker.cwd, storage)
+                command + f"{command} --storage {storage}"
+            if archive:
+                command + f"{command} --archive"
+            proc = docker.run(command)
+            if proc.returncode:
+                raise Exception(f"Docker {command} failed.")
+
+
+            return
+            ##################################################
             param['RUNNER'] = 'shell'
             docker = Docker(self.api, project)
             docker.WD = '$home/project/%s' % project.name
