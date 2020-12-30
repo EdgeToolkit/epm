@@ -41,14 +41,14 @@ class Creator(Worker):
         if runner == 'auto':
             runner = 'docker' if project.profile.docker.builder else 'shell'
         
-
         if runner == 'docker':
             from epm.utils.docker import BuildDocker
             docker = BuildDocker(project)
 
-            command = f"epm --runner shell --profile {project.profile.name} create "
-            if project.scheme.name:
+            command = f"epm --runner shell --profile {project.profile.name}"
+            if project.scheme:
                 command += f"{command} --scheme {project.scheme.name}"
+            command += f"{command} create"
 
             if storage:
                 docker.environment['CONAN_STORAGE_PATH'] = '%s/%s' % (docker.cwd, storage)
