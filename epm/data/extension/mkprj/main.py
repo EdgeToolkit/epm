@@ -1,22 +1,25 @@
 import os
 import argparse
 import yaml
-from jinja2 import Environment, FileSystemLoader, Template, BaseLoader
+from jinja2 import Environment, FileSystemLoader, BaseLoader
+
+
+def If(expr, args):
+    symbol = {}
+    params = vars(args)  # 返回 args 的属性和属性值的字典
+    for k, v in params.items():
+        symbol[f"argument.{k}"] = v
+    from epm.utils.yacc.condition import Yacc
+    yacc = Yacc(symbol)
+
+    result = yacc.parse(expr)
+    return result
 
 
 class Jinja2(object):
 
-    def __init__(self, config):
-        self._config = config
-
-    @property
-    def context(self):
-        context = {'WD': os.path.abspath('.'),
-                   'name': self._config['name'],
-                   'version': self._config.get('version', ''),
-                   'description': self._config.get('description', '')
-        }
-        return context
+    def __init__(self, directory):
+        self._dir = os.path.abspath(os.path.expanduser(directory))
 
     def _add_filters(self, env):
         def _basename(path):
@@ -25,24 +28,14 @@ class Jinja2(object):
         env.filters['basename'] = _basename
         return env
 
-    def _extend_context(self, context={}):
-        _context = {'WD': os.path.abspath('.'),
-                    'name': self._config['name'],
-                    'version': self._config.get('version', ''),
-                    'description': self._config.get('description', '')
-                   }
-        _context.update(context)
-        print(_context)
-        return _context
-
     def render(self, template, context={}, outfile=None, trim_blocks=True):
-        path = os.path.dirname(self._config['__file__'])
-        env = Environment(loader=FileSystemLoader(path))
+
+        env = Environment(loader=FileSystemLoader(self._dir))
 
         env.trim_blocks = trim_blocks
         self._add_filters(env)
         T = env.get_template(template)
-        text = T.render(self._extend_context(context))
+        text = T.render(context)
         if outfile:
             path = os.path.abspath(outfile)
             folder = os.path.dirname(path)
@@ -56,7 +49,7 @@ class Jinja2(object):
         env = Environment(loader=BaseLoader())
         self._add_filters(env)
         T = env.from_string(text)
-        return T.render(**self._extend_context(context))
+        return T.render(**context)
 
 
 class Argument(object):
@@ -102,12 +95,94 @@ class Argument(object):
         return args
 
 
+class Extension(object):
+
+    def __init__(self, directory):
+        self._dir = os.path.abspath(os.path.expanduser(directory))
+        path = os.path.join(self._dir, 'extension.yml')
+        with open(path) as f:
+            self._config = yaml.safe_load(f)
+            self._config['__file__'] = path
+        self._argument = Argument(self._config)
+        self._context = {'WD': os.path.abspath('.'),
+                         'name': self._config['name'],
+                         'version': self._config.get('version', ''),
+                         'description': self._config.get('description', '')
+        }
+        self._args = None
+
+    def exec(self, argv):
+        self._args = self._argument.parse(argv)
+
+
+class TemplateExtension(Extension):
+
+    def __init__(self, directory):
+        super().__init__(directory)
+
+    def exec(self, argv):
+        super().exec(argv)
+        for item in self._config.get('template') or []:
+            self._compile(item, self._args)
+
+    def _compile(self, item, args):
+
+        if_expr = None
+        src = None
+        dst = None
+        if isinstance(item, dict):
+            src = item['src']
+            dst = item.get('dst', None)
+            if_expr = item.get('if', None)
+        elif isinstance(item, str):
+            src = item
+        else:
+            raise SyntaxError('unsupported template type {}'.format(type(item)))
+        if if_expr:
+            if not If(if_expr, args):
+                return
+
+        path = os.path.join(self._dir, 'templates', src)
+        if os.path.isfile(path):
+            self._generate(args, src, dst)
+        elif os.path.isdir(path):
+            from conans.tools import chdir
+            tfiles = []
+            with chdir(f"{self._dir}/templates"):
+                for root, dirs, files in os.listdir('.'):
+                    for i in files:
+                        tfiles.append(os.path.join(root, i))
+            for i in tfiles:
+                self._generate(args, i, dst)
+        else:
+            assert False
+
+    def _generate(self, args, src, dst):
+        context = dict(self._context, **{'argument': args})
+
+        def _jpath(x):
+            return Jinja2(self._dir).parse(dst, context)
+        #infile = os.path.join(self._dir, 'templates', src)
+        outfile = os.path.join(args.out, _jpath(dst or src))
+        j2 = Jinja2(os.path.join(self._dir, 'templates'))
+        j2.render(src, context, outfile=outfile)
+
+
+
+ext = TemplateExtension(r'D:\_download\mkprj')
+ext.exec(['--type', 'lib'])
+import sys
+sys.exit(0)
+
 def load_config(path):
     path = os.path.abspath(os.path.expanduser(path))
     with open(path) as f:
         conf = yaml.safe_load(f)
         conf['__file__'] = path
     return conf
+
+
+
 
 conf = load_config(r'D:\_download\mkprj\extension.yml')
 j2 = Jinja2(conf)
