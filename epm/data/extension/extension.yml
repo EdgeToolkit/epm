@@ -1,0 +1,51 @@
+name: mkprj
+version: 0.1
+description: |
+  Generate C/C++ project for epm project
+kind: template
+#entry: main.py
+argument:
+  type:
+    type: str
+    enum: [lib, app]
+    help: project of type <lib> for library, 'app' for executable application.
+      
+  name:
+    type: str
+    default: "{{WD | basename}}"
+    help: name of the epm project
+    
+  version:
+    type: str
+    default: '0.0.1'
+    help: version name of the epm project
+
+  dir:
+    type: str
+    default: "{{WD}}"
+    help: directory  of the epm project to be generated.
+
+template:
+- CMakeLists.txt
+- conanfile.py
+- package.yml
+
+- include/lib{{name}}.h:
+  when: argument.type == lib 
+
+- source/lib{{name}}.c:
+  when: argument.type == lib
+
+- test_package/test_package.c:
+  when: argument.type == lib
+  
+- test_package/CMakeLists.txt:
+  when: argument.type == lib
+
+- test_package/conanfile.py:
+  when: argument.type == lib
+
+- test_package/main.c:
+  when: argument.type == app
+
+- test_package/unittest/*

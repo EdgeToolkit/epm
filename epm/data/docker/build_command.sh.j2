@@ -1,4 +1,4 @@
-#!/bin/bash
+build.sh.j2#!/bin/bash
 set -e
 {% for v in docker.volume %}
 {% if not v.option or 'rw' in v.option %}

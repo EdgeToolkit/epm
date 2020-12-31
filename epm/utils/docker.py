@@ -1,6 +1,6 @@
 import os
 from conans.tools import mkdir
-from epm.utils import jinja_render
+from epm.utils import jinja_render, PLATFORM
 
 
 class Volume(object):
@@ -36,7 +36,6 @@ class BuildDocker(_Docker):
         self.workbench = workbench or os.environ['EPM_WORKBENCH']
         self.project = project
 
-
         docker = self.project.profile.docker.builder
         self.home = docker['home']
         self.image = docker['image']
@@ -59,16 +58,20 @@ class BuildDocker(_Docker):
         context = {'docker': self, 'workbench': self.workbench,
                    'script_dir': self.project.folder.out,
                    'command': command}
-
-        script = f"{out_dir}/build_docker.sh"
-
-        jinja_render(context, 'docker/build.sh.j2', outfile=script)
+        jinja_render(context, 'docker/build.sh.j2', outfile=f"{out_dir}/build_docker.sh")
+        jinja_render(context, 'docker/build.cmd.j2', outfile=f"{out_dir}/build_docker.cmd")
         jinja_render(context, 'docker/build_command.sh.j2', outfile=f"{out_dir}/docker_build_command.sh")
-        return script
+        return out_dir
 
     def run(self, command):
         import subprocess
-        filename = self.generate(command)
-        proc = subprocess.run(['/bin/bash', filename])
+        out_dir = self.generate(command)
+        if PLATFORM == 'Linux':
+            command = ['/bin/bash', f"{out_dir}/build_docker.sh"]
+        elif PLATFORM == 'Windows':
+            command = ['cmd.exe', '/k', f"{out_dir}/build_docker.cmd"]
+        else:
+            raise Exception(f'Unsupported platform <{PLATFORM}>')
+        proc = subprocess.run(command)
         return proc
 

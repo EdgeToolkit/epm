@@ -1,4 +1,14 @@
+#!/bin/bash
+function on_exit(){
+{% for v in docker.volume -%}
+{% if not v.option or 'rw' in v.option -%}
+  sudo chown -R $(id -u):$(id -g) -v {{v.source}} 2>&1 >/dev/null
+{% endif -%}
+{% endfor -%}
+}
 set -e
+trap on_exit EXIT
+
 sudo -E docker run --rm \
 {% for v in docker.volume -%}
     -v {{v.volume}} \
@@ -12,8 +22,3 @@ sudo -E docker run --rm \
     {{docker.image}} \
     {{docker.shell}} {{script_dir}}/docker_build_command.sh
 
-{% for v in docker.volume -%}
-{% if not v.option or 'rw' in v.option -%}
-sudo chown -R $(id -u):$(id -g) -v {{v.source}} 2>&1 >/dev/null
-{% endif -%}
-{% endfor -%}
