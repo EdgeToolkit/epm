@@ -14,6 +14,8 @@ from epm.worker.build import Builder
 from epm.worker.sandbox import Sandbox
 from epm.worker.create import Creator
 from epm.worker.runit import Runit
+from epm.worker.runx import RunX
+
 from epm.worker.upload import Uploader
 from epm.worker.download import Downloader
 
@@ -202,6 +204,16 @@ class APIv1(APIUtils):
 
         return runit.exec(command, runner=runner, argv=argv)
 
+    @api_method
+    def runx(self, param):
+        command = param['command']
+        argv = param.get('args') or []
+
+        project = self.project(param.get('PROFILE'), param.get('SCHEME'))
+        runx = RunX(project, self)
+        runner = param.get('RUNNER', None)
+
+        return runx.exec(command, runner=runner, argv=argv)
     @api_method
     def load_config(self, update=True):
         path = os.path.join(self.workbench_dir, 'config.yml')
