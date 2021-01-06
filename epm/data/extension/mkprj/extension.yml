@@ -1,8 +1,9 @@
 name: mkprj
 version: 0.1
+prototype: jinja
 description: |
   Generate C/C++ project for epm project
-kind: template
+
 #entry: main.py
 argument:
   type:

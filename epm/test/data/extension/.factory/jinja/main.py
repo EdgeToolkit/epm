@@ -100,14 +100,15 @@ class Extension(object):
     _KIND = {}
     prototype = None
 
-    def __init__(self, directory):
+    def __init__(self, directory, cwd=None, prototype=None):
         self._dir = os.path.abspath(os.path.expanduser(directory))
+        self._wd = os.path.abspath(cwd or '.')
         path = os.path.join(self._dir, 'extension.yml')
         with open(path) as f:
             self._config = yaml.safe_load(f)
             self._config['__file__'] = path
         self._argument = Argument(self._config)
-        self._context = {'WD': os.path.abspath('.'),
+        self._context = {'WD': self._wd,
                          'name': self._config['name'],
                          'version': self._config.get('version', ''),
                          'description': self._config.get('description', '')
@@ -121,7 +122,7 @@ class Extension(object):
             return None
         directory = os.path.expanduser('~/.epm/extension/.prototype/{name}')
         path = os.path.join(directory, 'prototype.yml')
-        if os.path.exists(path):
+        if not os.path.exists(path):
             raise FileNotFoundError(f'prototype <{name}> defination file {path} not exists.')
 
         return Prototype(directory)

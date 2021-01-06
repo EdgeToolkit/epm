@@ -83,97 +83,61 @@ class Runner(object):
         runner = ConanRunner(output=self._api.out)
         command = '{} {}'.format(" ".join(command), " ".join(argv))
         return runner(command)
+import yaml
+from collections import namedtuple
+
+
+class ExtensionDefinition(object):
+    METAINFO_MANIFEST = 'extension.yml'
+
+    def __init__(self, dir='.', purpose='general', origin='global'):
+        Attribute = namedtuple('Attribute', ['dir', 'purpose', 'origin'])
+        self.attribute = Attribute(os.path.abspath(dir),
+                                   purpose, origin)
+        with open(os.path.join(self.attribute.dir, ExtensionDefinition.METAINFO_MANIFEST)) as f:
+            self.matainfo = yaml.safe_load(f)
+
+    @staticmethod
+    def load(name, project=None, workbench=None):
+        workbench = workbench or os.getenv('EPM_WORKBENCH', None)
+        attribute = None
+        if project and project.metainfo:
+            data = project.metainfo.get('extension') or {}
+            if name in data:
+                attribute = dict({'purpose': 'package',
+                                  'dir': os.path.join(project.dir, 'extension', name),
+                                  'origin': 'package'
+                                  }, **data)
+                path = os.path.join(attribute['dir'], ExtensionDefinition.METAINFO_MANIFEST)
+                if not os.path.exists(path):
+                    raise Exception("extension <{name}> defined in meta-info file,"
+                                    "but definition file {path} not found.")
+        if attribute is None and workbench:
+            path = os.path.expanduser(f'~/.epm/.workbench/{workbench}/extension/{name}/extension.yml')
+            if os.path.exists(path):
+                attribute = {'purpose': 'general',
+                             'dir': os.path.dirname(path),
+                             'origin': 'workbench'
+                            }
+        if attribute is None:
+            path = os.path.expanduser(f'~/.epm/extension/{name}/extension.yml')
+            if os.path.exists(path):
+                attribute = {'purpose': 'general',
+                             'dir': os.path.dirname(path),
+                             'origin': 'global'
+                            }
+        return ExtensionDefinition(**attribute)
+
 
 
 class RunX(Worker):
 
-    def __init__(self, project, api=None):
+    def __init__(self, name, project=None, api=None):
         super(RunX, self).__init__(api)
+        self.name = name
         self.project = project
         self.WD = os.path.abspath('.')
+        self.definition = ExtensionDefinition.load(name)
 
-    def _locate_extension(self, name):
-        exinfo = None
-        # check for epm project local
-        if self.project.metainfo:
-            meta = self.project.get('extension') or {}
-            if name in meta:
-                exinfo = dict({'purpose': 'package',
-                               'dir': os.path.join(self.project.dir, 'extension', name),
-                               'defination': 'extension.yml',
-                               '__origin__': 'package',
-                               }, **meta)
-                path = os.path.join(meta['dir'], meta['defination'])
-                if not os.path.exists(path):
-                    raise Exception("extension <{name}> defined in meta-info file, but implement not found {path}.")
-        # find in workspace
-        WORKBENCH = os.environ.get('EPM_WORKBENCH')
-        if not exinfo and WORKBENCH:
-            directory = os.path.expanduser(f'~/.epm/.workbench/{WORKBENCH}/extension/{name}')
-            path = f"{directory}/extension.yml"
-            if os.path.exists(path):
-                exinfo = {'purpose': 'general',
-                          'dir': directory,
-                          'defination': 'extension.yml',
-                          '__origin__': 'workbench',
-                          }
-        if not exinfo:
-            directory = os.path.expanduser(f'~/.epm/extension/{name}')
-            path = f"{directory}/extension.yml"
-            if os.path.exists(path):
-                exinfo = {'purpose': 'general',
-                          'dir': directory,
-                          'defination': 'extension.yml',
-                          '__origin__': 'global',
-                          }
-        return exinfo
+    def exec(self, runner=None, argv=[]):
 
-
-    def exec(self, command, runner=None, argv=[]):
-
-        m = self.project.metainfo
-        script = m.get('script', {}).get(command)
-        if not script:
-            raise ModuleNotFoundError('no <{}> in script'.format(command))
-
-        cmdline = script
-        if isinstance(script, dict):
-            location = script.get('location')
-            cmdline = script.get('command')
-            path = os.path.normpath(os.path.join('.epm', 'script', command))
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            d = cache(location)
-            shutil.copytree(d, path)
-            cmdline = '%s/%s' % (path, cmdline)
-
-        cmdline = cmdline.strip()
-        args = cmdline.split(' ', 1)
-        filename = args[0]
-        command = []
-
-        if len(args) > 1:
-            import shlex
-
-            for i in shlex.split(args[1]):
-                if ' ' in i:
-                    i = '"{}"'.format(i)
-
-                command.append(i)
-
-        command = [filename] + command
-
-        if filename.endswith('.py'):
-            command = [sys.executable] + command
-
-        profile = self.project.profile.name if self.project.profile else None
-        scheme = self.project.scheme.name if self.project.scheme else None
-
-        env_vars = {'EPM_SANDBOX_PROFILE': profile,
-                    'EPM_SANDBOX_SCHEME': scheme,
-                    'EPM_SANDBOX_RUNNER': runner
-                    }
-
-        from conans.tools import environment_append
-        with environment_append(env_vars):
-            return Runner(self, 'shell').exec(command, argv)
