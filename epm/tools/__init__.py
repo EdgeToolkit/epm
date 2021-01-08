@@ -1,6 +1,9 @@
 import re
 import os
+
 import pathlib
+from jinja2 import Environment, FileSystemLoader, BaseLoader
+
 from conans.tools import cross_building
 
 from collections import namedtuple
@@ -230,3 +233,40 @@ def parse_sandbox(manifest):
 
     return result
 
+
+class Jinja2(object):
+    Filters = {
+        'basename': os.path.basename,
+        'dirname': os.path.dirname
+    }
+
+    def __init__(self, directory='.'):
+        self._dir = os.path.abspath(os.path.expanduser(directory))
+
+    def _add_filters(self, env):
+        for name, fn in self.Filters.items():
+            env.filters[name] = fn
+        return env
+
+    def render(self, template, context={}, outfile=None, trim_blocks=True):
+
+        env = Environment(loader=FileSystemLoader(self._dir))
+
+        env.trim_blocks = trim_blocks
+        self._add_filters(env)
+        T = env.get_template(template)
+        text = T.render(context)
+        if outfile:
+            path = os.path.abspath(outfile)
+            folder = os.path.dirname(path)
+            if not os.path.exists(folder):
+                os.makedirs(folder)
+            with open(path, 'w') as f:
+                f.write(text)
+        return text
+
+    def parse(self, text, context={}):
+        env = Environment(loader=BaseLoader())
+        self._add_filters(env)
+        T = env.from_string(text)
+        return T.render(**context)

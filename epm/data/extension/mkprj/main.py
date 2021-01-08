@@ -5,18 +5,6 @@ import yaml
 from jinja2 import Environment, FileSystemLoader, BaseLoader
 
 
-def If(expr, args):
-    symbol = {}
-    params = vars(args)  # 返回 args 的属性和属性值的字典
-    for k, v in params.items():
-        symbol[f"argument.{k}"] = v
-    from epm.utils.yacc.condition import Yacc
-    yacc = Yacc(symbol)
-
-    result = yacc.parse(expr)
-    return result
-
-
 class Jinja2(object):
 
     def __init__(self, directory):
