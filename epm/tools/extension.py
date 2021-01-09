@@ -27,44 +27,106 @@ class Definition(object):
         return str(ver)
 
     @property
+    def namespace(self):
+        return self.metainfo['namespace']
+
+    @property
+    def kind(self):
+        return self.metainfo.get('kind') or 'extension'
+
+    @property
+    def prototype(self):
+        P = namedtuple('Prototype', 'namespace name version url')
+        p = self.metainfo.get('prototype')
+        if not p:
+            return None
+        version = None
+        namespace = None
+        url = None
+        if isinstance(p, str):
+            tokens = p.split('=')
+            if len(tokens) == 2:
+                version = tokens[1]
+            tokens = tokens[0].split(':')
+            namespace = tokens[0]
+            name = tokens[1]
+        else:
+            assert isinstance(p, dict)
+            name = p['name']
+            namespace = p.get('namespace') or namespace
+            version = p.get('version')
+            url = p.get('version')
+        return P(namespace, name, version, url)
+
+    @property
+    def author(self):
+        return self.metainfo.get('author')
+
+    @property
+    def email(self):
+        return self.metainfo.get('email')
+
+    @property
+    def home(self):
+        return self.metainfo.get('home')
+
+    @property
+    def topics(self):
+        return self.metainfo.get('topics') or []
+
+    @property
+    def license(self):
+        return self.metainfo.get('license') or []
+
+    @property
+    def entry(self):
+        return self.metainfo.get('entry') or 'main.py'
+
+    @property
     def description(self):
         return self.metainfo.get('description') or ''
+
+    @property
+    def prototype(self):
+        return self.metainfo.get('prototype', None)
 
     @property
     def argument(self):
         return self.metainfo.get('argument', []) or []
 
-
-
     @staticmethod
-    def load(name, project=None, workbench=None):
+    def load(name, namespace=None, project=None, workbench=None):
         workbench = workbench or os.getenv('EPM_WORKBENCH', None)
         attribute = None
-        if project and project.metainfo:
+        if project and project.metainfo and namespace:
             data = project.metainfo.get('extension') or {}
             if name in data:
+                config = data.get(name) or {}
+                path = os.path.join(config.get('path') or 'extension', name)
                 attribute = dict({'purpose': 'package',
-                                  'dir': os.path.join(project.dir, 'extension', name),
+                                  'dir': path,
                                   'origin': 'package'
                                   }, **data)
-                path = os.path.join(attribute['dir'], ExtensionDefinition.METAINFO_MANIFEST)
+                path = os.path.join(attribute['dir'], Definition.METAINFO_MANIFEST)
                 if not os.path.exists(path):
-                    raise Exception("extension <{name}> defined in meta-info file,"
+                    raise FileNotFoundError("extension <{name}> defined in meta-info file,"
                                     "but definition file {path} not found.")
-        if attribute is None and workbench:
-            path = os.path.expanduser(f'~/.epm/.workbench/{workbench}/extension/{name}/extension.yml')
-            if os.path.exists(path):
-                attribute = {'purpose': 'general',
-                             'dir': os.path.dirname(path),
-                             'origin': 'workbench'
-                            }
+
         if attribute is None:
-            path = os.path.expanduser(f'~/.epm/extension/{name}/extension.yml')
+            if namespace is None or namespace == ':':
+                namespace = 'epm'
+            path = f'~/.epm/.workbench/{workbench}/extension' if workbench else f'~/.epm/extension/{name}'
+            path = f'{path}/{namespace}/{name}'
             if os.path.exists(path):
                 attribute = {'purpose': 'general',
-                             'dir': os.path.dirname(path),
-                             'origin': 'global'
-                            }
+                             'dir': path,
+                             'origin': 'workbench' if workbench else 'global',
+                             }
+
+        if attribute is None:
+            fullname = f'{namespace}:{name}' if namespace else name
+            raise FileNotFoundError(f"extension <{fullname}> not found.")
+
         return Definition(**attribute)
 
 
@@ -116,8 +178,6 @@ class Prototype(object):
 
     def __init__(self, definition):
         self.definition = definition
-
-
 
     def parse_args(self, argv):
         argument = Argument(self.definition)

@@ -17,3 +17,22 @@ deps:
 epm extension install  X --global/workbench/
 
 epm extension remove  X 
+
+epm --profile --scheme --runner runx github.com/mingyiz/epx:hello   
+
+epx --profile --scheme --runner github.com/mingyiz/epx:hello
+
+
+
+extension.yml 
+
+```yaml
+extension:
+  .config:
+     namespace:
+        github.com/edgetoolkit/epm/uuyy:
+        ................................
+   mkprj:
+     location: extension/mkprj
+```
+

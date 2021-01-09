@@ -1,0 +1,12 @@
+name: jinja
+namespace: epm
+version: 0.0.1
+kind: prototype
+description: |
+  Extension of epm to generate skeleten with Jinja2 rules
+author: Mingyi Zhang
+email: mingyi.z@outlook.com
+home: https://github.com/edgetoolkit/epm/extension/mkprj
+topics: [C/C++, generate, project]
+license: MIT
+entry: main.py

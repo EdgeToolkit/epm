@@ -1,5 +1,6 @@
 import os
 import sys
+import uuid
 import pathlib
 import yaml
 from collections import OrderedDict
@@ -177,3 +178,20 @@ def jinja_render(context, template, module_dir='', outfile=None, trim_blocks=Tru
         with open(path, 'w') as f:
             f.write(text)
     return text
+
+
+
+def abspath(path):
+    path = os.path.expanduser(path)
+    path = os.path.abspath(path)
+    path = os.path.normpath(path)
+    return path
+
+
+def load_module(path, name=None):
+    from importlib.util import spec_from_file_location, module_from_spec
+    name = name or str(uuid.uuid1())
+    spec = spec_from_file_location(name, path)
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module

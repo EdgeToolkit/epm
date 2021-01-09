@@ -1,7 +1,0 @@
-name: jinja
-version: 0.1
-description: |
-  Jinja2 file generation template prototype
-
-# default main.py , if entry not set
-entry: main.py

@@ -1,7 +1,7 @@
 from epm.commands import Command, register_command, ArgparseArgument
 
 
-class Run(Command):
+class RunX(Command):
     """
     """
 
@@ -24,4 +24,4 @@ class Run(Command):
         return api.runx(param)
 
 
-register_command(Run)
+register_command(RunX)
