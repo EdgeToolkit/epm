@@ -3,15 +3,15 @@ import sys
 import argparse
 import yaml
 from collections import namedtuple
+from epm.utils import abspath
 
 
 class Definition(object):
     METAINFO_MANIFEST = 'extension.yml'
 
-    def __init__(self, dir='.', purpose='general', origin='global'):
-        Attribute = namedtuple('Attribute', ['dir', 'purpose', 'origin'])
-        self.attribute = Attribute(os.path.abspath(dir),
-                                   purpose, origin)
+    def __init__(self, path, where=None):
+        Attribute = namedtuple('Attribute', ['dir', 'where'])
+        self.attribute = Attribute(path, where)
         with open(os.path.join(self.attribute.dir, self.METAINFO_MANIFEST)) as f:
             self.metainfo = yaml.safe_load(f)
 
@@ -96,38 +96,28 @@ class Definition(object):
 
     @staticmethod
     def load(name, namespace=None, project=None, workbench=None):
-        workbench = workbench or os.getenv('EPM_WORKBENCH', None)
-        attribute = None
-        if project and project.metainfo and namespace:
+        where = None
+        path = None
+        from epm.utils import abspath
+        if project and project.metainfo and namespace is None:
             data = project.metainfo.get('extension') or {}
             if name in data:
                 config = data.get(name) or {}
-                path = os.path.join(config.get('path') or 'extension', name)
-                attribute = dict({'purpose': 'package',
-                                  'dir': path,
-                                  'origin': 'package'
-                                  }, **data)
-                path = os.path.join(attribute['dir'], Definition.METAINFO_MANIFEST)
-                if not os.path.exists(path):
+                path = config.get('path') or f'extension/{name}'
+                path = abspath(os.path.join(project.dir, path))
+                where = 'package'
+                if not os.path.exists(path, Definition.METAINFO_MANIFEST):
                     raise FileNotFoundError("extension <{name}> defined in meta-info file,"
-                                    "but definition file {path} not found.")
+                                            "but definition file {path} not found.")
 
-        if attribute is None:
-            if namespace is None or namespace == ':':
-                namespace = 'epm'
-            path = f'~/.epm/.workbench/{workbench}/extension' if workbench else f'~/.epm/extension/{name}'
-            path = f'{path}/{namespace}/{name}'
-            if os.path.exists(path):
-                attribute = {'purpose': 'general',
-                             'dir': path,
-                             'origin': 'workbench' if workbench else 'global',
-                             }
+        if where is None:
+            namespace = namespace or 'epm'
+            path = f'~/.epm/.workbench/{workbench}' if workbench else f'~/.epm'
+            path = f'{path}/extension/{namespace}/{name}'
+            if not os.path.exists(path, Definition.METAINFO_MANIFEST):
+                raise FileNotFoundError(f"extension <{namespace}:{name}> not found.")
 
-        if attribute is None:
-            fullname = f'{namespace}:{name}' if namespace else name
-            raise FileNotFoundError(f"extension <{fullname}> not found.")
-
-        return Definition(**attribute)
+        return Definition(path, where=where)
 
 
 class Argument(object):
@@ -178,6 +168,14 @@ class Prototype(object):
 
     def __init__(self, definition):
         self.definition = definition
+
+    @property
+    def name(self):
+        return self.definition.name
+
+    @property
+    def namespace(self):
+        return self.definition.namespace
 
     def parse_args(self, argv):
         argument = Argument(self.definition)

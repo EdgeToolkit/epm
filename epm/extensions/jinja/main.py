@@ -4,7 +4,6 @@ from epm.tools import Jinja2 as J2
 
 
 class Jinja(Prototype):
-    name = 'jinja'
 
     def __init__(self, definition):
         super().__init__(definition)

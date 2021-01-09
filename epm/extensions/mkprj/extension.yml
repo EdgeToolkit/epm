@@ -1,6 +1,6 @@
 name: mkprj
 version: 0.1
-prototype: jinja
+prototype: epm:jinja
 description: |
   Generate C/C++ project for epm project
 
