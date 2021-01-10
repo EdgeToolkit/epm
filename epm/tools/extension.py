@@ -2,7 +2,9 @@ import os
 import sys
 import argparse
 import yaml
+import glob
 from collections import namedtuple
+from conans.tools import chdir
 from epm.utils import Jinja2 as J2
 
 
@@ -105,10 +107,8 @@ class Argument(object):
     def __init__(self, definition):
         self._definition = definition
 
+
     def parse(self, argv):
-        context = {
-            'WD': os.path.abspath('.')
-        }
         prog = self._definition.description
         parser = argparse.ArgumentParser(prog=prog)
         enums = {}
@@ -125,7 +125,7 @@ class Argument(object):
             if default:
                 param['default'] = default
                 if type == 'str' and "{{" in default and "}}" in default:
-                    param['default'] = J2().parse(default, context)
+                    param['default'] = J2().parse(default)
             else:
                 param['required'] = True
 
@@ -185,7 +185,6 @@ class JinjaExtension(Extension):
     def _compile(self, item, args):
 
         if_expr = None
-        src = None
         dst = None
         if isinstance(item, dict):
             src = item['src']
@@ -202,25 +201,31 @@ class JinjaExtension(Extension):
         path = os.path.join(self.definition.attribute.dir, 'templates', src)
         if os.path.isfile(path):
             self._generate(args, src, dst)
+
         elif os.path.isdir(path):
-            from conans.tools import chdir
-            tfiles = []
+            files = []
             with chdir(f"{self.definition.attribute.dir}/{self.TEMPLATE_DIR}"):
-                for root, dirs, files in os.listdir('.'):
-                    for i in files:
-                        tfiles.append(os.path.join(root, i))
-            for i in tfiles:
+                for i in glob.glob('*'):
+                    if os.path.isfile(i):
+                        files.append(i)
+            for i in files:
                 self._generate(args, i, dst)
         else:
-            assert False
+            msg = f'template source file {path} '
+            msg += 'is invalid' if os.path.exists(path) else 'not exists.'
+            raise Exception(msg)
 
     def _if(self, expr, args):
         if isinstance(expr, str):
             expr = [expr]
         values = {'argument': args}
         for e in expr:
-            print('+', e)
-            if not eval(e, values):
+            try:
+                result = eval(e, values)
+            except:
+                print('Parse condition statement error.\n+', e)
+                raise
+            if not result:
                 return False
         return True
 

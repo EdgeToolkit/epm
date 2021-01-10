@@ -37,16 +37,17 @@ template:
 - src: source/lib{{name}}.c
   if: argument.type == 'lib'
 
-- src: test_package/test_package.c
+- src: source/main.c
+  if: argument.type == 'app'
+
+- src: test_package/test_package.cpp
   if: argument.type == 'lib'
   
 - src: test_package/CMakeLists.txt
-  if: argument.type == 'li'b
+  if: argument.type == 'lib'
 
 - src: test_package/conanfile.py
   if: argument.type == 'lib'
 
-- src: test_package/main.c
-  if: argument.type == 'app'
 
 - test_package/unittest
