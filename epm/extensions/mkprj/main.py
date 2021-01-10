@@ -1,9 +1,9 @@
 import os
-from epm.tools.extension import Prototype
+from epm.tools.extension import Extension
 from epm.tools import Jinja2 as J2
 
 
-class Jinja(Prototype):
+class Jinja(Extension):
 
     def __init__(self, definition):
         super().__init__(definition)

@@ -210,10 +210,11 @@ class APIv1(APIUtils):
         argv = param.get('args') or []
 
         project = self.project(param.get('PROFILE'), param.get('SCHEME'))
-        runx = RunX(project, self)
+        runx = RunX(project, self, command)
         runner = param.get('RUNNER', None)
 
         return runx.exec(command, runner=runner, argv=argv)
+
     @api_method
     def load_config(self, update=True):
         path = os.path.join(self.workbench_dir, 'config.yml')

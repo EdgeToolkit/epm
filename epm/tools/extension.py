@@ -87,10 +87,6 @@ class Definition(object):
         return self.metainfo.get('description') or ''
 
     @property
-    def prototype(self):
-        return self.metainfo.get('prototype', None)
-
-    @property
     def argument(self):
         return self.metainfo.get('argument', []) or []
 
@@ -181,8 +177,13 @@ class Prototype(object):
         argument = Argument(self.definition)
         return argument.parse(argv)
 
-    def exec(self, argv=[], runner=None):
+    def exec(self, argv=[], runner=None, extension_definition=None):
         raise NotImplemented(f"{self.defination.name} Prototype.exec not implemented.")
 
 
+class Extension(object):
 
+    def __init__(self, definition, prototype=None):
+        self.definition = definition
+        self.prototype = prototype
+class Jinja(Extension)
