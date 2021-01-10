@@ -210,10 +210,10 @@ class APIv1(APIUtils):
         argv = param.get('args') or []
 
         project = self.project(param.get('PROFILE'), param.get('SCHEME'))
-        runx = RunX(project, self, command)
+        runx = RunX(command, project, self)
         runner = param.get('RUNNER', None)
 
-        return runx.exec(command, runner=runner, argv=argv)
+        return runx.exec(runner=runner, argv=argv)
 
     @api_method
     def load_config(self, update=True):

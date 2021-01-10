@@ -6,6 +6,7 @@ import yaml
 from collections import OrderedDict
 from conans.client.conan_api import ConanAPIV1 as ConanAPI
 from conans.tools import mkdir
+from jinja2 import Environment, FileSystemLoader, BaseLoader
 from epm import HOME_DIR, DATA_DIR
 from epm.enums import Platform, Architecture
 from epm.errors import EException
@@ -180,7 +181,6 @@ def jinja_render(context, template, module_dir='', outfile=None, trim_blocks=Tru
     return text
 
 
-
 def abspath(path):
     path = os.path.expanduser(path)
     path = os.path.abspath(path)
@@ -195,3 +195,48 @@ def load_module(path, name=None):
     module = module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+class Jinja2(object):
+    Filters = {
+        'basename': os.path.basename,
+        'dirname': os.path.dirname,
+        'abspath': abspath
+    }
+
+    def __init__(self, directory=None, context=None):
+        self._dir = directory
+        self._context = context or {}
+
+    def _add_filters(self, env):
+        for name, fn in self.Filters.items():
+            env.filters[name] = fn
+        return env
+
+    def render(self, template, context={}, outfile=None, trim_blocks=True):
+        from epm.utils import abspath
+        path = abspath(self._dir or '.')
+
+        env = Environment(loader=FileSystemLoader(path))
+
+        env.trim_blocks = trim_blocks
+        self._add_filters(env)
+        T = env.get_template(template)
+        context = dict(self._context, **context)
+        text = T.render(context)
+        if outfile:
+            path = os.path.abspath(outfile)
+            folder = os.path.dirname(path)
+            if not os.path.exists(folder):
+                os.makedirs(folder)
+            with open(path, 'w') as f:
+                f.write(text)
+        return text
+
+    def parse(self, text, context={}):
+        env = Environment(loader=BaseLoader())
+        self._add_filters(env)
+        T = env.from_string(text)
+        context = dict(self._context, **context)
+        return T.render(context)
+

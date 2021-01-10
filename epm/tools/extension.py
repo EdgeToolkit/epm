@@ -3,7 +3,7 @@ import sys
 import argparse
 import yaml
 from collections import namedtuple
-from epm.utils import abspath
+from epm.utils import Jinja2 as J2
 
 
 class Definition(object):
@@ -33,30 +33,6 @@ class Definition(object):
     @property
     def kind(self):
         return self.metainfo.get('kind') or 'extension'
-
-    @property
-    def prototype(self):
-        P = namedtuple('Prototype', 'namespace name version url')
-        p = self.metainfo.get('prototype')
-        if not p:
-            return None
-        version = None
-        namespace = None
-        url = None
-        if isinstance(p, str):
-            tokens = p.split('=')
-            if len(tokens) == 2:
-                version = tokens[1]
-            tokens = tokens[0].split(':')
-            namespace = tokens[0]
-            name = tokens[1]
-        else:
-            assert isinstance(p, dict)
-            name = p['name']
-            namespace = p.get('namespace') or namespace
-            version = p.get('version')
-            url = p.get('version')
-        return P(namespace, name, version, url)
 
     @property
     def author(self):
@@ -90,6 +66,12 @@ class Definition(object):
     def argument(self):
         return self.metainfo.get('argument', []) or []
 
+    def __contains__(self, item):
+        return item in self.metainfo
+
+    def __getitem__(self, i):
+        return self.metainfo.get(i)
+
     @staticmethod
     def load(name, namespace=None, project=None, workbench=None):
         where = None
@@ -108,10 +90,11 @@ class Definition(object):
 
         if where is None:
             namespace = namespace or 'epm'
-            path = f'~/.epm/.workbench/{workbench}' if workbench else f'~/.epm'
-            path = f'{path}/extension/{namespace}/{name}'
-            if not os.path.exists(path, Definition.METAINFO_MANIFEST):
-                raise FileNotFoundError(f"extension <{namespace}:{name}> not found.")
+            path = f'~/.epm/.workbench/{workbench}' if workbench else '~/.epm'
+            path = abspath(f'{path}/.extension/{namespace}/{name}')
+            if not os.path.exists(f"{path}/{Definition.METAINFO_MANIFEST}"):
+                raise FileNotFoundError(f"extension <{namespace}:{name}> not found."
+                                        f"{path}/{Definition.METAINFO_MANIFEST}")
 
         return Definition(path, where=where)
 
@@ -123,6 +106,9 @@ class Argument(object):
         self._definition = definition
 
     def parse(self, argv):
+        context = {
+            'WD': os.path.abspath('.')
+        }
         prog = self._definition.description
         parser = argparse.ArgumentParser(prog=prog)
         enums = {}
@@ -139,7 +125,7 @@ class Argument(object):
             if default:
                 param['default'] = default
                 if type == 'str' and "{{" in default and "}}" in default:
-                    param['default'] = Jinja2(self._config).parse(default)
+                    param['default'] = J2().parse(default, context)
             else:
                 param['required'] = True
 
@@ -160,7 +146,7 @@ class Argument(object):
         return args
 
 
-class Prototype(object):
+class Extension(object):
 
     def __init__(self, definition):
         self.definition = definition
@@ -177,13 +163,73 @@ class Prototype(object):
         argument = Argument(self.definition)
         return argument.parse(argv)
 
-    def exec(self, argv=[], runner=None, extension_definition=None):
+    def exec(self, argv=[], runner=None):
         raise NotImplemented(f"{self.defination.name} Prototype.exec not implemented.")
 
 
-class Extension(object):
+class JinjaExtension(Extension):
+    TEMPLATE_DIR = 'templates'
 
-    def __init__(self, definition, prototype=None):
-        self.definition = definition
-        self.prototype = prototype
-class Jinja(Extension)
+    def __init__(self, definition):
+        super().__init__(definition)
+        self._context = {}
+
+    def exec(self, argv=[], runner=None):
+        args = self.parse_args(argv)
+        print('------------------------------')
+        print(args)
+        print('------------------------------')
+        for item in self.definition['template'] or []:
+            self._compile(item, args)
+
+    def _compile(self, item, args):
+
+        if_expr = None
+        src = None
+        dst = None
+        if isinstance(item, dict):
+            src = item['src']
+            dst = item.get('dst', None)
+            if_expr = item.get('if', None)
+        elif isinstance(item, str):
+            src = item
+        else:
+            raise SyntaxError('unsupported template type {}'.format(type(item)))
+
+        if if_expr and not self._if(if_expr, args):
+            return
+
+        path = os.path.join(self.definition.attribute.dir, 'templates', src)
+        if os.path.isfile(path):
+            self._generate(args, src, dst)
+        elif os.path.isdir(path):
+            from conans.tools import chdir
+            tfiles = []
+            with chdir(f"{self.definition.attribute.dir}/{self.TEMPLATE_DIR}"):
+                for root, dirs, files in os.listdir('.'):
+                    for i in files:
+                        tfiles.append(os.path.join(root, i))
+            for i in tfiles:
+                self._generate(args, i, dst)
+        else:
+            assert False
+
+    def _if(self, expr, args):
+        if isinstance(expr, str):
+            expr = [expr]
+        values = {'argument': args}
+        for e in expr:
+            print('+', e)
+            if not eval(e, values):
+                return False
+        return True
+
+    def _generate(self, args, src, dst):
+        path = dst or src
+        path = J2(self._context).parse(path, {'argument': args})
+        outfile = os.path.join(args.out, path)
+        template_dir = os.path.join(self.definition.attribute.dir, 'templates')
+        j2 = J2(template_dir, context=self._context)
+        j2.render(src, context={'argument': args}, outfile=outfile)
+
+

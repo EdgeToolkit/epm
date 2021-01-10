@@ -11,15 +11,15 @@ class RunX(Command):
     def __init__(self):
         args = [
 
-            ArgparseArgument("run_command", type=str,
-                             help="The command that defined in package.yml script section.")
+            ArgparseArgument("extension", type=str,
+                             help="The name fo extension to be run.")
             ]
 
         Command.__init__(self, args)
 
     def run(self, args, api):
         param = self.parameter(args)
-        param['command'] = args.run_command
+        param['command'] = args.extension
         param['args'] = args.argv
         return api.runx(param)
 

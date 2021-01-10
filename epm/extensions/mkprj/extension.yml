@@ -1,10 +1,10 @@
 name: mkprj
+namespace: epm
 version: 0.1
-prototype: epm:jinja
 description: |
   Generate C/C++ project for epm project
 
-#entry: main.py
+entry: main.py
 argument:
   type:
     type: str
@@ -13,7 +13,7 @@ argument:
       
   name:
     type: str
-    default: "{{WD | basename}}"
+    default: "{{'.' | abspath | basename}}"
     help: name of the epm project
     
   version:
@@ -23,7 +23,7 @@ argument:
 
   out:
     type: str
-    default: "{{WD}}"
+    default: "{{'.' | abspath}}"
     help: output directory  of the epm project to be generated.
 
 template:
@@ -32,21 +32,21 @@ template:
 - package.yml
 
 - src: include/lib{{name}}.h
-  if: argument.type == lib
+  if: argument.type == 'lib'
 
 - src: source/lib{{name}}.c
-  if: argument.type == lib
+  if: argument.type == 'lib'
 
 - src: test_package/test_package.c
-  if: argument.type == lib
+  if: argument.type == 'lib'
   
 - src: test_package/CMakeLists.txt
-  if: argument.type == lib
+  if: argument.type == 'li'b
 
 - src: test_package/conanfile.py
-  if: argument.type == lib
+  if: argument.type == 'lib'
 
 - src: test_package/main.c
-  if: argument.type == app
+  if: argument.type == 'app'
 
 - test_package/unittest
