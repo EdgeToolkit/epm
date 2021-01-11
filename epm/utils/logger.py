@@ -3,7 +3,9 @@ import yaml
 import shutil
 import logging 
 import logging.config
-
+from epm.utils import abspath
+from conans.tools import mkdir
+import stat
 
 def get_logger(name=None):
     from epm import DATA_DIR
@@ -30,19 +32,63 @@ syslog = get_logger()
 
 
 class SysLog(object):
+    FILENAME = '.epm/log.txt'
+    FORMATTER = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+    def __init__(self):
+        self._logger = None
+        self._handler = None
+        self.filename = abspath(self.FILENAME)
 
     @property
     def logger(self):
-        return None
+        if self._logger is None:
+            logger = logging.getLogger()
+            logger.setLevel(level=logging.INFO)
 
-    def open(self, filename='.epm/sys.log', prolog=''):
-        pass
+            console = logging.StreamHandler()
+            console.setLevel(level=logging.WARNING)
+            formatter = logging.Formatter('%(levelname)s - %(message)s')
+            console.setFormatter(formatter)
+            logger.addHandler(console)
+
+            formatter = logging.Formatter(self.FORMATTER)
+            if self._fhandler:
+                self._fhandler.flush()
+                self._fhandler.close()
+                self._fhandler = None
+
+            self._handler = logging.FileHandler(self.filename, mode='a')
+            self._handler.setFormatter(formatter)
+
+            logger.addHandler(self._handler)
+            self._logger = logger
+        return self._logger
+
+    def open(self, force=False, prolog=''):
+        directory = os.path.basename(self.filename)
+        STAT = stat.S_IWOTH | stat.S_IROTH | \
+               stat.S_IWGRP | stat.S_IRGRP | \
+               stat.S_IWUSR | stat.S_IRUSR
+
+        mkdir(directory)
+        if not force and os.path.exists(self.filename):
+            return
+
+        with open(self.filename, 'w') as f:
+            f.write(prolog)
+
+        os.chmod(self.filename, STAT)
 
     def close(self):
-        pass
+        if self._handler:
+            self._handler.flush()
+            self._handler.close()
+            self._handler = None
 
     def flush(self):
-        pass
+        if self._handler:
+            self._handler.flush()
 
     def debug(self, msg, *args, **kwargs):
         self.logger.debug(msg, *args, **kwargs)
@@ -56,3 +102,4 @@ class SysLog(object):
     def error(self, msg, *args, **kwargs):
         self.logger.error(msg, *args, **kwargs)
 
+syslog = SysLog()
