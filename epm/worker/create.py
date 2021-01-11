@@ -46,18 +46,18 @@ class Creator(Worker):
             docker = BuildDocker(project)
 
             command = f"epm --runner shell --profile {project.profile.name}"
-            if project.scheme:
-                command += f"{command} --scheme {project.scheme.name}"
-            command += f"{command} create"
+            if project.scheme and project.scheme.name:
+                command += f" --scheme {project.scheme.name}"
+            command += f" create"
 
             if storage:
                 docker.environment['CONAN_STORAGE_PATH'] = '%s/%s' % (docker.cwd, storage)
-                command + f"{command} --storage {storage}"
+                command += f" --storage {storage}"
             if archive:
-                command + f"{command} --archive"
+                command += f" --archive"
             proc = docker.run(command)
             if proc.returncode:
-                raise Exception(f"Docker {command} failed.")
+                raise Exception(f"[Docker] {command} failed.")
 
 
             return
