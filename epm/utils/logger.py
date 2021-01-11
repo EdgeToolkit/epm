@@ -27,3 +27,32 @@ def get_logger(name=None):
 
 
 syslog = get_logger()
+
+
+class SysLog(object):
+
+    @property
+    def logger(self):
+        return None
+
+    def open(self, filename='.epm/sys.log', prolog=''):
+        pass
+
+    def close(self):
+        pass
+
+    def flush(self):
+        pass
+
+    def debug(self, msg, *args, **kwargs):
+        self.logger.debug(msg, *args, **kwargs)
+
+    def info(self, msg, *args, **kwargs):
+        self.logger.info(msg, *args, **kwargs)
+
+    def warning(self, msg, *args, **kwargs):
+        self.logger.error(msg, *args, **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        self.logger.error(msg, *args, **kwargs)
+
