@@ -53,10 +53,10 @@ class SysLog(object):
             logger.addHandler(console)
 
             formatter = logging.Formatter(self.FORMATTER)
-            if self._fhandler:
-                self._fhandler.flush()
-                self._fhandler.close()
-                self._fhandler = None
+            if self._handler:
+                self._handler.flush()
+                self._handler.close()
+                self._handler = None
 
             self._handler = logging.FileHandler(self.filename, mode='a')
             self._handler.setFormatter(formatter)

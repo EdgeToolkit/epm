@@ -25,7 +25,7 @@ _PROFILE_HELP = 'Profile of the target package, this required in build/create/sa
 _SCHEME_HELP = 'Scheme of the target package'
 _RUNNER_HELP = 'Runner of the command used to execute/process'
 
-_PROLOG="""
+_PROLOG = """
     ***************************************************************************
       Run command with epm {version}
       $ epm {command}
@@ -35,7 +35,9 @@ class Main(object):
 
     def __init__(self, args, out=None):
         from epm import __version__
-        syslog.info(_PROLOG.format(version=__version__, command=" ".join(args)))
+        prolog = _PROLOG.format(version=__version__, command=" ".join(args))
+        syslog.open(prolog=prolog)
+        #syslog.info(_PROLOG.format(version=__version__, command=" ".join(args)))
 
         color = colorama_initialize()
         self.out = out or Output(sys.stdout, sys.stderr, color)
