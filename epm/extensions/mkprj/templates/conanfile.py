@@ -1,18 +1,19 @@
 {% set name = argument.name %}
 {% set version = argument.version %}
-{% set type = argument.type %}
+{% set id = name.replace('-', '_') %}
+{% set ID = name.upper() %}
 from conans import ConanFile, CMake
 from epm.tools.conan import MetaClass, delete
 ConanFile = MetaClass(ConanFile)
 
-class {{name | capitalize | replace('-', '_')}}Conan(ConanFile):
-    name = "name"
+class {{ID}}Conan(ConanFile):
+    name = "{{name}}"
     description = "<TODO>"
     topics = ("conan", "{{name}}")
     url = "<TODO>"
     homepage = "<TODO>"
     license = "MIT"
-    exports_sources = ["CMakeLists.txt", "include/*", "source/*"]
+    exports_sources = ["LICENSE", "CMakeLists.txt", "include/*", "source/*", "cmake/*"]
     generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False]}
@@ -39,6 +40,6 @@ class {{name | capitalize | replace('-', '_')}}Conan(ConanFile):
         cmake.build()
 
     def package(self):
-        self.copy("LICENSE", dst="licenses", src=self._source_subfolder)
+        self.copy("LICENSE", dst="licenses")
         cmake = self._configure_cmake()
         cmake.install()

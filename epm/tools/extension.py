@@ -176,9 +176,6 @@ class JinjaExtension(Extension):
 
     def exec(self, argv=[], runner=None):
         args = self.parse_args(argv)
-        print('------------------------------')
-        print(args)
-        print('------------------------------')
         for item in self.definition['template'] or []:
             self._compile(item, args)
 

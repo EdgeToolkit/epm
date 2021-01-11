@@ -27,15 +27,23 @@ argument:
     help: output directory  of the epm project to be generated.
 
 template:
-- CMakeLists.txt
-- conanfile.py
 - package.yml
+- conanfile.py
 - LICENSE
 
-- src: include/lib{{name}}.h
+- CMakeLists.txt
+- src: cmake/options.cmake
+- src: cmake/{{argument.name}}-config.cmake.in
   if: argument.type == 'lib'
 
-- src: source/lib{{name}}.c
+
+- src: include/{{argument.name}}/{{argument.name}}.h
+  if: argument.type == 'lib'
+
+- src: include/{{argument.name}}/declare.h
+  if: argument.type == 'lib'
+
+- src: source/{{argument.name}}.c
   if: argument.type == 'lib'
 
 - src: source/main.c
@@ -49,6 +57,8 @@ template:
 
 - src: test_package/conanfile.py
   if: argument.type == 'lib'
+
+
 
 
 - test_package/unittest

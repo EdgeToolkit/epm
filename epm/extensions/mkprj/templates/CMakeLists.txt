@@ -35,26 +35,26 @@ include_directories( source)
 set(_include_dir ${CMAKE_HOME_DIRECTORY}/include)
 set(_source_dir ${CMAKE_HOME_DIRECTORY}/source)
 set(_SRCs)
-foreach(i "*.c;*.cpp;*.cxx")
-  file(GLOB_RECURSE l "${_source_dir}/${i}")
+foreach(i "*.c" "*.cpp" "*.cxx")
+  file(GLOB_RECURSE l "${_source_dir}/${i}")  
   list(APPEND _SRCs ${l})
 endforeach()
 
-set({{id}}_HDRs)
-foreach(i "*.h;*.hpp;*.hxx")
-  file(GLOB_RECURSE l "${_include_dir}/${i}")
+set(_HDRs)
+foreach(i "*.h" "*.hpp" "*.hxx")
+  file(GLOB_RECURSE l "${_include_dir}/${i}")  
   list(APPEND _HDRs ${l})
 endforeach()
 
 include_directories(${_source_dir} ${_include_dir})
 
 {% if type == 'lib' %}
-add_library({{name}}  ${_SRCS} ${_HDRS})
+add_library({{name}}  ${_SRCs} ${_HDRs})
 if(BUILD_SHARED_LIBS)
   if(MSVC)
     target_compile_definitions({{name}}
-		PUBLIC  {{ID}}_USE_DLLS
-		PRIVATE {{ID}}_EXPORTS)
+    PUBLIC  {{ID}}_USE_DLLS
+    PRIVATE {{ID}}_EXPORTS)
   endif()
 endif()
 
@@ -69,13 +69,13 @@ mark_as_advanced(CMAKE_INSTALL_CMAKEDIR)
 
 # Install configuration
 set(_cmakedir_desc "Directory relative to CMAKE_INSTALL to install the cmake configuration files")
-configure_file({{name}}.cmake.in
+configure_file(cmake/{{name}}-config.cmake.in
                ${CMAKE_INSTALL_CMAKEDIR}/{{name}}-config.cmake @ONLY)
 export(TARGETS  {{name}}
       NAMESPACE  {{name}}::
-      FILE ${CMAKE_INSTALL_CMAKEDIR}/ {{name}}-targets.cmake )
+      FILE ${CMAKE_INSTALL_CMAKEDIR}/{{name}}-targets.cmake )
 
-install(EXPORT libadd-targets
+install(EXPORT {{name}}-targets
     DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
     NAMESPACE  {{name}}::
     COMPONENT  {{name}}-export)
@@ -85,9 +85,9 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/
       COMPONENT  {{name}}-export
       PATTERN  {{name}}-targets.cmake EXCLUDE )
 
-install(DIRECTORY ${_include_dir}
-      DESTINATION  include
-      FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${_include_dir}/
+        DESTINATION  include
+        FILES_MATCHING PATTERN "*.h")
 
 install(TARGETS {{name}} EXPORT {{name}}-targets
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT {{name}}

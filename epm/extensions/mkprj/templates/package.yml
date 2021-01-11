@@ -17,7 +17,12 @@ scheme:
       shared: false
 
 app:
-  test_package: test_package/bin/test_package
+- name: test_package
+  dir: test_package
+  executable: test_package/bin/test_package
+  
+
+
 
 build-tools:
   # -------------------------------------------------------
