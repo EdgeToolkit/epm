@@ -1,0 +1,36 @@
+name: {{argument.name}}
+version: {{argument.version | default(0.0.1)}}
+
+{% if argument.type == 'app' %}
+# ---------------------------------------------------------
+# Here we set scheme for executable program, which make you
+# are able to decide use static or shared to link with
+# dependent libraries.
+# ---------------------------------------------------------
+{% endif %}
+scheme:
+  shared:
+    options:
+      shared: true
+  static:
+    options:
+      shared: false
+
+app:
+  test_package: test_package/bin/test_package
+
+build-tools:
+  # -------------------------------------------------------
+  # If you request some tools for build, please add bellow
+  # more details please check: <TODO:> add docs
+  # -------------------------------------------------------
+  # meson:
+  #   version: 0.55.3
+
+dependencies:
+  # -------------------------------------------------------
+  # Here after will list this package dependicies
+  # more details please check: <TODO:> add docs
+  # -------------------------------------------------------
+  # zlib:
+  #   version: 1.2.11

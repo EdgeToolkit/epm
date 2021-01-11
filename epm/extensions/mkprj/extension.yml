@@ -30,6 +30,7 @@ template:
 - CMakeLists.txt
 - conanfile.py
 - package.yml
+- LICENSE
 
 - src: include/lib{{name}}.h
   if: argument.type == 'lib'
