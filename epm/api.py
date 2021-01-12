@@ -107,7 +107,7 @@ def api_method(f):
     def wrapper(api, *args, **kwargs):
         old_curdir = os.getcwd()
         try:
-            env_vars = api.config.get('environment', {})
+            env_vars = api.config.get('environment') or {}
             env_vars = dict(api.env_vars, **env_vars)
             if api.conan_storage_path:
                 env_vars['CONAN_STORAGE_PATH'] = api.conan_storage_path
