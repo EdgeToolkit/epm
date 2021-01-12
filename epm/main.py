@@ -36,8 +36,9 @@ class Main(object):
     def __init__(self, args, out=None):
         from epm import __version__
         prolog = _PROLOG.format(version=__version__, command=" ".join(args))
-        syslog.open(prolog=prolog)
-        #syslog.info(_PROLOG.format(version=__version__, command=" ".join(args)))
+        name = "docker" if os.getenv('EPM_GUEST_SYSTEM') else "epm"
+        syslog.open(name, prolog=prolog)
+        syslog.info("test")
 
         color = colorama_initialize()
         self.out = out or Output(sys.stdout, sys.stderr, color)

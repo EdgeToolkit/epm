@@ -133,7 +133,7 @@ def request_profile(f):
     return wrapper
 
 
-class APIv1(APIUtils):
+class _APIv0(APIUtils):
     VERSION = '0.1'
 
     @classmethod
@@ -266,12 +266,4 @@ def conanfile_instance(conan, path, profile=None):
         instance.config_options()
     return conanfile, instance
 
-
-
-
-
-
-
-
-
-API = APIv1
+API = _APIv0

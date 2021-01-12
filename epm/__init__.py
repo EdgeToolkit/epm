@@ -2,7 +2,7 @@
 # to allow refactors
 import os
 
-__version__ = '0.0.32'
+__version__ = '0.0.33'
 
 
 HOME_DIR = os.path.join(os.path.expanduser('~'), '.epm')

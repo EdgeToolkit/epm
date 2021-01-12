@@ -28,7 +28,7 @@ def get_logger(name=None):
     return logging.getLogger(name)
 
 
-syslog = get_logger()
+#syslog = get_logger()
 
 
 class SysLog(object):
@@ -38,6 +38,7 @@ class SysLog(object):
     def __init__(self):
         self._logger = None
         self._handler = None
+        self._name = None
         self.filename = abspath(self.FILENAME)
 
     @property
@@ -63,21 +64,20 @@ class SysLog(object):
 
             logger.addHandler(self._handler)
             self._logger = logger
-        return self._logger
+        return logging.getLogger(self._name) if self._name else self._logger
 
-    def open(self, force=False, prolog=''):
-        directory = os.path.basename(self.filename)
+    def open(self, name=None, prolog=''):
+
+        self._name = name or self._name
+
+        directory = os.path.dirname(self.filename)
         STAT = stat.S_IWOTH | stat.S_IROTH | \
                stat.S_IWGRP | stat.S_IRGRP | \
                stat.S_IWUSR | stat.S_IRUSR
-
         mkdir(directory)
-        if not force and os.path.exists(self.filename):
-            return
-
-        with open(self.filename, 'w') as f:
+        mode = 'a' if os.path.exists(self.filename) else 'w'
+        with open(self.filename, mode=mode) as f:
             f.write(prolog)
-
         os.chmod(self.filename, STAT)
 
     def close(self):
