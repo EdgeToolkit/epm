@@ -33,7 +33,7 @@ class BuildDocker(_Docker):
 
     def __init__(self, project, workbench=None):
         super().__init__()
-        self.workbench = workbench or os.environ['EPM_WORKBENCH']
+        self.workbench = workbench or os.environ['EPM_WORKBENCH'] or ''
         self.project = project
 
         docker = self.project.profile.docker.builder
@@ -55,7 +55,7 @@ class BuildDocker(_Docker):
 
         out_dir = self.project.abspath.out
         mkdir(out_dir)
-        context = {'docker': self, 'workbench': self.workbench,
+        context = {'docker': self, 'workbench': self.workbench or '',
                    'script_dir': self.project.folder.out,
                    'command': command}
         jinja_render(context, 'docker/build.sh.j2', outfile=f"{out_dir}/build_docker.sh")
@@ -72,6 +72,7 @@ class BuildDocker(_Docker):
             command = ['cmd.exe', '/k', f"{out_dir}/build_docker.cmd"]
         else:
             raise Exception(f'Unsupported platform <{PLATFORM}>')
-        proc = subprocess.run(command)
+
+        proc = subprocess.run(command, env={'EPM_WORKBENCH': self.workbench})
         return proc
 

@@ -49,6 +49,7 @@ class Creator(Worker):
             if project.scheme and project.scheme.name:
                 command += f" --scheme {project.scheme.name}"
             command += f" create"
+            docker.enviroment['EPM_RUNNING_SYSTEM'] = 'docker'
 
             if storage:
                 docker.environment['CONAN_STORAGE_PATH'] = '%s/%s' % (docker.cwd, storage)
@@ -60,19 +61,6 @@ class Creator(Worker):
                 raise Exception(f"[Docker] {command} failed.")
 
 
-            return
-            ##################################################
-            param['RUNNER'] = 'shell'
-            docker = Docker(self.api, project)
-            docker.WD = '$home/project/%s' % project.name
-
-            docker.add_volume(project.dir, docker.WD)
-            docker.add_volume(HOME_DIR, '$home/.epm')
-            if storage:
-                docker.environment['CONAN_STORAGE_PATH'] = '%s/%s' % (docker.WD, storage)
-            docker.exec('epm api create %s' % param_encode(param))
-            if docker.returncode:
-                raise EDockerException(docker)
 
         else:
 

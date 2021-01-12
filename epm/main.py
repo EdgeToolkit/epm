@@ -31,12 +31,13 @@ _PROLOG = """
       $ epm {command}
     ***************************************************************************
 """
+#sudo chown -R $(id -u):$(id -g) ~/.epm
 class Main(object):
 
     def __init__(self, args, out=None):
         from epm import __version__
         prolog = _PROLOG.format(version=__version__, command=" ".join(args))
-        name = "docker" if os.getenv('EPM_GUEST_SYSTEM') else "epm"
+        name = os.getenv('EPM_GUEST_SYSTEM') or "epm"
         syslog.open(name, prolog=prolog)
         syslog.info("test")
 
