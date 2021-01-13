@@ -18,19 +18,22 @@ class Builder(Worker):
         super(Builder, self).__init__(api)
         self._step = None
 
-    def _exec(self, project, steps, tests):
+    def _exec(self, project, step, program):
         for i in self.conan.editable_list():
             self.conan.editable_remove(i)
 
         for i in ['configure', 'make', 'package']:
-            if i in steps:
+            if i in step:
                 fn = getattr(self, '_%s' % i)
                 self.out.highlight('[building - %s ......]\n' % i)
                 with environment_append(self.api.config.env_vars):
                     fn(project)
-        if tests or tests is None:
-            build_tests(project, tests)
-            Generator.build(project, is_create=False, targets=tests)
+        from epm.model.program import build_program
+        build_program(project, program)
+
+#        if tests or tests is None:
+#            build_tests(project, tests)
+#            Generator.build(project, is_create=False, targets=tests)
 
     def exec(self, param):
         project = self.api.project(param['PROFILE'], param.get('SCHEME'))
@@ -40,9 +43,9 @@ class Builder(Worker):
             runner = 'docker' if project.profile.docker.builder else 'shell'
 
         if runner == 'shell':
-            steps = param.get('steps')
-            tests = param.get('tests')
-            self._exec(project, steps, tests)
+            step = param.get('step')
+            program = param.get('program')
+            self._exec(project, step, program)
 
         elif runner == 'docker':
             param['RUNNER'] = 'shell'

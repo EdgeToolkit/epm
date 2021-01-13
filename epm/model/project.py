@@ -196,9 +196,9 @@ class Project(object):
 
     @property
     def folder(self):
-        Folder = namedtuple('Folder', ['cache', 'out', 'build', 'package', 'test', 'name'])
+        Folder = namedtuple('Folder', ['cache', 'out', 'build', 'package', 'test', 'name', 'program'])
         cache = '.epm'
-        out = build = package = test = None
+        out = build = package = test = program = None
         basename = self.attribute.profile
         scheme = self.attribute.scheme
         if scheme and scheme not in ['default', 'None']:
@@ -209,8 +209,9 @@ class Project(object):
             build = '%s/build' % out
             package = '%s/package' % out
             test = '%s/test' % out
+            program = '%s/program' % out
 
-        return Folder(cache, out, build, package, test, basename)
+        return Folder(cache, out, build, package, test, basename, program)
 
     def _make_path(self, posix=True, absolute=True):
         """
