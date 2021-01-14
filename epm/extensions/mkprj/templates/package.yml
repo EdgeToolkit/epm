@@ -16,10 +16,20 @@ scheme:
     options:
       shared: false
 
-app:
+program:
 - name: test_package
-  dir: test_package
-  executable: test_package/bin/test_package
+  location: test_package
+  #
+  # ${__package__}
+  # ${__build__}
+  #
+  executable: bin/test_package
+  # pckage/bin
+
+  # ${path}
+  # package/${path}
+  # build/${path}
+
   
 
 

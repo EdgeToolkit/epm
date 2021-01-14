@@ -2,9 +2,9 @@
 {% set version = argument.version %}
 {% set id = name.replace('-', '_') %}
 {% set ID = name.upper() %}
-from conans import ConanFile, CMake
-from epm.tools.conan import MetaClass, delete
-ConanFile = MetaClass(ConanFile)
+from conans import ConanFile, CMake, tools
+from epm.tools.conan import as_package
+ConanFile = as_package(ConanFile)
 
 class {{ID}}Conan(ConanFile):
     name = "{{name}}"
@@ -43,3 +43,5 @@ class {{ID}}Conan(ConanFile):
         self.copy("LICENSE", dst="licenses")
         cmake = self._configure_cmake()
         cmake.install()
+    def package_info(self):
+        self.cpp_info.libs = tools.collect_libs(self)

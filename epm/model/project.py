@@ -217,7 +217,7 @@ class Project(object):
         """
         """
         Path = namedtuple('Path', ['root', 'cache', 'out', 'build', 'package', 'profile', 'build_profile',
-                                   'profile_host', 'profile_build', 'cross_file'
+                                   'profile_host', 'profile_build', 'cross_file', 'program'
                                    ])
         root = '.'
         cache = '.epm'
@@ -235,21 +235,23 @@ class Project(object):
         if isinstance(scheme, str):
             basename += '@%s' % scheme
 
-        profile = build_profile = profile_host = profile_build = cross_file = None
+        profile = build_profile = profile_host = profile_build = cross_file = program = None
 
         if basename:
             out = _(os.path.join(cache, basename))
             build = _(os.path.join(out, 'build'))
             package = _(os.path.join(out, 'package'))
             profile = _(os.path.join(out, 'profile'))
+            program = _(os.path.join(out, 'program'))
             build_profile = _(os.path.join(out, 'build_profile'))
+
 
             profile_host = _(os.path.join(out,  Project.CONAN_PROFILE_BUILD))
             profile_build = _(os.path.join(out, Project.CONAN_PROFILE_HOST))
             cross_file = _(os.path.join(out, Project.MESON_CROSS_FILE))
 
         return Path(root, cache, out, build, package, profile, build_profile,
-                    profile_host, profile_build, cross_file)
+                    profile_host, profile_build, cross_file, program)
 
     @property
     def path(self):

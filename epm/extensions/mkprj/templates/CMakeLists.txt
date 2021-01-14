@@ -6,7 +6,7 @@
 # ---------------------------------------------------------
 # Global cmake configuration
 # ---------------------------------------------------------
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.10)
 # CMake policies
 cmake_policy(SET CMP0022 NEW)
 # On MacOS use @rpath/ for target's install name prefix path
