@@ -231,7 +231,7 @@ class Jinja2(object):
             folder = os.path.dirname(path)
             if not os.path.exists(folder):
                 os.makedirs(folder)
-            with open(path, 'wb', newline=newline) as f:
+            with open(path, 'wb') as f:
                 f.write(text)
         return text
 
