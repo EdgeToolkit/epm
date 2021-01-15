@@ -83,6 +83,7 @@ class BuildDocker(_Docker):
         from conans.tools import environment_append
         with environment_append({'EPM_WORKBENCH': self.workbench}):
             syslog.flush()
+            syslog.close()
             proc = subprocess.run(command)
         return proc
 
