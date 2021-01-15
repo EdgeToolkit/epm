@@ -5,11 +5,12 @@ from conans.tools import environment_append
 from epm import HOME_DIR
 from epm.model.program import build_program
 from epm.utils import PLATFORM
+from epm.utils.docker import BuildDocker
 
-class Docker(DockerRunner):
-
-    def __init__(self, api, project):
-        super(Docker, self).__init__(api, project)
+#class Docker(DockerRunner):
+#
+#    def __init__(self, api, project):
+#        super(Docker, self).__init__(api, project)
 
 
 class Builder(Worker):
@@ -48,7 +49,6 @@ class Builder(Worker):
             self._exec(project, step, program)
 
         elif runner == 'docker':
-            from epm.utils.docker import BuildDocker
             docker = BuildDocker(project)
 
             command = f"epm --runner shell --profile {project.profile.name}"
