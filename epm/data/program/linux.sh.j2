@@ -163,16 +163,6 @@ if [ "$_runner" = "shell" ]; then
   export LD_LIBRARY_PATH=$_build_dir/lib:$_home/.sandbox/lib:$LD_LIBRARY_PATH
 {% endif %}
   $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
-   {#% if sandbox.privileged %}
-   if [ -z $_sudo ]; then
-     $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
-   else
-     sudo -E $_shell -c "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH && $_home/.sandbox/bin/{{ name }} {{ arguments }} $*"
-   fi
-   {% else %#}
-
-   {% endif %#}
-
 else
-   _docker_exec $*
+  _docker_exec $*
 fi
