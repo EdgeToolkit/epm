@@ -1,7 +1,7 @@
 import os
 import stat
 from conans.tools import mkdir, rmdir
-from epm.utils import jinja_render, PLATFORM
+from epm.utils import Jinja2, PLATFORM
 import pathlib
 from epm.utils.logger import syslog
 
@@ -68,10 +68,14 @@ class BuildDocker(_Docker):
         context = {'docker': self, 'workbench': self.workbench or '',
                    'script_dir': self.project.folder.out,
                    'command': command}
+        from epm.utils import Jinja2
+        from epm import DATA_DIR
+        j2 = Jinja2(f"{DATA_DIR}", context=context)
         for src, dst in [('docker/build.sh.j2', f"{out_dir}/build_docker.sh"),
                          ('docker/build.cmd.j2', f"{out_dir}/build_docker.cmd"),
                          ('docker/build_command.sh.j2', f"{out_dir}/docker_build_command.sh")]:
-            jinja_render(context, src, dst)
+            j2.render(src, outfile=dst)
+            #jinja_render(context, src, dst)
             os.chmod(dst, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
         return out_dir

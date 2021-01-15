@@ -162,23 +162,23 @@ def dict_get(value, *args):
             break
     return result if i == n else None
 
-
-def jinja_render(context, template, module_dir='', outfile=None, trim_blocks=True):
-    path = os.path.join(DATA_DIR, module_dir)
-    env = Environment(loader=FileSystemLoader(path))
-
-    env.trim_blocks = trim_blocks
-
-    T = env.get_template(template)
-    text = T.render(context)
-    if outfile:
-        path = os.path.abspath(outfile)
-        folder = os.path.dirname(path)
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-        with open(path, 'w') as f:
-            f.write(text)
-    return text
+#
+#def jinja_render(context, template, module_dir='', outfile=None, trim_blocks=True):
+#    path = os.path.join(DATA_DIR, module_dir)
+#    env = Environment(loader=FileSystemLoader(path))
+#
+#    env.trim_blocks = trim_blocks
+#
+#    T = env.get_template(template)
+#    text = T.render(context)
+#    if outfile:
+#        path = os.path.abspath(outfile)
+#        folder = os.path.dirname(path)
+#        if not os.path.exists(folder):
+#            os.makedirs(folder)
+#        with open(path, 'w') as f:
+#            f.write(text)
+#    return text
 
 
 def abspath(path):
