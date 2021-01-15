@@ -102,6 +102,7 @@ class APIUtils(object):
 
         return self._CONFIG
 
+
 def api_method(f):
 
     def wrapper(api, *args, **kwargs):
