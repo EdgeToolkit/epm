@@ -1,7 +1,7 @@
 
 from epm.commands import Command, register_command, ArgparseArgument
 from epm.errors import EException
-from epm.worker import param_decode
+#from epm.worker import param_decode
 from epm.utils.logger import syslog
 
 class APICommand(Command):
@@ -34,4 +34,4 @@ class APICommand(Command):
         method(param)
 
 
-register_command(APICommand)
+#register_command(APICommand)
