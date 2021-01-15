@@ -213,7 +213,7 @@ class Jinja2(object):
             env.filters[name] = fn
         return env
 
-    def render(self, template, context={}, outfile=None, newline='\n', trim_blocks=True):
+    def render(self, template, context={}, outfile=None, encoding='utf-8', trim_blocks=True):
         from epm.utils import abspath
         path = abspath(self._dir or '.')
 
@@ -224,15 +224,15 @@ class Jinja2(object):
         T = env.get_template(template)
         context = dict(self._context, **context)
         text = T.render(context)
-        if newline == '\n':
-            text.replace("\r\n", "\n")
+        #if newline == '\n':
+        #    text.replace("\r\n", "\n")
         if outfile:
             path = os.path.abspath(outfile)
             folder = os.path.dirname(path)
             if not os.path.exists(folder):
                 os.makedirs(folder)
             with open(path, 'wb') as f:
-                f.write(text)
+                f.write(bytes(text, encoding=encoding))
         return text
 
     def parse(self, text, context={}):
