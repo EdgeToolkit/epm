@@ -2,8 +2,8 @@ import os
 from epm.worker import Worker, DockerRunner, param_encode
 from epm.errors import EConanException, EDockerException
 from conans.tools import environment_append
-from epm.worker.sandbox import Generator, build_tests
 from epm import HOME_DIR
+from epm.model.program import build_program
 
 
 class Docker(DockerRunner):
@@ -11,6 +11,7 @@ class Docker(DockerRunner):
     def __init__(self, api, project):
         super(Docker, self).__init__(api, project)
 
+from epm.utils import PLATFORM
 
 class Builder(Worker):
 
@@ -28,23 +29,20 @@ class Builder(Worker):
                 self.out.highlight('[building - %s ......]\n' % i)
                 with environment_append(self.api.config.env_vars):
                     fn(project)
-        from epm.model.program import build_program
-        build_program(project, program)
 
-#        if tests or tests is None:
-#            build_tests(project, tests)
-#            Generator.build(project, is_create=False, targets=tests)
+        build_program(project, program)
 
     def exec(self, param):
         project = self.api.project(param['PROFILE'], param.get('SCHEME'))
 
+        step = param.get('step')
+        program = param.get('program')
         runner = param.get('RUNNER') or 'auto'
+
         if runner == 'auto':
             runner = 'docker' if project.profile.docker.builder else 'shell'
 
         if runner == 'shell':
-            step = param.get('step')
-            program = param.get('program')
             self._exec(project, step, program)
 
         elif runner == 'docker':
@@ -57,6 +55,23 @@ class Builder(Worker):
             docker.exec('epm api build %s' % param_encode(param))
             if docker.returncode:
                 raise EDockerException(docker)
+            #################################################
+            from epm.utils.docker import BuildDocker
+            docker = BuildDocker(project)
+
+            command = f"epm --runner shell --profile {project.profile.name}"
+            if project.scheme and project.scheme.name:
+                command += f" --scheme {project.scheme.name}"
+            command += f" build"
+            if step:
+                command += [f" --{i}" for i in step]
+            if program:
+                command += [f" --program {i}" for i in program]
+            docker.enviroment['EPM_RUNNING_SYSTEM'] = 'docker'
+
+            proc = docker.run(command)
+            if proc.returncode:
+                raise Exception(f"[Docker] {command} failed.")
 
     def _configure(self, project):
         scheme = project.scheme

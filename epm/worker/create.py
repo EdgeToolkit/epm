@@ -60,10 +60,7 @@ class Creator(Worker):
             if proc.returncode:
                 raise Exception(f"[Docker] {command} failed.")
 
-
-
         else:
-
             storage_path = os.path.join(project.dir, storage, 'data') if storage else self.api.conan_storage_path
             env_vars = {'CONAN_STORAGE_PATH': storage_path}
             if PLATFORM == 'Windows' and storage:
