@@ -1,17 +1,15 @@
 import os
-from epm.worker import Worker, DockerRunner, param_encode
+from epm.worker import Worker
 from epm.errors import EConanException
 from conans.tools import environment_append
 from epm import HOME_DIR
 from epm.model.program import build_program
-
+from epm.utils import PLATFORM
 
 class Docker(DockerRunner):
 
     def __init__(self, api, project):
         super(Docker, self).__init__(api, project)
-
-from epm.utils import PLATFORM
 
 
 class Builder(Worker):
