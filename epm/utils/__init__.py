@@ -224,6 +224,8 @@ class Jinja2(object):
         T = env.get_template(template)
         context = dict(self._context, **context)
         text = T.render(context)
+        if newline == '\n':
+            text.replace("\r\n", "\n")
         if outfile:
             path = os.path.abspath(outfile)
             folder = os.path.dirname(path)

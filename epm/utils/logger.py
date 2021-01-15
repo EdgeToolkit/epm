@@ -86,7 +86,8 @@ class SysLog(object):
         mode = 'a' if os.path.exists(self.filename) else 'w'
         with open(self.filename, mode=mode) as f:
             f.write(prolog)
-        os.chmod(self.filename, STAT)
+        if mode == 'w':
+            os.chmod(self.filename, STAT)
 
     def close(self):
         if self._handler:
