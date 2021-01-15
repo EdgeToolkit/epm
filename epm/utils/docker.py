@@ -33,7 +33,7 @@ class BuildDocker(_Docker):
 
     def __init__(self, project, workbench=None):
         super().__init__()
-        self.workbench = workbench or os.environ['EPM_WORKBENCH'] or ''
+        self.workbench = workbench or os.environ.get('EPM_WORKBENCH') or ''
         self.project = project
 
         docker = self.project.profile.docker.builder

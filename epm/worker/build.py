@@ -13,18 +13,30 @@ class Docker(DockerRunner):
 
 from epm.utils import PLATFORM
 
+
 class Builder(Worker):
+    STEP = ['configure', 'make', 'package']
 
     def __init__(self, api=None):
         super(Builder, self).__init__(api)
         self._step = None
 
+    def _parse(self, step, program):
+        if not step and not program:
+            return None, None
+        [ for i in Builder]
+        step = step or []
+        program = program or []
+
     def _exec(self, project, step, program):
         for i in self.conan.editable_list():
             self.conan.editable_remove(i)
+        if not step and not program:
+            step = None
+            program = None
 
         for i in ['configure', 'make', 'package']:
-            if i in step:
+            if i is None or i in step:
                 fn = getattr(self, '_%s' % i)
                 self.out.highlight('[building - %s ......]\n' % i)
                 with environment_append(self.api.config.env_vars):
@@ -64,9 +76,9 @@ class Builder(Worker):
                 command += f" --scheme {project.scheme.name}"
             command += f" build"
             if step:
-                command += [f" --{i}" for i in step]
+                command += "".join([f" --{i}" for i in step])
             if program:
-                command += [f" --program {i}" for i in program]
+                command += "".join([f" --program {i}" for i in program])
             docker.enviroment['EPM_RUNNING_SYSTEM'] = 'docker'
 
             proc = docker.run(command)

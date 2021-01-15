@@ -32,9 +32,6 @@ class Build(Command):
                 ArgparseArgument("-p", "--package", default=None, action="store_true",
                                     help=""),
 
-                ArgparseArgument("-t", "--test", default=None, action='append',
-                                 help=""),
-
                 ArgparseArgument("--program", default=None, action='append',
                                  help=""),
 
@@ -47,17 +44,16 @@ class Build(Command):
         steps += ['configure'] if args.configure else []
         steps += ['make'] if args.make else []
         steps += ['package'] if args.package else []
-        program = args.program or []
+        #program = args.program or []
 
         param = self.parameter(args)
-        if not steps:
-            if not program:
-                steps = ['configure', 'make', 'package']
-                program = None
+        #if not steps:
+        #    if not program:
+        #        steps = ['configure', 'make', 'package']
+        #        program = None
 
-        param['steps'] = steps
         param['step'] = steps
-        param['program'] = program
+        param['program'] = args.program
 
         api.build(param)
 
