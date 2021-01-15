@@ -66,7 +66,7 @@ class BuildDocker(_Docker):
         mkdir(out_dir)
 
         context = {'docker': self, 'workbench': self.workbench or '',
-                   'script_dir': self.project.folder.out,
+                   'script_dir': pathlib.PurePath(out_dir).as_posix(),
                    'command': command}
         from epm.utils import Jinja2
         from epm import DATA_DIR
@@ -88,7 +88,7 @@ class BuildDocker(_Docker):
             command = ['/bin/bash', f"{out_dir}/build_docker.sh"]
         elif PLATFORM == 'Windows':
             out_dir = pathlib.WindowsPath(out_dir)
-            command = ['cmd.exe', '/c', f"{out_dir}/build_docker.cmd"]
+            command = ['cmd.exe', '/c', f"{out_dir}\\build_docker.cmd"]
         else:
             raise Exception(f'Unsupported platform <{PLATFORM}>')
         from conans.tools import environment_append

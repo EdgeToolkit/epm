@@ -77,13 +77,13 @@ fi
 
 {% if command == 'create' %}
 if [ -n "$EPM_SANDBOX_ARCHIVE" ]; then
-    _package_dir=$EPM_SANDBOX_ARCHIVE/$EPM_SANDBOX_PACKAGE_REFERENCE_DIR/package/$EPM_SANDBOX_PACKAGE_ID
+_package_dir=$EPM_SANDBOX_ARCHIVE/$EPM_SANDBOX_PACKAGE_REFERENCE_DIR/package/$EPM_SANDBOX_PACKAGE_ID
 else
-    _package_dir=$_storage/$EPM_SANDBOX_PACKAGE_REFERENCE_DIR/package/$EPM_SANDBOX_PACKAGE_ID
+_package_dir=$_storage/$EPM_SANDBOX_PACKAGE_REFERENCE_DIR/package/$EPM_SANDBOX_PACKAGE_ID
 fi
 {% else %}
-    _build_dir=$EPM_SANDBOX_PROJECT/{{project.folder.out}}/build
-    _package_dir=$EPM_SANDBOX_PROJECT/{{project.folder.out}}/package
+_build_dir=$EPM_SANDBOX_PROJECT/{{project.folder.out}}/build
+_package_dir=$EPM_SANDBOX_PROJECT/{{project.folder.out}}/package
 {% endif %}
 
 
@@ -102,18 +102,22 @@ _mount()
     mkdir -p $home/.sandbox/lib
     mkdir -p $home/.sandbox/bin
 
-
+{% if command == 'create' %}
 {% for lib in libs %}
     ln -s ${pkg_dir}/${lib} $home/.sandbox/lib/{{lib}}
 {% endfor %}
+{% endif %}
 {% for i in deps %}
     ln -s ${storage}/${lib} $home/.sandbox/lib/{{lib}}
 {% endfor %}
 
-{% if program['root'] == 'project' %}
-    ln -s $_project/{{project.folder.out}}/{{filename}} $home/.sandbox/bin/{{name}}
+{% set filename=filename.replace('/', '\\')%}
+{% set program_dir = "{}/{}".format(project.folder.program, executable.name)%}
+
+{% if where == 'project' %}
+    ln -s $_project/{{program_dir}}/{{filename}} $home/.sandbox/bin/{{name}}
 {% else %}
-    ln -s $_package_dir/{{filename}} $home/.sandbox/bin/{{name}}
+    ln -s $_package_dir/{{filename}} $home/.sandbox/bin/{{executable.name}}
 {% endif %}
 }
 
@@ -145,7 +149,7 @@ _docker_exec()
   _CMD=" $_CMD -w $home"
   _CMD=" $_CMD $image $shell -c "
 
-  $_sudo $_CMD "${project}/.epm/{{ project.folder.name }}/sandbox/{{ name }} $*"
+  $_sudo $_CMD "${project}/.epm/{{ project.folder.name }}/sandbox/{{executable.name}} $*"
 }
 #
 #
