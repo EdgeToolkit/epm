@@ -6,8 +6,8 @@ function on_exit(){
 {% endif -%}
 {% endfor -%}
 }
-set -e
-trap on_exit EXIT
+#set -e
+#trap on_exit EXIT
 
 sudo -E docker run --rm \
 {% for v in docker.volume -%}
