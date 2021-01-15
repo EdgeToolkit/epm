@@ -89,19 +89,6 @@ else
 fi
 
 # ---------------------------------------------------------
-# Generated in {{command}}, set related directory
-# ---------------------------------------------------------
-{% if command == 'create' %}
-if [ -n "$EPM_SANDBOX_ARCHIVE" ]; then
-_package_dir=$EPM_SANDBOX_ARCHIVE/$EPM_SANDBOX_PACKAGE_REFERENCE_DIR/package/$EPM_SANDBOX_PACKAGE_ID
-else
-_package_dir=$_storage/$EPM_SANDBOX_PACKAGE_REFERENCE_DIR/package/$EPM_SANDBOX_PACKAGE_ID
-fi
-{% else %}
-_package_dir=$EPM_SANDBOX_PROJECT/{{project.folder.out}}/package
-{% endif %}
-
-# ---------------------------------------------------------
 # Mount related archives
 # ---------------------------------------------------------
 _mount()
@@ -134,11 +121,22 @@ _mount()
 {% endif %}
 
   # -------------------------------------------------------
-  # link the program.executable (from {{where}}) to sandbox
+  # The program.executable {{executable.name}} was made by
+  # epm <{{command}}> and output `{{where}}`.
+  # now link it to sandbox directory
   # -------------------------------------------------------
 {% if where == 'project' %}
   ln -s $_project/{{program_dir}}/{{filename}} $sandbox_dir/bin/{{executable.name}}
 {% else %}
+  {% if command == 'create' %}
+  if [ -n "$EPM_SANDBOX_ARCHIVE" ]; then
+  _package_dir=$EPM_SANDBOX_ARCHIVE/$EPM_SANDBOX_PACKAGE_REFERENCE_DIR/package/$EPM_SANDBOX_PACKAGE_ID
+  else
+  _package_dir=$_storage/$EPM_SANDBOX_PACKAGE_REFERENCE_DIR/package/$EPM_SANDBOX_PACKAGE_ID
+  fi
+  {% else %}
+  _package_dir=$EPM_SANDBOX_PROJECT/{{project.folder.out}}/package
+  {% endif %}
   ln -s $_package_dir/{{filename}} $sandbox_dir/bin/{{executable.name}}
 {% endif %}
 }
