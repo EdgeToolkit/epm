@@ -61,7 +61,7 @@ class BuildDocker(_Docker):
         self.volume.append(Volume(self.project.dir, self.cwd))
 
     def generate(self, command):
-        out_dir = os.path.join(self.project.abspath.cache, 'docker', self.project.folder.name)
+        out_dir = os.path.join(self.project.folder.cache, 'docker', self.project.folder.name)
         rmdir(out_dir)
         mkdir(out_dir)
 
@@ -84,15 +84,18 @@ class BuildDocker(_Docker):
         import subprocess
         out_dir = self.generate(command)
         if PLATFORM == 'Linux':
+            out_dir = pathlib.PurePath(out_dir).as_posix()
             command = ['/bin/bash', f"{out_dir}/build_docker.sh"]
         elif PLATFORM == 'Windows':
+            out_dir = pathlib.WindowsPath(out_dir)
             command = ['cmd.exe', '/c', f"{out_dir}/build_docker.cmd"]
         else:
             raise Exception(f'Unsupported platform <{PLATFORM}>')
         from conans.tools import environment_append
         with environment_append({'EPM_WORKBENCH': self.workbench}):
             syslog.flush()
-            syslog.close()
+            #syslog.close()
+            print(command)
             proc = subprocess.run(command)
         return proc
 
