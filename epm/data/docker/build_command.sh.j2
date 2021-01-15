@@ -1,8 +1,8 @@
 #!/bin/bash
-#set -e
+set -e
 {% for v in docker.volume %}
 {% if not v.option or 'rw' in v.option %}
-#sudo chown -R $(id -u):$(id -g) -v {{v.destination}} 2>&1 >/dev/null
+sudo chown -R $(id -u):$(id -g) -v {{v.destination}} 2>&1 >/dev/null
 {% endif %}
 {% endfor %}
 {{command}}
