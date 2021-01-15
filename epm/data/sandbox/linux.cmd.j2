@@ -57,7 +57,7 @@ set _CMD=%_CMD% -e EPM_SANDBOX_STORAGE=%_DHOME%/@host/conan.storage
 set _CMD=%_CMD% -e EPM_SANDBOX_PROJECT=%_DHOME%/@host/project
 set _CMD=%_CMD% -w %_DHOME%
 set _CMD=%_CMD% %_DIMAGE% %_DSHELL%
-set _CMD=%_CMD% %_DHOME%/@host/project/.epm/{{ project.folder.name }}/sandbox/{{ name }} %*
+set _CMD=%_CMD% %_DHOME%/@host/project/.epm/{{ project.folder.name }}/sandbox/{{executable.name}}/run %*
 
 %_CMD%
 
