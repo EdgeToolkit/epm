@@ -2,7 +2,7 @@
 # to allow refactors
 import os
 
-__version__ = '0.0.48'
+__version__ = '0.0.49'
 
 
 

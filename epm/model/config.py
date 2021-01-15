@@ -11,11 +11,9 @@ class Config(object):
     def __init__(self, filename='~/.epm/config.yml'):
         self._data = {}
         self._filename = filename
-        try:
+        if os.path.exists(self._filename):
             with open(filename) as f:
                 self._data = yaml.safe_load(f) or {}
-        except:
-            pass
 
     @property
     def workbench(self):

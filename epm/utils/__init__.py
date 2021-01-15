@@ -213,7 +213,7 @@ class Jinja2(object):
             env.filters[name] = fn
         return env
 
-    def render(self, template, context={}, outfile=None, trim_blocks=True):
+    def render(self, template, context={}, outfile=None, newline='\n', trim_blocks=True):
         from epm.utils import abspath
         path = abspath(self._dir or '.')
 
@@ -229,7 +229,7 @@ class Jinja2(object):
             folder = os.path.dirname(path)
             if not os.path.exists(folder):
                 os.makedirs(folder)
-            with open(path, 'w') as f:
+            with open(path, 'wb', newline=newline) as f:
                 f.write(text)
         return text
 

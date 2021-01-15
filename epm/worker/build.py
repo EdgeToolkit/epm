@@ -50,16 +50,6 @@ class Builder(Worker):
             self._exec(project, step, program)
 
         elif runner == 'docker':
-            #param['RUNNER'] = 'shell'
-            #docker = Docker(self.api, project)
-            #docker.WD = '$home/.project/%s' % project.name
-            #
-            #docker.add_volume(project.dir, docker.WD)
-            #docker.add_volume(HOME_DIR, '$home/.epm')
-            #docker.exec('epm api build %s' % param_encode(param))
-            #if docker.returncode:
-            #    raise EDockerException(docker)
-            ##################################################
             from epm.utils.docker import BuildDocker
             docker = BuildDocker(project)
 

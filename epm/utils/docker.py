@@ -1,18 +1,25 @@
 import os
 from conans.tools import mkdir
 from epm.utils import jinja_render, PLATFORM
-
+import pathlib
 
 class Volume(object):
 
     def __init__(self, source, destination, option=None):
-        self.source = source
-        self.destination = destination
+        self.source = pathlib.PurePath(source).as_posix()
+        self.destination = pathlib.PurePath(destination).as_posix()
         self.option = option
 
     @property
     def volume(self):
         v = f"{self.source}:{self.destination}"
+        return f"{v}:{self.option}" if self.option else v
+
+    @property
+    def volume4win(self):
+
+        source = pathlib.WindowsPath(self.source)
+        v = f"{source}:{self.destination}"
         return f"{v}:{self.option}" if self.option else v
 
 
@@ -69,10 +76,11 @@ class BuildDocker(_Docker):
         if PLATFORM == 'Linux':
             command = ['/bin/bash', f"{out_dir}/build_docker.sh"]
         elif PLATFORM == 'Windows':
-            command = ['cmd.exe', '/k', f"{out_dir}/build_docker.cmd"]
+            command = ['cmd.exe', '/c', f"{out_dir}/build_docker.cmd"]
         else:
             raise Exception(f'Unsupported platform <{PLATFORM}>')
-
-        proc = subprocess.run(command, env={'EPM_WORKBENCH': self.workbench})
+        from conans.tools import environment_append
+        with environment_append({'EPM_WORKBENCH': self.workbench}):
+            proc = subprocess.run(command)
         return proc
 
