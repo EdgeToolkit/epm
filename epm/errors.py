@@ -16,14 +16,3 @@ class EConanException(EException):
         super(EConanException, self).__init__(message)
 
 
-class EDockerException(EException):
-
-    def __init__(self, message, docker=None):
-        from epm.worker import DockerBase
-        if isinstance(docker, DockerBase):
-            self.docker = {'returncode': docker.returncode,
-                      'command': docker.command_str,
-                      }
-
-        super(EException, self).__init__(message)
-

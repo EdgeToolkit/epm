@@ -2,6 +2,7 @@ import os
 from conans.tools import mkdir
 from epm.utils import jinja_render, PLATFORM
 import pathlib
+from epm.utils.logger import syslog
 
 class Volume(object):
 
@@ -81,6 +82,7 @@ class BuildDocker(_Docker):
             raise Exception(f'Unsupported platform <{PLATFORM}>')
         from conans.tools import environment_append
         with environment_append({'EPM_WORKBENCH': self.workbench}):
+            syslog.flush()
             proc = subprocess.run(command)
         return proc
 

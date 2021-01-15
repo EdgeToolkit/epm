@@ -1,6 +1,6 @@
 import os
 from epm.worker import Worker, DockerRunner, param_encode
-from epm.errors import EConanException, EDockerException
+from epm.errors import EConanException
 from conans.tools import environment_append
 from epm import HOME_DIR
 from epm.model.program import build_program

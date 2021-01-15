@@ -37,7 +37,7 @@ class Main(object):
     def __init__(self, args, out=None):
         from epm import __version__
         prolog = _PROLOG.format(version=__version__, command=" ".join(args))
-        name = os.getenv('EPM_GUEST_SYSTEM') or "epm"
+        name = os.getenv('EPM_RUNNING_SYSTEM') or "epm"
         syslog.open(name, prolog=prolog)
         syslog.info("test")
 

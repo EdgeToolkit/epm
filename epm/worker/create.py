@@ -7,23 +7,11 @@ from conans.client.tools import environment_append
 from conans.tools import chdir, load, mkdir, rmdir
 
 from epm import HOME_DIR
-from epm.worker import Worker, DockerBase, param_encode
-from epm.errors import EConanException, EDockerException
+from epm.worker import Worker
+from epm.errors import EConanException
 from epm.worker.sandbox import build_tests, Generator
-
+from epm.utils.docker import BuildDocker
 from epm.utils import PLATFORM
-
-def conan_real_path(path):
-    from conans.util.windows import CONAN_LINK
-    link = os.path.join(path, CONAN_LINK)
-    if os.path.exists(link):
-        return load(link)
-    return path
-
-class Docker(DockerBase):
-
-    def __init__(self, api, project):
-        super(Docker, self).__init__(api, project)
 
 
 class Creator(Worker):
@@ -42,7 +30,6 @@ class Creator(Worker):
             runner = 'docker' if project.profile.docker.builder else 'shell'
         
         if runner == 'docker':
-            from epm.utils.docker import BuildDocker
             docker = BuildDocker(project)
 
             command = f"epm --runner shell --profile {project.profile.name}"
