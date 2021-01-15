@@ -1,5 +1,6 @@
 import os
-from conans.tools import mkdir
+import stat
+from conans.tools import mkdir, rmdir
 from epm.utils import jinja_render, PLATFORM
 import pathlib
 from epm.utils.logger import syslog
@@ -60,15 +61,19 @@ class BuildDocker(_Docker):
         self.volume.append(Volume(self.project.dir, self.cwd))
 
     def generate(self, command):
-
-        out_dir = self.project.abspath.out
+        out_dir = os.path.join(self.project.abspath.cache, 'docker', self.project.folder.name)
+        rmdir(out_dir)
         mkdir(out_dir)
+
         context = {'docker': self, 'workbench': self.workbench or '',
                    'script_dir': self.project.folder.out,
                    'command': command}
-        jinja_render(context, 'docker/build.sh.j2', outfile=f"{out_dir}/build_docker.sh")
-        jinja_render(context, 'docker/build.cmd.j2', outfile=f"{out_dir}/build_docker.cmd")
-        jinja_render(context, 'docker/build_command.sh.j2', outfile=f"{out_dir}/docker_build_command.sh")
+        for src, dst in [('docker/build.sh.j2', f"{out_dir}/build_docker.sh"),
+                         ('docker/build.cmd.j2', f"{out_dir}/build_docker.cmd"),
+                         ('docker/build_command.sh.j2', f"{out_dir}/docker_build_command.sh")]:
+            jinja_render(context, src, dst)
+            os.chmod(dst, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+
         return out_dir
 
     def run(self, command):

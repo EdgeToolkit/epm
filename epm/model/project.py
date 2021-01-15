@@ -196,6 +196,14 @@ class Project(object):
 
     @property
     def folder(self):
+        """
+        .cache: .epm
+        .name:  <profile>@<scheme>
+        .program: .epm/<profile>@<scheme>/program
+        .package: .epm/<profile>@<scheme>/package
+        .build: .epm/<profile>@<scheme>/build
+        :return:
+        """
         Folder = namedtuple('Folder', ['cache', 'out', 'build', 'package', 'test', 'name', 'program'])
         cache = '.epm'
         out = build = package = test = program = None
