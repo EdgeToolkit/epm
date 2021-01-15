@@ -114,7 +114,7 @@ _mount()
 {% set program_dir = "{}/{}".format(project.folder.program, executable.name)%}
 
 {% if where == 'project' %}
-    ln -s $_project/{{program_dir}}/{{filename}} $home/.sandbox/bin/{{name}}
+    ln -s $_project/{{program_dir}}/{{filename}} $home/.sandbox/bin/{{executable.name}}
 {% else %}
     ln -s $_package_dir/{{filename}} $home/.sandbox/bin/{{executable.name}}
 {% endif %}
@@ -148,7 +148,7 @@ _docker_exec()
   _CMD=" $_CMD -w $home"
   _CMD=" $_CMD $image $shell -c "
 
-  $_sudo $_CMD "${project}/.epm/{{ project.folder.name }}/sandbox/{{executable.name}} $*"
+  $_sudo $_CMD "${project}/.epm/{{ project.folder.name }}/sandbox/{{executable.name}}/run $*"
 }
 #
 #
@@ -156,12 +156,13 @@ _docker_exec()
 set -e
 
 if [ "$_runner" = "shell" ]; then
-   _mount $_home $_storage $EPM_SANDBOX_PACKAGE_DIR
+  _mount $_home $_storage $EPM_SANDBOX_PACKAGE_DIR
 {% if command == 'create' %}
-   export LD_LIBRARY_PATH=$_home/.sandbox/lib:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$_home/.sandbox/lib:$LD_LIBRARY_PATH
 {% else %}
-   export LD_LIBRARY_PATH=$_build_dir/$_home/.sandbox/lib:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$_build_dir/lib:$_home/.sandbox/lib:$LD_LIBRARY_PATH
 {% endif %}
+  $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
    {#% if sandbox.privileged %}
    if [ -z $_sudo ]; then
      $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
@@ -169,8 +170,8 @@ if [ "$_runner" = "shell" ]; then
      sudo -E $_shell -c "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH && $_home/.sandbox/bin/{{ name }} {{ arguments }} $*"
    fi
    {% else %#}
-   $_home/.sandbox/bin/{{ name }} {{ arguments }} $*
-   {#% endif %#}
+
+   {% endif %#}
 
 else
    _docker_exec $*
