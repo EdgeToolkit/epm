@@ -107,7 +107,6 @@ class Argument(object):
     def __init__(self, definition):
         self._definition = definition
 
-
     def parse(self, argv):
         prog = self._definition.description
         parser = argparse.ArgumentParser(prog=prog)
@@ -143,6 +142,7 @@ class Argument(object):
             if value not in items:
                 raise Exception(f"options --{name} should be in {items}".format(
                     name=name, items=items))
+        print('----->', args)
         return args
 
 
