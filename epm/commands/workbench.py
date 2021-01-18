@@ -87,8 +87,6 @@ class Workbench(Command):
 
     def run(self, args, api=None):
         from epm.utils import workbench
-
-
         if args.action == 'active':
             workbench.active(args.name)
         elif args.action == 'install':
@@ -102,36 +100,6 @@ class Workbench(Command):
             print('{:19s} {:40s}'.format('-' * 19, '-' * 40))
             for name, value in info.items():
                 print('{:19s} {:40s}'.format(name, os.path.normpath(value['location'])))
-
-
-
-
-
-
-
-        return
-        from epm.utils.workbench import install, active, banner
-        if args.sub_command == 'install':
-            install(args.location, args.editable)
-        elif args.sub_command == 'shell':
-            active(args.name)
-        elif args.sub_command == 'banner':
-            banner()
-
-        #############################################################
-        elif args.sub_command == 'list':
-            info = wenv.get_all_installed_wenv_info()
-            print('{:19s} {:40s}'.format('name', 'location'))
-            print('{:19s} {:40s}'.format('-'*19, '-'*40))
-            for name, value in info.items():
-                print('{:19s} {:40s}'.format(name, os.path.normpath(value['location'])))
-        elif args.sub_command == 'show':
-            info = wenv.get_all_installed_wenv_info()
-            info = info.get(args.name)
-            if info:
-                print(info['config']['wenv'].get('description'))
-            else:
-                print('%s not installed.' % args.name)
 
 
 register_command(Workbench)

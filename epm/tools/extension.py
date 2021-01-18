@@ -111,8 +111,9 @@ class Argument(object):
         prog = self._definition.description
         parser = argparse.ArgumentParser(prog=prog)
         enums = {}
-        if not argv or not self._definition.argument:
+        if not self._definition.argument:
             return object()
+        argv = argv or []
 
         for name, prop in self._definition.argument.items():
             param = {}
@@ -142,7 +143,6 @@ class Argument(object):
             if value not in items:
                 raise Exception(f"options --{name} should be in {items}".format(
                     name=name, items=items))
-        print('----->', args)
         return args
 
 
