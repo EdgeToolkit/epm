@@ -2,9 +2,9 @@
 function on_exit(){
   echo ""
 {% for v in docker.volume -%}
-#{% if not v.option or 'rw' in v.option -%}
+{% if not v.option or 'rw' in v.option -%}
 #  sudo chown -R $(id -u):$(id -g) -v {{v.source}} 2>&1 >/dev/null
-#{% endif -%}
+{% endif -%}
 {% endfor -%}
 }
 set -e
