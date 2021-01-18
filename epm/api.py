@@ -198,11 +198,12 @@ class _APIv0(APIUtils):
     @request_profile
     def exec(self, param):
         project = self.project(param['PROFILE'], param.get('SCHEME'))
-        sandbox = Sandbox(project, self)
+
         command = param['name']
         argv = param.get('args') or []
         runner = param.get('RUNNER', None)
-        return sandbox.exec(command, runner=runner, argv=argv)
+        from epm.model.program import exec_program
+        return exec_program(project, command, runner=runner, argv=argv)
 
     @api_method
     def runit(self, param):

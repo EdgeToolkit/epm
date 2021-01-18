@@ -1,3 +1,4 @@
+import sys
 from epm.commands import Command, register_command, ArgparseArgument
 
 
@@ -22,7 +23,8 @@ class Exec(Command):
         param['name'] = args.name
         param['args'] = args.argv
 
-        api.sandbox(param)
+        exit_code = api.exec(param)
+        sys.exit(exit_code)
 
 
 register_command(Exec)

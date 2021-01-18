@@ -1,8 +1,10 @@
 import os
 import glob
 import pathlib
+import subprocess
 from conans.tools import chdir
 from epm.utils.logger import syslog
+from epm.utils import PLATFORM, ARCH
 '''
 program:
 - name: test_package
@@ -220,9 +222,6 @@ class Program(object):
                         build_folder=build_folder,
                         install_folder=build_folder)
 
-    def generate(self):
-        pass
-
     @staticmethod
     def load(project):
         config = project.metainfo.get('program')
@@ -232,6 +231,16 @@ class Program(object):
         for conf in config:
             program.append(Program(project, conf))
         return program
+
+    @staticmethod
+    def exec(project, name, argv, runner=None):
+        """execute the specified executable program <name> in given runner
+
+        """
+        for program in Program.load(project):
+            for e in program.executable:
+                if e.name == program.name:
+                    e.run
 
 
 class editable_add(object):
@@ -261,3 +270,53 @@ def build_program(project, target):
                 program.build()
                 for e in program.executable:
                     e.generate()
+
+
+def guess_runner(project, runner):
+    if runner in ['docker', 'shell']:
+        return runner
+    if runner in ['auto', None]:
+        if project.profile.docker.runner:
+            return 'docker'
+        _os = project.profile.host.settings['os']
+        _arch = project.profile.host.settings['arch']
+        if _os != PLATFORM or _arch != ARCH:
+            raise Exception(f'the program({_os} {_arch}) is not runnable in current system.')
+        return 'shell'
+    assert isinstance(runner, str)
+    return runner
+
+
+def exec_program(project, name, argv, runner=None):
+    """execute the specified executable program <name> in given runner
+
+    """
+    program = None
+    executable = None
+    out = project.api.out
+    canidates = []
+
+    for program in Program.load(project):
+
+        for e in program.executable:
+            canidates.append(e.name)
+            if e.name == name:
+                program = program
+                executable = e
+                break
+    if executable is None:
+        out.error(f"executable program <{name}> not defined in package.yml.\ndefined programs are:\n\t" +
+                  "\t\n".join(canidates))
+        return 128
+
+    filename = pathlib.PurePath(f"{project.folder.out}/sandbox/{name}/run").as_posix()
+    runner = guess_runner(project, runner)
+    if runner in ['shell', 'docker']:
+        if PLATFORM == 'Windows':
+            filename = "{}.cmd".format(pathlib.WindowsPath(filename))
+
+        command = [filename] + argv
+        proc = subprocess.run(command, shell=True)
+        return proc.returncode
+
+    print(filename)
