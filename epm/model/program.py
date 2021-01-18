@@ -310,13 +310,12 @@ def exec_program(project, name, argv, runner=None):
         return 128
 
     filename = pathlib.PurePath(f"{project.folder.out}/sandbox/{name}/run").as_posix()
-    runner = guess_runner(project, runner)
-    if runner in ['shell', 'docker']:
+    if runner in ['shell', 'docker', None, 'auto']:
         if PLATFORM == 'Windows':
             filename = "{}.cmd".format(pathlib.WindowsPath(filename))
 
         command = [filename] + argv
-        proc = subprocess.run(command, shell=True)
-        return proc.returncode
-
-    print(filename)
+        from conans.tools import environment_append
+        with environment_append({'EPM_SANDBOX_RUNNER': runner}):
+            proc = subprocess.run(command, shell=True)
+            return proc.returncode
