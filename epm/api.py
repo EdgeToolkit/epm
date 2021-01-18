@@ -106,7 +106,7 @@ class APIUtils(object):
 def api_method(f):
 
     def wrapper(api, *args, **kwargs):
-        old_curdir = os.getcwd()
+        old_cwd = os.getcwd()
         try:
             env_vars = api.config.get('environment') or {}
             env_vars = dict(api.env_vars, **env_vars)
@@ -120,7 +120,7 @@ def api_method(f):
                 return f(api, *args, **kwargs)
 
         finally:
-            os.chdir(old_curdir)
+            os.chdir(old_cwd)
     return wrapper
 
 
@@ -190,6 +190,16 @@ class _APIv0(APIUtils):
         project = self.project(param['PROFILE'], param.get('SCHEME'))
         sandbox = Sandbox(project, self)
         command = param['command']
+        argv = param.get('args') or []
+        runner = param.get('RUNNER', None)
+        return sandbox.exec(command, runner=runner, argv=argv)
+
+    @api_method
+    @request_profile
+    def exec(self, param):
+        project = self.project(param['PROFILE'], param.get('SCHEME'))
+        sandbox = Sandbox(project, self)
+        command = param['name']
         argv = param.get('args') or []
         runner = param.get('RUNNER', None)
         return sandbox.exec(command, runner=runner, argv=argv)
