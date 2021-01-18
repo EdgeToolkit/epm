@@ -1,6 +1,6 @@
 set _VOLUME=
 {% for v in docker.volume -%}
-set _VOLUME=%_VOLUME% -v {{v.volume4win}}
+set _VOLUME=%_VOLUME% -v {{v.volume| replace('/', '\\')}}
 {% endfor -%}
 
 set _ENVIROMENT=-e EPM_WORKBENCH=%EPM_WORKBENCH%
