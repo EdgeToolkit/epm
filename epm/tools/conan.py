@@ -1,7 +1,11 @@
 import re
 import os
 import yaml
+import copy
+import uuid
+
 from .generators.pkg_config import PkgConfigGenerator
+
 from conans import ConanFile
 
 
@@ -19,69 +23,6 @@ def _conanfile_hacking(minfo, generator=None):
     if mirror:
         mirror.register(name)
 
-
-def MetaClass(ConanFileClass=None, manifest=None, test_package=False, generator=None):
-
-    manifest = manifest or '../package.yml' if test_package else 'package.yml'
-    if os.environ.get('EPM_PROGRAM_NAME'):
-        test_package = True
-        manifest = os.path.join(os.getenv('EPM_PROJECT_DIRECTORY'), 'package.yml')
-
-    print('EPM_PROGRAM_NAME', os.environ.get('EPM_PROGRAM_NAME'))
-    print('test_package', test_package)
-
-    with open(manifest) as f:
-        minfo = yaml.safe_load(f)
-
-    name = minfo.get('name')
-    version = str(minfo.get('version'))
-    user = minfo.get('user')
-    channel = minfo.get('channel') or get_channel(user)
-    exports = [manifest]
-    ClassName = re.sub(r'\W', '_', os.path.basename(os.path.normpath(os.path.abspath(manifest))))
-    ConanFileClass = ConanFileClass or ConanFile
-
-    _conanfile_hacking(minfo, generator)
-
-    member = dict(name=name, version=version, __meta_information__=minfo)
-    if test_package:
-        folder = os.path.basename(os.path.abspath('.'))
-        ClassName = '{}_TestPackage_{}'.format(re.sub(r'\W', '_', folder), ClassName)
-
-        requires = ('%s/%s@%s/%s' % (name, version,
-                                     user or '_',
-                                     channel or '_'))
-        member['name'] += '_{}'.format(folder)
-        member['requires'] = requires
-        # workaround
-        member['options'] = {"shared": [True, False]}
-        member['default_options'] = {"shared": False}
-
-        CoanFileEx = ConanFileClass
-        print('+++++++++++++++++++++++')
-        print(member)
-
-    else:
-        member['exports'] = exports
-
-        class CoanFileEx(ConanFileClass):
-
-            def requirements(self):
-                self.requires = create_requirements(self.__meta_information__,
-                                                    self.settings,
-                                                    self.options,
-                                                    conanfile=self)
-
-            def build_requirements(self):
-                add_build_requirements(self.build_requires, self.__meta_information__,
-                                       self.settings, self.options,
-                                       conanfile=self)
-
-    return type(ClassName, (CoanFileEx,), member)
-
-from epm.utils import abspath
-import copy
-import uuid
 
 def _ConanfileEx(klass):
 
@@ -144,9 +85,6 @@ def _make_program_metainfo(name, origin):
     build_tools = meta.get('build-tools') or {}
     build_tools.update(program.get('build-tools') or {})
     meta['build-tools'] = build_tools
-    import pprint
-    pprint.pprint(meta)
-    print('--------------------------------------------------------')
     return meta
 
 
@@ -164,6 +102,8 @@ def as_program(klass):
 
     with open(manifest) as f:
         __meta_information__ = yaml.safe_load(f)
+        __meta_information__['version'] = str(__meta_information__['version'])
+
     minfo = _make_program_metainfo(name, __meta_information__)
 
     version = str(__meta_information__.get('version'))
