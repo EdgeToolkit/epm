@@ -137,6 +137,9 @@ class Executable(object):
         deps = []
         win = bool(conaninfo.settings.os == 'Windows')
         storage = self.storage_path
+        if not os.path.exists(storage):
+            return list(), list()
+
         with chdir(storage):
             for pref in conaninfo.full_requires:
                 path = os.path.join(pref.ref.dir_repr(), 'package', pref.id)
