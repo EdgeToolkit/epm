@@ -2,7 +2,7 @@
 # to allow refactors
 import os
 
-__version__ = '0.0.59.8'
+__version__ = '0.0.59.9'
 
 HOME_DIR = os.path.join(os.path.expanduser('~'), '.epm')
 DATA_DIR = os.path.normpath('%s/data' % os.path.dirname(__file__))

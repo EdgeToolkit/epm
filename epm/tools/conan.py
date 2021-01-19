@@ -105,7 +105,7 @@ def as_program(klass):
     if not os.path.exists(manifest):
         raise Exception('Invalid program directory (miss package.yml)')
 
-    __meta_information__ = _load_manifest
+    __meta_information__ = _load_manifest(manifest)
 
     minfo = _make_program_metainfo(name, __meta_information__)
 
