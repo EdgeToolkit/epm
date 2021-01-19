@@ -44,28 +44,12 @@ class SysLog(object):
     @property
     def logger(self):
         if self._logger is None:
-            logger = logging.getLogger()
+            logger = logging.getLogger(self._name)
             logger.setLevel(level=logging.INFO)
-
-            #console = logging.StreamHandler()
-            #console.setLevel(level=logging.WARNING)
-            #formatter = logging.Formatter('%(levelname)s - %(message)s')
-            #console.setFormatter(formatter)
-            #logger.addHandler(console)
-            #
-            #formatter = logging.Formatter(self.FORMATTER)
-            #if self._handler:
-            #    self._handler.flush()
-            #    self._handler.close()
-            #    self._handler = None
-            #
-            #self._handler = logging.FileHandler(self.filename, mode='a')
-            #self._handler.setFormatter(formatter)
-            #
-            #logger.addHandler(self._handler)
             self._logger = logger
             self._attach_handle(self._logger)
-        return logging.getLogger(self._name) if self._name else self._logger
+        return self._logger
+        #return logging.getLogger(self._name) if self._name else self._logger
 
     def _attach_handle(self, logger):
         if self._handler is None:
@@ -96,7 +80,6 @@ class SysLog(object):
             self._handler.flush()
             self._handler.close()
             self._handler = None
-    
 
     def flush(self):
         if self._handler:
