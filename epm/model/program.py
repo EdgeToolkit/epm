@@ -42,6 +42,8 @@ class Executable(object):
     @property
     def name(self):
         name = self._config.get('name')
+        if name is False:
+            return False
         if not name:
             name = self._program.name
         else:
@@ -85,6 +87,8 @@ class Executable(object):
         return None
 
     def generate(self):
+        if self.name is False:
+            return
         program = self._program
         project = program.project
         builtin = program.location is None
@@ -177,8 +181,8 @@ class Program(object):
     def __init__(self, project, config):
         self.project = project
         self._config = config
-        self.name = self._config['name']
-        self.location = self._config.get('location') or None
+        self.name = self._config.get('name') or None
+        self.location = self._config.get('location')
         self.argv = self._config.get('argv') or None
         self._executable = None
 
