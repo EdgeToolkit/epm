@@ -1,11 +1,6 @@
 #!/bin/bash
 function on_exit(){
   echo ""
-{% for v in docker.volume -%}
-{% if not v.option or 'rw' in v.option -%}
-#  sudo chown -R $(id -u):$(id -g) -v {{v.source}} 2>&1 >/dev/null
-{% endif -%}
-{% endfor -%}
 }
 set -e
 trap on_exit EXIT
@@ -20,6 +15,8 @@ sudo -E docker run --rm \
     -e {{name}}:{{value}} \
 {% endfor -%}
     -w {{docker.cwd}} \
+    --user $(id -u):$(id -g) \
+    -e HOME={{docker.home}} \
     {{docker.image}} \
     {{docker.shell}} {{script_dir}}/docker_build_command.sh
 
