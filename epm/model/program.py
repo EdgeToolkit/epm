@@ -2,9 +2,11 @@ import os
 import glob
 import pathlib
 import subprocess
+import stat
 from conans.tools import chdir
 from epm.utils.logger import syslog
 from epm.utils import PLATFORM, ARCH
+
 '''
 program:
 - name: test_package
@@ -131,6 +133,7 @@ class Executable(object):
         else:
             j2.render("linux.sh.j2", outfile=f"{out_dir}/run")
             j2.render("linux.cmd.j2", outfile=f"{out_dir}/run.cmd")
+            os.chmod(f"{out_dir}/run", stat.S_IRWXU | stat.S_IXGRP | stat.S_IRGRP | stat.S_IROTH)
 
     def _parse_dynamic_libs(self, conaninfo):
         libs = []
