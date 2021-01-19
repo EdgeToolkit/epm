@@ -12,7 +12,7 @@ from epm.errors import EConanException
 from epm.worker.sandbox import build_tests, Generator
 from epm.utils.docker import BuildDocker
 from epm.utils import PLATFORM
-
+from epm.model.program import build_program
 
 class Creator(Worker):
 
@@ -104,6 +104,7 @@ class Creator(Worker):
         id = info.get('installed')[0].get('packages')[0]['id']
         result = {'id': id}
         project.record.set('package_id', id)
+        build_program(project)
         return result
 
     def _archive(self, project, path, storage_path):

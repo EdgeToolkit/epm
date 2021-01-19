@@ -269,7 +269,7 @@ class editable_add(object):
             conan.editable_remove(self._ref)
 
 
-def build_program(project, target):
+def build_program(project, target=None):
     with editable_add(project):
         for program in Program.load(project):
             if target is None or program.name in target:
