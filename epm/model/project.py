@@ -87,6 +87,8 @@ class Project(object):
         try:
             with open(os.path.join(self.dir, 'package.yml')) as f:
                 self.__meta_information__ = yaml.safe_load(f) or {}
+                if 'version' in self.__meta_information__:
+                    self.__meta_information__['version'] = str(self.__meta_information__['version'])
         except:
             pass
 
