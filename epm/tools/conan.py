@@ -41,20 +41,25 @@ def _ConanfileEx(klass):
     return _Klass
 
 
+def _load_manifest(filename):
+    with open(filename) as f:
+        minfo = yaml.safe_load(f)
+        minfo['version'] = str(minfo['version'])
+    return minfo
+
+
 def as_package(klass):
     manifest = 'package.yml'
 
     if not os.path.exists(manifest):
         raise Exception('Invalid program directory (miss package.yml)')
 
-    with open(manifest) as f:
-        minfo = yaml.safe_load(f)
+    minfo = _load_manifest(manifest)
 
     name = minfo['name']
     version = minfo['version']
     exports = [manifest]
     class_name = "{}-{}".format(name, uuid.uuid4())
-    #class_name = re.sub(r'\W', '_', class_name)
 
     _conanfile_hacking(minfo)
 
@@ -100,15 +105,12 @@ def as_program(klass):
     if not os.path.exists(manifest):
         raise Exception('Invalid program directory (miss package.yml)')
 
-    with open(manifest) as f:
-        __meta_information__ = yaml.safe_load(f)
-        __meta_information__['version'] = str(__meta_information__['version'])
+    __meta_information__ = _load_manifest
 
     minfo = _make_program_metainfo(name, __meta_information__)
 
     version = str(__meta_information__.get('version'))
     class_name = "{}-{}".format(name, uuid.uuid4())
-#    class_name = re.sub(r'\W', '_', class_name)
 
     _conanfile_hacking(minfo)
 
