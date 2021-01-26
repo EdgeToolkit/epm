@@ -1,7 +1,7 @@
 # Conan docker for HiSilicon aarch64-himix200 toolchain
 # tar -xf $TOOLS_PKG -C $TOP_DIR
 #
-{% set _PREFIX = 'aarch64-himix100-linux' -%}
+{% set _PREFIX = '/opt/aarch64-himix100-linux/aarch64-himix100-linux/bin/aarch64-himix100-linux' -%}
 FROM conanio/gcc8-x86:{{config.conan.version}}
 
 {% include "label.j2" %}
@@ -19,8 +19,8 @@ ENV CC={{_PREFIX}}-gcc \
 
 RUN cd /opt \
     && sudo wget {{config.tarball.himix100}} \
-    && sudo tar -xf aarch64-himix100-linux.tgz -C /opt \
+    && sudo tar -xf aarch64-himix100-linux.bz2 -C /opt \
     && sudo chown -R conan:1001 /opt/aarch64-himix100-linux \
-    && sudo rm /opt/aarch64-himix100-linux.tgz \
+    && sudo rm /opt/aarch64-himix100-linux.bz2 \
     && conan profile new default --detect \
     && conan profile update settings.arch=armv8 default

@@ -139,7 +139,7 @@ def render(name, version, j2, config):
     elif image.endswith('-aarch64'):
         image =image.replace("-aarch64", "-armv8")
 
-    kworkds = {'profile': name, 'version': version, 'config': config,'pip_options': pip_options}
+    kworkds = {'profile': name, 'version': version, 'config': config, 'pip_options': pip_options}
     loader = jinja2.FileSystemLoader(searchpath=[os.path.join(_DIR, "templates")])
     env = jinja2.Environment(loader=loader)
     template = env.get_template(j2)
@@ -154,12 +154,21 @@ def build(name, version, config):
     elif name.startswith('hi'):
         filename = 'HiSi'
     from epm.utils import Jinja2
+
+    pip_options = f"--proxy {config.pip.proxy}" if config.pip.proxy else ""
+    if config.pip.index_url:
+        pip_options += f" --index-url {config.pip.index_url}"
+    if config.pip.trusted_host:
+        pip_options += f" --trusted-host {config.pip.trusted_host}"
+
+    context = {'profile': name, 'version': version, 'config': config, 'pip_options': pip_options}
+
     j2 = Jinja2(f"{_DIR}/templates")
 
     outfile = f".epm/{name}.Dockerfile"
-    j2.render(f"{filename}.j2", context={'config': config }, outfile=outfile)
+    j2.render(f"{filename}.j2", context=context, outfile=outfile)
     
-    command = ['docker', 'build', '-f', outfile, '-t', f'edgetoolkit/{name}:{version}', '.']
+    command = ['docker', 'build', '-f', f"{name}.Dockerfile", '-t', f'edgetoolkit/{name}:{version}', '.']
     print(" ".join(command))
     subprocess.run(command, check=True, cwd='.epm')
 

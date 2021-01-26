@@ -143,7 +143,7 @@ class Jinja2(object):
             env.filters[name] = fn
         return env
 
-    def render(self, template, context={}, outfile=None, encoding='utf-8', trim_blocks=True):
+    def render(self, template, context={}, outfile=None, encoding='utf-8', trim_blocks=False):
         from epm.utils import abspath
         path = abspath(self._dir or '.')
 
