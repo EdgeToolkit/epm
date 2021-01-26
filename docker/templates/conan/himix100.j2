@@ -19,8 +19,8 @@ ENV CC={{_PREFIX}}-gcc \
 
 RUN cd /opt \
     && sudo wget {{config.tarball.himix100}} \
-    && sudo tar -xf aarch64-himix100-linux.bz2 -C /opt \
+    && sudo tar -xf aarch64-himix100-linux.tar.bz2 -C /opt \
     && sudo chown -R conan:1001 /opt/aarch64-himix100-linux \
-    && sudo rm /opt/aarch64-himix100-linux.bz2 \
+    && sudo rm /opt/aarch64-himix100-linux.tar.bz2 \
     && conan profile new default --detect \
     && conan profile update settings.arch=armv8 default
