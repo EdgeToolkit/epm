@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 import os
 import sys
-import jinja2
 import argparse
 import yaml
 import subprocess
 import fnmatch
-from epm import __version__
 
 _DIR = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
-_EPM_DIR = os.path.normpath(os.path.join(_DIR, '..'))
-sys.path.insert(0, _EPM_DIR)
+sys.path.insert(0, f"{_DIR}/..")
+
+from epm import __version__
+from epm.utils import ObjectView
 
 
 _CONFIG_TEMPLATE = """
@@ -40,61 +40,6 @@ _NAMEs = ['conan-hisiv300', 'conan-hisiv400', 'conan-himix100',
           ]
 # 'gcc5-x86', NOT WORK
 
-
-class ObjectView(object):
-    """Object view of a dict, updating the passed in dict when values are set
-    or deleted. "ObjectView" the contents of a dict...: """
-
-    def __init__(self, d):
-        # since __setattr__ is overridden, self.__dict = d doesn't work
-        object.__setattr__(self, '_ObjectView__dict', d)
-
-    # Dictionary-like access / updates
-    def __getitem__(self, name):
-        if name not in self.__dict:
-            return None
-        value = self.__dict[name]
-        if isinstance(value, dict):  # recursively view sub-dicts as objects
-            value = ObjectView(value)
-        elif isinstance(value, (list, tuple, set)):
-            value = []
-            for i in self.__dict[name]:
-                if isinstance(i, dict):
-                    value.append(ObjectView(i))
-                else:
-                    value.append(i)
-
-        return value
-
-    def __iter__(self):
-        return iter(self._ObjectView__dict)
-
-    def __setitem__(self, name, value):
-        self.__dict[name] = value
-
-    def __delitem__(self, name):
-        del self.__dict[name]
-
-    # Object-like access / updates
-    def __getattr__(self, name):
-        return self[name] if name in self else None
-
-    def __setattr__(self, name, value):
-        self[name] = value
-
-    def __delattr__(self, name):
-        del self[name]
-
-    def __repr__(self):
-        return "%s(%r)" % (type(self).__name__, self.__dict)
-
-    def __str__(self):
-        return str(self.__dict)
-
-    def __contains__(self, name):
-        return name in self.__dict
-
-
 def match(patterns):
     if isinstance(patterns, str):
         patterns = [patterns]
@@ -105,45 +50,6 @@ def match(patterns):
                 result.append(name)
                 break
     return result
-
-def dict2obj(d):
-    if isinstance(d, dict):
-        n = {}
-        for item in d:
-            name = item.replace('-', '_')
-            if isinstance(d[item], dict):
-                n[name] = dict2obj(d[item])
-            elif isinstance(d[item], (list, tuple)):
-                n[name] = [dict2obj(elem) for elem in d[item]]
-            else:
-                n[name] = d[item]
-        return type('obj_from_dict', (object,), n)
-    elif isinstance(d, (list, tuple,)):
-        l = []
-        for item in d:
-            l.append(dict2obj(item))
-        return l
-    else:
-        return d
-
-def render(name, version, j2, config):
-    pip_options = f"--proxy {config.pip.proxy}" if config.pip.proxy else ""
-    if config.pip.index_url:
-        pip_options += f" --index-url {config.pip.index_url}"
-    if config.pip.trusted_host:
-        pip_options += f" --trusted-host {config.pip.trusted_host}"
-
-    image = name
-    if image.endswith('-arm'):
-        image +="v7"
-    elif image.endswith('-aarch64'):
-        image =image.replace("-aarch64", "-armv8")
-
-    kworkds = {'profile': name, 'version': version, 'config': config, 'pip_options': pip_options}
-    loader = jinja2.FileSystemLoader(searchpath=[os.path.join(_DIR, "templates")])
-    env = jinja2.Environment(loader=loader)
-    template = env.get_template(j2)
-    return template.render(kworkds)
 
 
 def build(name, version, config):
