@@ -6,13 +6,12 @@ import argparse
 import yaml
 import subprocess
 import fnmatch
-from urllib.parse import urlparse
+from epm import __version__
 
 _DIR = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
 _EPM_DIR = os.path.normpath(os.path.join(_DIR, '..'))
 sys.path.insert(0, _EPM_DIR)
-from epm import __version__ as VERSION
-#VERSION = __import__(f"{_EPM_DIR}/epm/__init__").__version__
+
 
 _CONFIG_TEMPLATE = """
 conan:
@@ -23,6 +22,7 @@ tarball:
   hisiv400: http://<hostname>/archive/HiSilicon/GCC/arm-hisiv400-linux.tar.gz
   hisiv500: http://<hostname>/archive/HiSilicon/GCC/arm-hisiv500-linux.tgz
   hisiv600: http://<hostname>/archive/HiSilicon/GCC/arm-hisiv600-linux.tgz
+  himix100: http://<hostname>/archive/HiSilicon/GCC/arm-himix100-linux.tgz
 
 pip:
   proxy: http://<hostname>:8888
@@ -32,13 +32,13 @@ pip:
   trusted-host: <hostname>
 """
 
-_NAMEs = ['conan-hisiv300', 'conan-hisiv400',
+_NAMEs = ['conan-hisiv300', 'conan-hisiv400', 'conan-himix100',
           'gcc5', 'gcc5-x86', 'gcc5-armv7', 'gcc5-armv8',
           'gcc8', 'gcc8-x86', 'gcc8-armv7', 'gcc8-armv8',
-          'hisiv300', 'hisiv400'
+          'hisiv300', 'hisiv400',
+          'himix100'
           ]
 # 'gcc5-x86', NOT WORK
-
 
 
 class ObjectView(object):
@@ -51,6 +51,8 @@ class ObjectView(object):
 
     # Dictionary-like access / updates
     def __getitem__(self, name):
+        if name not in self.__dict:
+            return None
         value = self.__dict[name]
         if isinstance(value, dict):  # recursively view sub-dicts as objects
             value = ObjectView(value)
@@ -88,6 +90,9 @@ class ObjectView(object):
 
     def __str__(self):
         return str(self.__dict)
+
+    def __contains__(self, name):
+        return name in self.__dict
 
 
 def match(patterns):
@@ -148,58 +153,45 @@ def build(name, version, config):
         filename = 'GCC'
     elif name.startswith('hi'):
         filename = 'HiSi'
+    from epm.utils import Jinja2
+    j2 = Jinja2(f"{_DIR}/templates")
+
+    outfile = f".epm/{name}.Dockerfile"
+    j2.render(f"{filename}.j2", context={'config': config }, outfile=outfile)
     
-    
-    txt = render(name, version, f"{filename}.j2", config)
-    
-    
-    with open(f".epm/{name}.Dockerfile", 'w') as f:
-        f.write(txt)
-    command = ['docker', 'build', '-f', f"{name}.Dockerfile", '-t', f'edgetoolkit/{name}:{version}', '.']
+    command = ['docker', 'build', '-f', outfile, '-t', f'edgetoolkit/{name}:{version}', '.']
     print(" ".join(command))
     subprocess.run(command, check=True, cwd='.epm')
 
-#
-# build x --clear
-#
-def Main():
+
+def main():
+
     parser = argparse.ArgumentParser()
     parser.add_argument('name', nargs='+', help="name of the docker image to build.")
     parser.add_argument('--version', type=str, help="version of the image to build instead read from epm module.")
     parser.add_argument('--build', default=False, action="store_true", help="execute image build")
     parser.add_argument('--clear', default=False, action="store_true", help="clear exist image, if build")    
-    parser.add_argument('-c', '--config', default="~/config/docker-tools/config.yml", help="config file path. YAML format example\n")
+    parser.add_argument('-c', '--config', default="~/config/docker-tools/config.yml",
+                        help="config file path. YAML format example\n")
     args = parser.parse_args()
-#    name = args.name[0]
     args.config = os.path.expanduser(args.config)
     targets = match(args.name)
     print("Build ", ",".join(targets))
     if not targets:
-        print("No images build.")
+        print("No images build. supported targets as below:")
+        print("-- {}".format("\n-- ".join(_NAMEs)))
         return 0
 
     with open(args.config) as f:
         data = yaml.safe_load(f)
-        
-        data = dict({'pip':{'proxy': None, 'index-url': None, 'trusted-host': None}}, **data)
+        data = dict({'pip': {'proxy': None, 'index-url': None, 'trusted-host': None}}, **data)
 
-    #CWD = os.path.abspath('.')    
-    #if not os.path.exists(f"{CWD}/.epm"):
-    #    os.makedirs(f"{CWD}/.epm")
-    #from conans.tools import chdir
-    
-    #command = ['git', 'archive', '--format=tar.gz', '--output', f'{CWD}/.epm/epm.tar.gz', 'HEAD ']
-    #print(" ".join(command), f"EPMDIR:{_EPM_DIR}")
-    #with chdir(_EPM_DIR):
-    #    subprocess.run(command) 
-    #sys.exit(0)
-    config = dict2obj(data)
-    #config = ObjectView(data)
+    config = ObjectView(data)
     for name in targets:
         if name.startswith('conan-'):
             version = config.conan.version
         else:
-            version = args.version or VERSION
+            version = args.version or __version__
 
         if args.clear:
             command = ['docker', 'rmi', f'edgetoolkit/{name}:{version}']
@@ -208,8 +200,6 @@ def Main():
             build(name, version, config)
 
 
-
-
-
 if __name__ == '__main__':
-    Main()
+    sys.exit(main())
+

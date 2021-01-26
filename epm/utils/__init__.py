@@ -12,6 +12,7 @@ from epm.enums import Platform, Architecture
 from epm.errors import EException
 from jinja2 import Environment, FileSystemLoader
 
+
 def windows_arch():
     """
     Detecting the 'native' architecture of Windows is not a trivial task. We
@@ -80,39 +81,6 @@ def system_info():
 PLATFORM, ARCH = system_info()
 
 
-def is_elf(filename):
-    with open(filename, 'rb') as f:
-        return f.read(4) == b'\x7fELF'
-
-    return False
-
-
-def symbolize(string):
-    """ symbolize the string by replace non identifier char to '_'
-
-    :param string: the string to be symbolized
-    :return:
-    """
-    symbol = "".join(['_' if s in r"-.@:\\/" else s for s in string])
-    if not symbol.isidentifier():
-        raise SyntaxError('{} can not be converted to symbol.'.format(string))
-    return symbol
-
-
-def conandir(path):
-    """ conan short path probe
-
-    :param path:
-    :return:
-    """
-    if PLATFORM == 'Windows':
-        link = os.path.join(path, '.conan_link')
-        if os.path.exists(link):
-            from conans.util.files import load
-            path = load(link)
-    return path
-
-
 def get_workbench_dir(name=None):
     workbench = os.path.join(HOME_DIR, '.workbench')
     if not name or name in ['default']:
@@ -130,12 +98,7 @@ def get_workbench_dir(name=None):
     return None
 
 
-def banner_display_mode():
-    banner = os.getenv('EPM_BANNER_DISPLAY_MODE') or 'auto'
-    banner = banner.lower()
-    if banner in ['no', 'false', 'off', 'disable']:
-        banner = 'no'
-    return banner
+
 
 
 def conanfile_inspect(path, attributes=None):
@@ -146,39 +109,6 @@ def conanfile_inspect(path, attributes=None):
     conan = ConanAPI()
     return conan.inspect(path, attributes)
 
-
-def dict_get(value, *args):
-    _types = (dict, OrderedDict)
-    if not value or not isinstance(value, _types):
-        return None
-
-    result = value
-    n = len(args)
-    i = 0
-    while i < n:
-        result = result.get(args[i])
-        i += 1
-        if not isinstance(result, _types):
-            break
-    return result if i == n else None
-
-#
-#def jinja_render(context, template, module_dir='', outfile=None, trim_blocks=True):
-#    path = os.path.join(DATA_DIR, module_dir)
-#    env = Environment(loader=FileSystemLoader(path))
-#
-#    env.trim_blocks = trim_blocks
-#
-#    T = env.get_template(template)
-#    text = T.render(context)
-#    if outfile:
-#        path = os.path.abspath(outfile)
-#        folder = os.path.dirname(path)
-#        if not os.path.exists(folder):
-#            os.makedirs(folder)
-#        with open(path, 'w') as f:
-#            f.write(text)
-#    return text
 
 
 def abspath(path):

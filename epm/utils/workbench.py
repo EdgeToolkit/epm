@@ -14,7 +14,7 @@ from conans.client.tools import environment_append
 
 
 from epm import __version__, HOME_DIR
-from epm.utils import PLATFORM, banner_display_mode
+from epm.utils import PLATFORM
 
 from epm.errors import EException
 from epm.api import API
@@ -80,7 +80,14 @@ def banner(name=None):
 
     txt = logo.format(epm_version=__version__, docker_image=image, name=name)
 
-    if banner_display_mode() != 'no':
+    def _mode():
+        banner = os.getenv('EPM_BANNER_DISPLAY_MODE') or 'auto'
+        banner = banner.lower()
+        if banner in ['no', 'false', 'off', 'disable']:
+            banner = 'no'
+        return banner
+    
+    if _mode() != 'no':
         print(txt)
     return banner
 
