@@ -148,10 +148,13 @@ class Jinja2(object):
         path = abspath(self._dir or '.')
 
         env = Environment(loader=FileSystemLoader(path))
+        includes_loader = FileSystemLoader(path)
+        includes_env = Environment(loader=includes_loader)
 
         env.trim_blocks = trim_blocks
         self._add_filters(env)
         T = env.get_template(template)
+        T.environment = includes_env
         context = dict(self._context, **context)
         text = T.render(context)
         #if newline == '\n':
@@ -224,3 +227,17 @@ class ObjectView(object):
 
     def __contains__(self, name):
         return name in self.__dict
+
+def sequence_cast(value, sequence_type=list):
+    sequence_types = (list, set, tuple)
+    assert sequence_type in sequence_types
+    if isinstance(value, sequence_type):
+        return value
+    if isinstance(value, sequence_types):
+        return sequence_type(value)
+    if sequence_type == list:
+        return [value]
+    elif sequence_type == set:
+        return {value}
+    elif sequence_type == tuple:
+        return tuple([value])
