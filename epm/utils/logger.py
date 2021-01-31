@@ -53,6 +53,7 @@ class SysLog(object):
 
     def _attach_handle(self, logger):
         if self._handler is None:
+            mkdir(os.path.dirname(self.filename))
             formatter = logging.Formatter(self.FORMATTER)
             self._handler = logging.FileHandler(self.filename, mode='a')
             self._handler.setFormatter(formatter)
