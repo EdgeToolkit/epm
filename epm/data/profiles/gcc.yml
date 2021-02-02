@@ -208,7 +208,7 @@ gcc6-armv7:
   profile_host: gcc/5/armv7
   profile_build: gcc/5/x86_64
 
-gcc5-armv7d:
+gcc6-armv7d:
   docker:
     builder:
       image: edgetoolkit/gcc6-armv7
@@ -234,7 +234,7 @@ gcc6-armv8:
   profile_host: gcc/6/armv8
   profile_build: gcc/5/x86_64
 
-gcc5-armv8d:
+gcc6-armv8d:
   docker:
     builder:
       image: edgetoolkit/gcc6-armv8
@@ -250,7 +250,7 @@ gcc5-armv8d:
 # ================================================
 #          GNU GCC 7
 # ================================================
-gcc6:
+gcc7:
   docker:
     builder:
       image: edgetoolkit/gcc7
@@ -265,7 +265,7 @@ gcc6:
   profile_host: gcc/7/x86_64
   profile_build: gcc/5/x86_64
 
-gcc5d:
+gcc7d:
   docker:
     builder:
       image: edgetoolkit/gcc7
@@ -283,7 +283,7 @@ gcc5d:
 # ================================================
 #          GNU GCC 7 x86
 # ================================================
-gcc6-x86:
+gcc7-x86:
   docker:
     builder:
       image: edgetoolkit/gcc7-x86
@@ -300,7 +300,7 @@ gcc6-x86:
   profile_host: gcc/7/x86
   profile_build: gcc/5/x86
 
-gcc6-x86d:
+gcc7-x86d:
   docker:
     builder:
       image: edgetoolkit/gcc7-x86
@@ -322,7 +322,7 @@ gcc6-x86d:
 # ================================================
 #          GNU GCC 7 ARMv7
 # ================================================
-gcc6-armv7:
+gcc7-armv7:
   docker:
     builder:
       image: edgetoolkit/gcc7-armv7
@@ -333,7 +333,7 @@ gcc6-armv7:
   profile_host: gcc/5/armv7
   profile_build: gcc/5/x86_64
 
-gcc5-armv7d:
+gcc7-armv7d:
   docker:
     builder:
       image: edgetoolkit/gcc7-armv7
@@ -348,7 +348,7 @@ gcc5-armv7d:
 # ================================================
 #          GNU GCC 7 ARMv8 (aarch64)
 # ================================================
-gcc6-armv8:
+gcc7-armv8:
   docker:
     builder:
       image: edgetoolkit/gcc7-armv8
@@ -359,7 +359,7 @@ gcc6-armv8:
   profile_host: gcc/7/armv8
   profile_build: gcc/5/x86_64
 
-gcc5-armv8d:
+gcc7-armv8d:
   docker:
     builder:
       image: edgetoolkit/gcc7-armv8

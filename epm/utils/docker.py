@@ -19,9 +19,9 @@ class Volume(object):
 
     @property
     def volume4win(self):
-
-        source = pathlib.WindowsPath(self.source)
-        v = f"{source}:{self.destination}"
+        destination = pathlib.PurePath(self.destination).as_posix()
+        source = self.source.replace('/', "\\")
+        v = f"{source}:{destination}"
         return f"{v}:{self.option}" if self.option else v
 
 
@@ -53,9 +53,9 @@ class BuildDocker(_Docker):
 
         src = os.path.expanduser('~/.epm')
         dst = f"{self.home}/.epm"
-        if self.workbench:
-            src = os.path.join(src, '.workbench', self.workbench)
-            dst = f"{dst}/.workbench/{self.workbench}"
+        #if self.workbench:
+        #    src = os.path.join(src, '.workbench', self.workbench)
+        #    dst = f"{dst}/.workbench/{self.workbench}"
 
         self.volume.append(Volume(src, dst))
         self.volume.append(Volume(self.project.dir, self.cwd))
