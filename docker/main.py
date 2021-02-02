@@ -33,12 +33,12 @@ pip:
 """
 
 _NAMEs = ['conan-hisiv300', 'conan-hisiv400', 'conan-himix100',
-          'gcc5', 'gcc5-x86', 'gcc5-armv7', 'gcc5-armv8',
-          'gcc8', 'gcc8-x86', 'gcc8-armv7', 'gcc8-armv8',
+          'gcc5', 'gcc6', 'gcc7', 'gcc8',
+          'gcc5-armv7', 'gcc6-armv7', 'gcc7-armv7', 'gcc8-armv7',
+          'gcc5-armv8', 'gcc6-armv8', 'gcc7-armv8', 'gcc8-armv8',
           'hisiv300', 'hisiv400',
           'himix100'
           ]
-# 'gcc5-x86', NOT WORK
 
 def match(patterns):
     if isinstance(patterns, str):

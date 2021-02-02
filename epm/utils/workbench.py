@@ -196,7 +196,6 @@ def active(name):
     if config.conan.short_path:
         short_path = config.conan.short_path.replace('${workbench}', api.workbench_dir)
         env_vars['CONAN_USER_HOME_SHORT'] = short_path
-
     env_vars.update(config.environment)
 
     with environment_append(env_vars):

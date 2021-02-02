@@ -16,6 +16,8 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 import argparse
+import os
+from conans.tools import environment_append
 
 __all__ = ['Command', 'register_command', 'run', 'ArgparseArgument']
 
@@ -70,14 +72,14 @@ class Command:
             value = getattr(args, i, None)
             if value is not None:
                 result[i] = value
+            else:
+                env_var = os.getenv(f"EPM_{i}")
+                if env_var:
+                    result[i] = env_var
+                    print(f'use environment EPM_{i} = {env_var} for {i.lower}.')
         return result
 
 
-
-
-
-# dictionary with the list of commands
-# command_name -> command_instance
 _commands = {}
 
 
@@ -113,14 +115,13 @@ def run(command, args, out):
     if command not in _commands:
         raise FatalError('command not found')
 
-    # some command not need epm api
-    api = None
-    if command not in ['project', 'venv']:
-        from epm.api import API
-        import os
-        api = API(output=out)
-
-    return _commands[command].run(args, api)
+    from epm.api import API
+    workbench = args.WORKBENCH or os.getenv('EPM_WORKBENCH') or None
+    env_vars = {'EPM_WORKBENCH': workbench}
+    api = API(workbench=workbench, output=out)
+    env_vars.update(api.config.env_vars)
+    with environment_append(env_vars):
+        return _commands[command].run(args, api)
 
 
 class ArgparseArgument(object):

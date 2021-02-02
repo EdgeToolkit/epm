@@ -29,7 +29,7 @@ class Config(object):
 
     @property
     def environment(self):
-        return self._data.get('environment', {}) or {}
+        return self._data.get('environment') or {}
 
     def _parse_remotes(self, data):
         Remote = namedtuple('Remote', ['name', 'url', 'username', 'password'])

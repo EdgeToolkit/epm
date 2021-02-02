@@ -75,9 +75,7 @@ class BuildDocker(_Docker):
                          ('docker/build.cmd.j2', f"{out_dir}/build_docker.cmd"),
                          ('docker/build_command.sh.j2', f"{out_dir}/docker_build_command.sh")]:
             j2.render(src, outfile=dst)
-            #jinja_render(context, src, dst)
             os.chmod(dst, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-
         return out_dir
 
     def run(self, command):
