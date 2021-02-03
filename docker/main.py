@@ -14,7 +14,11 @@ from epm import __version__
 from epm.utils import ObjectView
 
 _NAMEs = ['conan-hisiv300', 'conan-hisiv400', 'conan-himix100',
+          'linaro-gcc5-armv7', 'linaro-gcc6-armv7', 'linaro-gcc7-armv7', 'linaro-gcc8-armv7',
+          'linaro-gcc5-armv8', 'linaro-gcc6-armv8', 'linaro-gcc7-armv8', 'linaro-gcc8-armv8',
+
           'gcc5', 'gcc6', 'gcc7', 'gcc8',
+
           'gcc5-armv7', 'gcc6-armv7', 'gcc7-armv7', 'gcc8-armv7',
           'gcc5-armv8', 'gcc6-armv8', 'gcc7-armv8', 'gcc8-armv8',
           'hisiv300', 'hisiv400',
@@ -35,13 +39,14 @@ def match(patterns):
 import re
 def build(name, version, config):
     GCC_ARM = re.compile(r'gcc(?P<version>\d+)\-(?P<armv>armv\d+)')
+    LINARO_GCC = re.compile(r'linaro-gcc(?P<version>\d+)\-(?P<armv>armv\d+)')
     context = {'profile': name, 'version': version, 'config': config}
 
     if name.startswith('conan-'):
         filename = name.replace('-', '/')
-    elif re.match(GCC_ARM, name):
+    elif name.startswith('linaro-'):
         filename = 'linaro'
-        m = re.match(GCC_ARM, name)
+        m = re.match(LINARO_GCC, name)
         print(m, m.groups(), m.group('armv'))
         context.update({'version': m.group('version'),
                         'arch': 'aarch64' if m.group('armv') == 'armv8' else 'arm'})
@@ -50,8 +55,6 @@ def build(name, version, config):
     elif name.startswith('hi'):
         filename = 'HiSi'
     from epm.utils import Jinja2
-
-
 
     j2 = Jinja2(f"{_DIR}/templates")
 
