@@ -6,7 +6,7 @@
 {%- set url = config.tarball[key]  -%}
 {%- set filename = url | basename -%}
 {%- set folder = filename | replace(".tar.xz","") -%}
-{%- set _PREFIX = arch + "-linux-gnu" -%}
+{%- set _PREFIX = "{}-linux-gnu{}".format(arch, 'eabi' if armv == 'armv7' else '') -%}
 {%- set TOOLS =  ['gcc', 'g++', 'strip', 'ranlib', 'as', 'ar', 'ld', 'gfortran'] %}
 FROM conanio/gcc8:{{config.conan.version}}
 
