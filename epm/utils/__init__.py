@@ -175,6 +175,7 @@ class Jinja2(object):
         context = dict(self._context, **context)
         return T.render(context)
 
+
 class ObjectView(object):
     """Object view of a dict, updating the passed in dict when values are set
     or deleted. "ObjectView" the contents of a dict...: """
@@ -227,6 +228,7 @@ class ObjectView(object):
 
     def __contains__(self, name):
         return name in self.__dict
+
 
 def sequence_cast(value, sequence_type=list):
     sequence_types = (list, set, tuple)

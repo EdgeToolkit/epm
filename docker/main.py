@@ -5,32 +5,13 @@ import argparse
 import yaml
 import subprocess
 import fnmatch
+from urllib.parse import urlparse
 
 _DIR = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, f"{_DIR}/..")
 
 from epm import __version__
 from epm.utils import ObjectView
-
-
-_CONFIG_TEMPLATE = """
-conan:
-  version: 1.31.2
-
-tarball:
-  hisiv300: http://<hostname>/archive/HiSilicon/GCC/arm-hisiv300-linux.tar.gz
-  hisiv400: http://<hostname>/archive/HiSilicon/GCC/arm-hisiv400-linux.tar.gz
-  hisiv500: http://<hostname>/archive/HiSilicon/GCC/arm-hisiv500-linux.tgz
-  hisiv600: http://<hostname>/archive/HiSilicon/GCC/arm-hisiv600-linux.tgz
-  himix100: http://<hostname>/archive/HiSilicon/GCC/arm-himix100-linux.tgz
-
-pip:
-  proxy: http://<hostname>:8888
-  # --index-url
-  index-url: http://<hostname>:8040/repository/pypi/simple
-  # pip --trusted-host
-  trusted-host: <hostname>
-"""
 
 _NAMEs = ['conan-hisiv300', 'conan-hisiv400', 'conan-himix100',
           'gcc5', 'gcc6', 'gcc7', 'gcc8',
@@ -51,23 +32,26 @@ def match(patterns):
                 break
     return result
 
-
+import re
 def build(name, version, config):
+    GCC_ARM = re.compile(r'gcc(?P<version>\d+)\-(?P<armv>armv\d+)')
+    context = {'profile': name, 'version': version, 'config': config}
+
     if name.startswith('conan-'):
         filename = name.replace('-', '/')
+    elif re.match(GCC_ARM, name):
+        filename = 'linaro'
+        m = re.match(GCC_ARM, name)
+        print(m, m.groups(), m.group('armv'))
+        context.update({'version': m.group('version'),
+                        'arch': 'aarch64' if m.group('armv') == 'armv8' else 'arm'})
     elif name.startswith('gcc'):
         filename = 'GCC'
     elif name.startswith('hi'):
         filename = 'HiSi'
     from epm.utils import Jinja2
 
-    pip_options = f"--proxy {config.pip.proxy}" if config.pip.proxy else ""
-    if config.pip.index_url:
-        pip_options += f" --index-url {config.pip.index_url}"
-    if config.pip.trusted_host:
-        pip_options += f" --trusted-host {config.pip.trusted_host}"
 
-    context = {'profile': name, 'version': version, 'config': config, 'pip_options': pip_options}
 
     j2 = Jinja2(f"{_DIR}/templates")
 
@@ -86,20 +70,43 @@ def main():
     parser.add_argument('--version', type=str, help="version of the image to build instead read from epm module.")
     parser.add_argument('--build', default=False, action="store_true", help="execute image build")
     parser.add_argument('--clear', default=False, action="store_true", help="clear exist image, if build")    
-    parser.add_argument('-c', '--config', default="~/config/docker-tools/config.yml",
+    parser.add_argument('-c', '--config', default=None,
                         help="config file path. YAML format example\n")
     args = parser.parse_args()
-    args.config = os.path.expanduser(args.config)
+#    args.config = os.path.expanduser(args.config)
     targets = match(args.name)
     print("Build ", ",".join(targets))
     if not targets:
         print("No images build. supported targets as below:")
         print("-- {}".format("\n-- ".join(_NAMEs)))
         return 0
+    path = args.config
+    if not path:
+        path = 'config.yml'
+        if not os.path.exists(path):
+            path = os.path.join(_DIR, 'config.yml')
+            if not os.path.exists(path):
+                raise Exception('Missing config.yml')
+    print("Using config file: {}".format(os.path.abspath(path)))
 
-    with open(args.config) as f:
+    with open(path) as f:
         data = yaml.safe_load(f)
-        data = dict({'pip': {'proxy': None, 'index-url': None, 'trusted-host': None}}, **data)
+        data = dict({'htt_proxy': None, 'pypi': None, 'archive_url': None,
+                     'tarball': {}}, **data)
+        archive_url = data['archive_url']
+        tarball = data['tarball']
+        if archive_url:
+            for k in tarball:
+                tarball[k] = tarball[k].replace("${", "{").format(**data)
+        pypi = data['pypi']
+        if pypi:
+            pip_options = f"--proxy {pypi}"
+            url = urlparse(pypi)
+            if url.scheme == 'http':
+                host = url.netloc.split(':')[0]
+                data['pypi_trusted_host'] = host
+                pip_options += f" --trusted-host {host}"
+            data['pip_options'] = pip_options
 
     config = ObjectView(data)
     for name in targets:
