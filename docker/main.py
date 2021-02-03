@@ -113,7 +113,7 @@ def main():
 
     config = ObjectView(data)
     for name in targets:
-        if name.startswith('conan-'):
+        if name.startswith('conan-') or name.startswith('linaro-'):
             version = config.conan.version
         else:
             version = args.version or __version__
