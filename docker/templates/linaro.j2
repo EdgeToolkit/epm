@@ -27,6 +27,7 @@ ENV CC={{ _PREFIX }}-gcc \
 RUN wget {{url}} \
     && tar -xvf {{ filename }} \
     && sudo mv {{ folder }} /opt/ \
+    && rm {{ filename }} \
 {%- for i in  TOOLS -%}
 {%- set name = "{}-{}".format(_PREFIX,i) %}
     && sudo update-alternatives --install /usr/bin/{{ name }} {{ name }} /opt/{{ folder }}/bin/{{ name }} 100 \
