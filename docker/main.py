@@ -100,7 +100,7 @@ def main():
 
     with open(path) as f:
         data = yaml.safe_load(f)
-        data = dict({'htt_proxy': None, 'pypi': None, 'archive_url': None,
+        data = dict({'http_proxy': None, 'pypi': None, 'archive_url': None,
                      'tarball': {}}, **data)
         archive_url = data['archive_url']
         tarball = data['tarball']
