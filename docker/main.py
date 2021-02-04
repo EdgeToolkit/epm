@@ -107,9 +107,11 @@ def main():
         if archive_url:
             for k in tarball:
                 tarball[k] = tarball[k].replace("${", "{").format(**data)
+        proxy = data['http_proxy']
         pypi = data['pypi']
+        pip_options = f"--proxy {proxy}" if proxy else ""
         if pypi:
-            pip_options = f"--proxy {pypi}"
+            pip_options = f"--index-url {pypi}"
             url = urlparse(pypi)
             if url.scheme == 'http':
                 host = url.netloc.split(':')[0]
