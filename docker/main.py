@@ -38,7 +38,7 @@ def match(patterns):
 
 import re
 def build(name, version, config):
-    GCC_ARM = re.compile(r'gcc(?P<version>\d+)\-(?P<armv>armv\d+)')
+    GCC_ARM = re.compile(r'^gcc(?P<version>\d+)\-(?P<armv>armv\d+)')
     LINARO_GCC = re.compile(r'linaro-gcc(?P<version>\d+)\-(?P<armv>armv\d+)')
     context = {'profile': name, 'version': version, 'config': config}
 
@@ -52,6 +52,12 @@ def build(name, version, config):
                         'arch': 'aarch64' if m.group('armv') == 'armv8' else 'arm'})
     elif name.startswith('gcc'):
         filename = 'GCC'
+        m = re.match(GCC_ARM, name)
+        if m:
+            filename = 'GCC-ARM'
+            context.update({'version': m.group('version'),
+                            'arch': 'aarch64' if m.group('armv') == 'armv8' else 'arm'})
+
     elif name.startswith('hi'):
         filename = 'HiSi'
     from epm.utils import Jinja2
