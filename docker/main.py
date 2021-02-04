@@ -111,7 +111,7 @@ def main():
         pypi = data['pypi']
         pip_options = f"--proxy {proxy}" if proxy else ""
         if pypi:
-            pip_options = f"--index-url {pypi}"
+            pip_options += f"--index-url {pypi}"
             url = urlparse(pypi)
             if url.scheme == 'http':
                 host = url.netloc.split(':')[0]
