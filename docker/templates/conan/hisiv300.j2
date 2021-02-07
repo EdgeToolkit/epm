@@ -1,0 +1,23 @@
+# Conan docker for HiSilicon v300 toolchain (GCC 4.8.3 uCLibc)
+# 
+#
+{% set _PREFIX = '/opt/arm-hisiv300-linux/bin/arm-hisiv300-linux-gnueabi' -%}
+FROM conanio/gcc8-x86:{{config.conan.version}}
+
+{% include "label.j2" %}
+
+ENV CC={{_PREFIX}}-gcc \
+    CXX={{_PREFIX}}-g++ \
+    STRIP={{_PREFIX}}-strip \
+    AS={{_PREFIX}}-as \
+    AR={{_PREFIX}}-ar \
+    LD={{_PREFIX}}-ld
+# use build mach ranlib instead of hisi RANLIB={{_PREFIX}}-gcc-ranlib \
+# arm-hisiv300-linux-gnueabi-gcc-ranlib: Cannot find plugin 'liblto_plugin.so'
+RUN cd /opt \
+    && sudo wget {{config.tarball.hisiv300}} \
+    && sudo tar -xvzf arm-hisiv300-linux.tar.gz \
+    && sudo chown -R conan:1001 /opt/arm-hisiv300-linux \
+    && sudo rm /opt/arm-hisiv300-linux.tar.gz \
+    && conan profile new default --detect \
+    && conan profile update settings.arch=armv7 default

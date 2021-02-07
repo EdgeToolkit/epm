@@ -1,0 +1,16 @@
+RUN    export CC=gcc                     \
+    && export CXX=g++                    \
+    && export CMAKE_C_COMPILER=gcc       \
+    && export CMAKE_CXX_COMPILER=g++     \
+    && export STRIP=strip                \
+    && export RANLIB=ranlib              \
+    && export AS=as                      \
+    && export AR=ar                      \
+    && export LD=ld                      \
+    && sudo pip uninstall -y conan-package-tools \
+    && mkdir /tmp/epm \
+    && tar -xvzf /tmp/epm.tar.gz -C /tmp/epm \
+    && export EPM_INSTALLATION_OPTIONS=disable-extend && sudo -E pip install {{config.pip_options}} /tmp/epm \
+    && sudo rm -rf /tmp/epm* \
+    && conan --version \
+    && epm --version

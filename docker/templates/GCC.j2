@@ -1,0 +1,8 @@
+{%- set name=profile -%}
+FROM conanio/{{name}}:{{config.conan.version}}
+
+{% include "label.j2" %}
+{% include "copy.j2" %}
+
+{% include "install.j2" %}
+

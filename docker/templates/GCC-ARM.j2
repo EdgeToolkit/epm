@@ -1,0 +1,8 @@
+{%- set name=profile -%}
+FROM edgetoolkit/linaro-{{name}}:{{config.conan.version}}
+
+{% include "label.j2" %}
+{% include "copy.j2" %}
+
+{% include "install-cross.j2" %}
+

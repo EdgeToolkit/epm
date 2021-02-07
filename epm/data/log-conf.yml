@@ -1,0 +1,52 @@
+version: 1
+disable_existing_loggers: False
+
+formatters:
+  simple:
+    format: "%(asctime)s - %(filename)s -%(levelname)s - %(message)s"
+
+handlers:
+    console:
+        class: logging.StreamHandler
+        level: DEBUG
+        formatter: simple
+        stream: ext://sys.stdout
+
+    simple_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: simple
+        filename: ./.epm/logs/epm.log
+        maxBytes: 64000
+        backupCount: 3
+        encoding: utf8
+
+    docker_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: simple
+        filename: ./.epm/logs/epm-docker.log
+        maxBytes: 64000
+        backupCount: 3
+        encoding: utf8
+
+    root_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: simple
+        filename: ./.epm/logs/logging-root.log
+        maxBytes: 64000
+        backupCount: 10
+        encoding: utf8
+loggers:
+    epm:
+        handlers: [simple_handler]
+        propagate: False
+    docker_epm:
+        handlers: [docker_handler]
+        propagate: False
+
+root:
+    level: INFO
+    handlers: [root_handler]
+    propagate: False

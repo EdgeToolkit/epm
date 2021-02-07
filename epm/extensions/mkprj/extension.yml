@@ -1,0 +1,64 @@
+name: mkprj
+namespace: epm
+version: 0.1
+description: |
+  Generate C/C++ project for epm project
+
+entry: main.py
+argument:
+  type:
+    type: str
+    enum: [lib, app]
+    help: project of type <lib> for library, 'app' for executable application.
+      
+  name:
+    type: str
+    default: "{{'.' | abspath | basename}}"
+    help: name of the epm project
+    
+  version:
+    type: str
+    default: '0.0.1'
+    help: version name of the epm project
+
+  out:
+    type: str
+    default: "{{'.' | abspath}}"
+    help: output directory  of the epm project to be generated.
+
+template:
+- package.yml
+- conanfile.py
+- LICENSE
+
+- CMakeLists.txt
+- src: cmake/options.cmake
+- src: cmake/{{argument.name}}-config.cmake.in
+  if: argument.type == 'lib'
+
+
+- src: include/{{argument.name}}/{{argument.name}}.h
+  if: argument.type == 'lib'
+
+- src: include/{{argument.name}}/declare.h
+  if: argument.type == 'lib'
+
+- src: source/{{argument.name}}.c
+  if: argument.type == 'lib'
+
+- src: source/main.c
+  if: argument.type == 'app'
+
+- src: test_package/test_package.cpp
+  if: argument.type == 'lib'
+  
+- src: test_package/CMakeLists.txt
+  if: argument.type == 'lib'
+
+- src: test_package/conanfile.py
+  if: argument.type == 'lib'
+
+
+
+
+- test_package/unittest
