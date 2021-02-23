@@ -15,6 +15,19 @@ from epm.utils import PLATFORM
 from epm.model.program import create_program
 
 
+def conandir(path):
+    """ conan short path probe
+
+    :param path:
+    :return:
+    """
+    if PLATFORM == 'Windows':
+        link = os.path.join(path, '.conan_link')
+        if os.path.exists(link):
+            from conans.util.files import load
+            path = load(link)
+    return path
+
 class Creator(Worker):
 
     def __init__(self, api=None):
@@ -43,7 +56,7 @@ class Creator(Worker):
                 docker.environment['CONAN_STORAGE_PATH'] = '%s/%s' % (docker.cwd, storage)
                 command += f" --storage {storage}"
             if archive:
-                command += f" --archive"
+                command += f" --archive {archive}"
             proc = docker.run(command)
             if proc.returncode:
                 raise Exception(f"[Docker] {command} failed.")
@@ -121,16 +134,15 @@ class Creator(Worker):
 
         mkdir(f"{root}/package")
         mkdir(f"{root}/export_source")
-        from epm.utils import conandir as _
 
+        _ = conandir
         shutil.copytree(_(pkg_dir), f"{root}/package/{pacage_id}")
         shutil.copytree(_(f"{rootpath}/export"), f"{root}/export")
 
 
 def _del(path):
     if os.path.isdir(path):
-        from epm.utils import conandir as _
-        rmdir(_(path))
+        rmdir(conandir(path))
     else:
         os.remove(path)
 
