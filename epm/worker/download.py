@@ -60,7 +60,7 @@ class Downloader(Worker):
                 pkgref = "{}#{}".format(pref.id, pref.revision) if pref.revision else pref.id
                 packages_list = [pkgref]
                 failed = True
-                for name in remotes.values():
+                for name in remotes:
                     try:
                         conan.download(reference=reference, packages=packages_list, remote_name=name)
                         failed = None
