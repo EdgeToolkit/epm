@@ -9,6 +9,7 @@ from conans.tools import environment_append, no_op
 from conans.model.info import ConanInfo, PackageReference
 from conans.util.files import load, mkdir, rmdir
 
+
 class Downloader(Worker):
 
     def __init__(self, api=None):
@@ -19,14 +20,15 @@ class Downloader(Worker):
         reference = param.get('reference')
         storage = param.get('storage')
         exclude = param.get('exclude') or []
+        remote = param.get('remote') or []
 
         with environment_append({'CONAN_STORAGE_PATH': os.path.abspath(storage)}) if storage else no_op():
             if is_deps:
-                self._download_deps(reference, exclude)
+                self._download_deps(remote, reference, exclude)
             else:
-                self._download_refs(reference)
+                self._download_refs(remote, reference)
 
-    def _download_deps(self, reference, exclude):
+    def _download_deps(self, remote, reference, exclude):
         if isinstance(reference, str):
             reference = [reference]
 
@@ -42,10 +44,8 @@ class Downloader(Worker):
 
         conan = self.api.conan
         conan.create_app()
-        remotes = conan.app.load_remotes()
-        print(remotes, '###########', remotes.items())
-        for remote in remotes.values():
-            print('#', remote.name)
+        remotes = remote or list(conan.app.load_remotes().values())
+
         for filename in conaninfos:
             conaninfo = ConanInfo.loads(load(filename))
             for pref in conaninfo.full_requires:
@@ -60,9 +60,9 @@ class Downloader(Worker):
                 pkgref = "{}#{}".format(pref.id, pref.revision) if pref.revision else pref.id
                 packages_list = [pkgref]
                 failed = True
-                for remote in remotes.values():
+                for name in remotes.values():
                     try:
-                        conan.download(reference=reference, packages=packages_list, remote_name=remote.name)
+                        conan.download(reference=reference, packages=packages_list, remote_name=name)
                         failed = None
                         break
                     except Exception as e:
@@ -70,6 +70,6 @@ class Downloader(Worker):
                 if failed:
                     raise failed
 
-    def _download_refs(self, reference):
+    def _download_refs(self, remote, reference):
         assert False
 
