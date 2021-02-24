@@ -12,7 +12,7 @@ class Download(Command):
 
     def __init__(self):
             args = [
-                ArgparseArgument("-r", "--remote", default=None, action="append"，
+                ArgparseArgument("-r", "--remote", default=None, action="append",
                                     help="the remote where package download from."),
 
                 ArgparseArgument("--storage", default=None,
