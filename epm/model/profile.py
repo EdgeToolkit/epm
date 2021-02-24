@@ -41,7 +41,8 @@ def install_buildin_profiles(cached=None):
     pr_dir = os.path.join(cached, 'profiles')
     mkdir(pr_dir)
     buildin = os.path.join(DATA_DIR, 'profiles')
-    for path in glob.glob('%s/*' % buildin):
+    for i in os.listdir(f'%s/{buildin}'):
+        path = os.path.join(buildin, i)
         name = os.path.basename(path)
         dst = os.path.join(pr_dir, name)
         if os.path.isfile(path):
