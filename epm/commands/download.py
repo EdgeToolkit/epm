@@ -23,6 +23,8 @@ class Download(Command):
 
                 ArgparseArgument("--exclude", default=list(), action="append", help=""),
 
+                ArgparseArgument("--only-deps", default=False, action='store_true', help=""),
+
             ]
             Command.__init__(self, args)
 
@@ -33,6 +35,7 @@ class Download(Command):
         param['storage'] = args.storage
         param['reference'] = args.reference
         param['exclude'] = args.exclude
+        param['deps'] = args.only_deps
 
         api.download(param)
 
