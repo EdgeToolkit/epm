@@ -34,10 +34,16 @@ _shell=$EPM_SANDBOX_SHELL
 _dshell=$EPM_SANDBOX_DOCKER_SHELL
 _dhome=$EPM_SADNBOX_DOCKER_HOME
 _dimage=$EPM_SANDBOX_DOCKER_IMAGE
+
 [ -z "$_storage" ] && _storage=$CONAN_STORAGE_PATH
 [ -z "$_storage" ] && _storage=~/.epm/.conan/data
 [ -z "$_runner"  ] && _runner='auto'
 [ -z "$_project" ] && _project=$PWD
+if [[ -z "$EPM_SANDBOX_ARCHIVE" ]]; then
+  _archive=$_storage
+else
+  _archive=$(cd $_archive && pwd)
+fi
 
 # ---------------------------------------------------------
 # if not set shell use /bin/bash or /bin/sh
@@ -95,7 +101,7 @@ _mount()
 {
   sandbox_dir=$1
   storage=$2
-  pkg_dir=$3
+  this=$3
 
   $_sudo rm -rf $sandbox_dir
   $_sudo mkdir -p -m 777 $sandbox_dir
@@ -107,7 +113,7 @@ _mount()
   # link {{project.name}} package libraries to sandbox
   # -------------------------------------------------------
 {% for lib in libs or [] %}
-  ln -s ${pkg_dir}/{{lib}} $sandbox_dir/lib/{{lib}}
+  ln -s ${this}/{{lib}} $sandbox_dir/lib/{{lib}}
 {% endfor %}
 {% endif %}
 
@@ -171,7 +177,7 @@ _docker_exec()
 set -e
 
 if [ "$_runner" = "shell" ]; then
-  _mount $_home/.sandbox $_storage $EPM_SANDBOX_PACKAGE_DIR
+  _mount $_home/.sandbox $_storage $_archive
 {% if command == 'create' %}
   export LD_LIBRARY_PATH=$_home/.sandbox/lib:$LD_LIBRARY_PATH
 {% else %}
