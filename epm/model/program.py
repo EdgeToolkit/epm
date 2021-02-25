@@ -119,7 +119,11 @@ class Executable(object):
         from conans.util.files import load, mkdir
         conaninfo = ConanInfo.loads(load(conaninfo_path))
         libs, deps = self._parse_dynamic_libs(conaninfo)
+        libdirs = set([os.path.dirname(x) for x in libs])
+        depdirs = set([os.path.dirname(x) for x in deps])
+        from collections import namedtuple
         context = {'libs': libs, 'deps': deps, 'package_id': package_id or '',
+                   'dirs': namedtuple('D', 'lib, dep')(libdirs, depdirs),
                    'project': project, 'program': program, 'executable': self,
                    'filename': path, 'where': where,
                    'command': 'create' if package_id else 'build'

@@ -68,7 +68,7 @@ class Command:
 
     def parameter(self, args):
         result = {}
-        for i in ['PROFILE', 'SCHEME', 'RUNNER']:
+        for i in ['PROFILE', 'SCHEME', 'RUNNER', 'STORAGE']:
             value = getattr(args, i, None)
             if value is not None:
                 result[i] = value
@@ -99,7 +99,6 @@ def load_commands(subparsers):
         try:
             __import__('epm.commands.%s' % name)
         except ImportError as e:
-            #m.warning("Error importing command %s:\n %s" % (name, e))
             print("Error importing command %s:\n %s" % (name, e))
 
     for command in _commands.values():

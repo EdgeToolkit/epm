@@ -8,7 +8,7 @@ from conans.util.files import mkdir
 from conans.client.conan_api import ConanAPIV1 as ConanAPI, api_method as conan_api_method
 from conans.client.output import colorama_initialize
 from conans.client.userio import UserIO as UserIO
-from conans.client.tools import environment_append
+from conans.client.tools import environment_append, no_op
 
 from epm.worker.build import Builder
 from epm.worker.sandbox import Sandbox
@@ -23,7 +23,7 @@ from epm.worker.download import Downloader
 from epm import HOME_DIR, DATA_DIR
 from epm.model.runner import Output
 from epm.errors import EException
-
+from epm.utils import abspath
 
 CONAN_FOLDER_NAME = '.conan'
 
@@ -156,7 +156,7 @@ class _APIv0(APIUtils):
 
         self._conan = None
         self._config = None
-        self.env_vars = {}
+        self.env_vars = {'CONAN_REVISIONS_ENABLED': '1'}
 
     def project(self, profile, scheme=None):
         from epm.model.project import Project
@@ -197,13 +197,15 @@ class _APIv0(APIUtils):
     @api_method
     @request_profile
     def exec(self, param):
-        project = self.project(param['PROFILE'], param.get('SCHEME'))
-
+        storage = param.get('STORAGE') or None
         command = param['name']
         argv = param.get('args') or []
         runner = param.get('RUNNER', None)
+
         from epm.model.program import exec_program
-        return exec_program(project, command, runner=runner, argv=argv)
+        with environment_append({'CONAN_STORAGE_PATH': abspath(storage)}) if storage else no_op():
+            project = self.project(param['PROFILE'], param.get('SCHEME'))
+            return exec_program(project, command, runner=runner, argv=argv)
 
     @api_method
     def runit(self, param):
@@ -220,12 +222,12 @@ class _APIv0(APIUtils):
     def runx(self, param):
         command = param['command']
         argv = param.get('args') or []
-
-        project = self.project(param.get('PROFILE'), param.get('SCHEME'))
-        runx = RunX(command, project, self)
-        runner = param.get('RUNNER', None)
-
-        return runx.exec(runner=runner, argv=argv)
+        storage = param.get('STORAGE') or None
+        with environment_append({'CONAN_STORAGE_PATH': abspath(storage)}) if storage else no_op():
+            project = self.project(param.get('PROFILE'), param.get('SCHEME'))
+            runx = RunX(command, project, self)
+            runner = param.get('RUNNER', None)
+            return runx.exec(runner=runner, argv=argv)
 
     @api_method
     def load_config(self, update=True):

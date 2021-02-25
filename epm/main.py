@@ -24,6 +24,7 @@ _DESCRIPTION = 'Embedded-system package manager for C/C++ development base on co
 _PROFILE_HELP = 'Profile of the target package, this required in build/create/sandbox/upload command'
 _SCHEME_HELP = 'Scheme of the target package'
 _RUNNER_HELP = 'Runner of the command used to execute/process'
+_STORAGE_HELP = 'relative path to current directory or absolute path to replace workbench or epm conan storage'
 _WORKBENCH_HELP = 'Workbench of the command runing on it'
 _PROLOG = """
     ***************************************************************************
@@ -59,7 +60,9 @@ class Main(object):
         self.parser.add_argument('-p', '--profile', dest='PROFILE', type=str, default=None, help=_PROFILE_HELP)
         self.parser.add_argument('-s', '--scheme', dest='SCHEME', type=str, default=None, help=_SCHEME_HELP)
         self.parser.add_argument('-r', '--runner', dest='RUNNER', type=str, default=None, help=_RUNNER_HELP)
-        self.parser.add_argument('-w', '--workbench', dest='WORKBENCH', type=str, default=None, help=_WORKBENCH_HELP)
+        self.parser.add_argument('--storage', dest='STORAGE', type=str, default=None, help=_STORAGE_HELP)
+        self.parser.add_argument('--workbench', dest='WORKBENCH', type=str, default=None, help=_WORKBENCH_HELP)
+
 
     def parse_arguments(self, args):
         ''' Parse the command line arguments '''

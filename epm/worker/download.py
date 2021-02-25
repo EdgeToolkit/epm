@@ -16,31 +16,24 @@ class Downloader(Worker):
         super(Downloader, self).__init__(api)
 
     def exec(self, param):
-        is_deps = param.get('deps')
         reference = param.get('reference')
         storage = param.get('storage')
         exclude = param.get('exclude') or []
         remote = param.get('remote') or []
 
         with environment_append({'CONAN_STORAGE_PATH': os.path.abspath(storage)}) if storage else no_op():
-            if is_deps:
-                self._download_deps(remote, reference, exclude)
+            if os.path.exists(reference):
+                self._download_according_conaninfo(remote, reference, exclude)
             else:
                 self._download_refs(remote, reference)
 
-    def _download_deps(self, remote, reference, exclude):
-        if isinstance(reference, str):
-            reference = [reference]
-
-        conaninfos = []
-        for pattern in reference:
-            if os.path.isdir(pattern):
-                conaninfos += glob.glob(f"{pattern}/conaninfo.txt")
-                conaninfos += glob.glob(f"{pattern}/**/conaninfo.txt", recursive=True)
-            elif os.path.isfile(pattern):
-                conaninfos = [pattern]
-            else:
-                conaninfos += glob.glob(f"{pattern}/conaninfo.txt")
+    def _download_according_conaninfo(self, remote, reference, exclude):
+        pattern = reference
+        if os.path.isdir(pattern):
+            conaninfos = glob.glob(f"{pattern}/conaninfo.txt")
+            conaninfos += glob.glob(f"{pattern}/**/conaninfo.txt", recursive=True)
+        elif os.path.isfile(pattern):
+            conaninfos = [pattern]
 
         conan = self.api.conan
         conan.create_app()

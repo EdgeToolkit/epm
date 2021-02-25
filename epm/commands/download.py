@@ -7,7 +7,7 @@ class Download(Command):
     """
 
     name = 'download'
-    help = 'Dowload package.'
+    help = 'Dowload package according reference or conaninfo.txt deps.'
     prog = 'epm [-p PROFILE] [-s SCHEME] [-r RUNNER] %s' % name
 
     def __init__(self):
@@ -18,12 +18,9 @@ class Download(Command):
                 ArgparseArgument("--storage", default=None,
                                     help="upload the local conan cache "),
 
-                ArgparseArgument("--reference", default=None,
-                                 help=""),
+                ArgparseArgument("--reference", default=None, help=""),
 
                 ArgparseArgument("--exclude", default=list(), action="append", help=""),
-
-                ArgparseArgument("--only-deps", default=False, action='store_true', help=""),
 
             ]
             Command.__init__(self, args)
@@ -35,7 +32,6 @@ class Download(Command):
         param['storage'] = args.storage
         param['reference'] = args.reference
         param['exclude'] = args.exclude
-        param['deps'] = args.only_deps
 
         api.download(param)
 
