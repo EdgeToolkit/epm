@@ -91,9 +91,10 @@ class BuildDocker(_Docker):
             raise Exception(f'Unsupported platform <{PLATFORM}>')
         from conans.tools import environment_append
         with environment_append({'EPM_WORKBENCH': self.workbench}):
-            syslog.flush()
-            #syslog.close()
+            #syslog.flush()
+            syslog.close()
             print(command)
             proc = subprocess.run(command)
+            syslog.open('========== docker command done ===============')
         return proc
 

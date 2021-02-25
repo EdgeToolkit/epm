@@ -65,7 +65,7 @@ class Scheme(object):
                 ref = str(self.requires.get(name))
                 options, deps = get_scheme_options(scheme, ref, settings, conan, profile=self._project.profile)
                 self._reqs_options[name] = options
-                self._reqs_options.update(deps)
+                self._reqs_options.update(dict(deps))
 
         return self._reqs_options
 

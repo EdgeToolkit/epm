@@ -40,7 +40,6 @@ class Main(object):
         prolog = _PROLOG.format(version=__version__, command=" ".join(args))
         name = os.getenv('EPM_RUNNING_SYSTEM') or "epm"
         syslog.open(name, prolog=prolog)
-        syslog.info("test")
 
         color = colorama_initialize()
         self.out = out or Output(sys.stdout, sys.stderr, color)
