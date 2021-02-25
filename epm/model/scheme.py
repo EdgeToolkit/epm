@@ -65,8 +65,6 @@ class Scheme(object):
                 ref = str(self.requires.get(name))
                 options, deps = get_scheme_options(scheme, ref, settings, conan, profile=self._project.profile)
                 self._reqs_options[name] = options
-                print('A:', deps)
-                print('B:', dict(deps))
                 self._reqs_options.update(dict(deps))
 
         return self._reqs_options
@@ -155,7 +153,6 @@ def get_scheme_options(scheme, reference, settings, conan, requires=None, profil
     conanfile, instance = conanfile_instance(conan, reference, profile)
     manifest = getattr(conanfile, '__meta_information__', None)
     if not manifest:
-        print('**********************X')
         return {k: v for k, v in instance.options.items()}, {}
 
     mdata = manifest.get('scheme', {}).get(scheme) or {}
@@ -169,7 +166,6 @@ def get_scheme_options(scheme, reference, settings, conan, requires=None, profil
 
     reqs_options = {}
     deps = get_dep_scheme(scheme, mdata, requires, settings, options, profile=profile)
-    print("#.deps", reference, '->', deps)
 
     for name, sch in deps.items():
         ref = requires[name]
@@ -177,9 +173,6 @@ def get_scheme_options(scheme, reference, settings, conan, requires=None, profil
         if isinstance(ref, Requirement):
             ref = str(ref.ref)
         o, po = get_scheme_options(sch, ref, settings, conan, profile=profile)
-        print("*", ref)
-        print("|- ", o)
-        print("|- ", po)
         reqs_options[name] = o
         reqs_options.update(po)
 

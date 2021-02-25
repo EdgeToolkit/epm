@@ -37,7 +37,7 @@ class Downloader(Worker):
 
         conan = self.api.conan
         conan.create_app()
-        remotes = remote or list(conan.app.load_remotes().values())
+        remotes = remote or [x.name for x in conan.app.load_remotes().values()]
 
         for filename in conaninfos:
             conaninfo = ConanInfo.loads(load(filename))

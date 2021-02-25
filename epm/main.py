@@ -101,7 +101,7 @@ class Main(object):
         except Exception as e:
             res = self._error(e)
         finally:
-            pass
+            syslog.close()
 
         if res:
             sys.exit(res)

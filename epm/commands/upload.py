@@ -25,7 +25,6 @@ class Upload(Command):
             Command.__init__(self, args)
 
     def run(self, args, api):
-        print("###################################################")
         param = self.parameter(args)
 
         param['remote'] = args.remote
