@@ -18,7 +18,7 @@ class Download(Command):
 #                ArgparseArgument("--storage", default=None,
 #                                    help="upload the local conan cache "),
 
-                ArgparseArgument("--reference", default=None, help=""),
+                ArgparseArgument("--reference", required=True, help=""),
 
                 ArgparseArgument("--exclude", default=list(), action="append", help=""),
 
