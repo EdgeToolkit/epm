@@ -18,11 +18,11 @@
 # !!! MAKE SURE you are in project directory
 #    epm sandbox --profile {{ profile.name }} {{ '--scheme %s' % scheme.name if scheme.name else '' }} {{ name }}
 ###########################################################
-set EPM_SANDBOX_PACKAGE_NAME={{project.name}}
-set EPM_SANDBOX_PACKAGE_VERSION={{project.version}}
-set EPM_SANDBOX_PACKAGE_REFERENCE={{project.reference}}
-set EPM_SANDBOX_PACKAGE_REFERENCE_DIR={{project.reference.dir_repr()}}
-set EPM_SANDBOX_PACKAGE_ID={{package_id}}
+EPM_SANDBOX_PACKAGE_NAME={{project.name}}
+EPM_SANDBOX_PACKAGE_VERSION={{project.version}}
+EPM_SANDBOX_PACKAGE_REFERENCE={{project.reference}}
+EPM_SANDBOX_PACKAGE_REFERENCE_DIR={{project.reference.dir_repr()}}
+EPM_SANDBOX_PACKAGE_ID={{package_id}}
 
 _runner=$EPM_SANDBOX_RUNNER
 _storage=$EPM_SANDBOX_STORAGE
