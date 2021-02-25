@@ -108,21 +108,22 @@ _mount()
   mkdir -p $sandbox_dir/lib
   mkdir -p $sandbox_dir/bin
 
+libpath=
 {% if command == 'create' and libs %}
   # -------------------------------------------------------
   # link {{project.name}} package libraries to sandbox
   # -------------------------------------------------------
-{% for lib in libs or [] %}
-  ln -s ${this}/{{lib}} $sandbox_dir/lib/{{lib}}
+{% for lib in dirs.lib or [] %}
+    libpath=${this}/{{lib}}:$libpath
 {% endfor %}
 {% endif %}
 
 
-{% for lib in deps or [] %}
-  # -------------------------------------------------------
-  # {{project.name}} package depend libraries
-  # -------------------------------------------------------
-  ln -s ${storage}/{{lib}} $sandbox_dir/lib/{{lib}}
+{% for lib in dirs.dep or [] %}
+    # -------------------------------------------------------
+    # {{project.name}} package depend libraries
+    # -------------------------------------------------------
+    libpath=${storage}/{{lib}}:$libpath
 {% endfor %}
 
 
@@ -179,7 +180,7 @@ set -e
 if [ "$_runner" = "shell" ]; then
   _mount $_home/.sandbox $_storage $_archive
 {% if command == 'create' %}
-  export LD_LIBRARY_PATH=$_home/.sandbox/lib:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$libpath:$LD_LIBRARY_PATH
 {% else %}
   _prj_out=$_project/{{project.folder.out}}
   export LD_LIBRARY_PATH=$_prj_out/build/lib:$_prj_out/package/lib:$_home/.sandbox/lib:$LD_LIBRARY_PATH
