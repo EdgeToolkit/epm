@@ -46,8 +46,10 @@ class BuildDocker(_Docker):
         self.project = project
 
         docker = self.project.profile.docker.builder
+        prefix = os.getenv('EPM_DOCKER_BUILDER_IMAGE_PREFIX') or ''
+
         self.home = docker['home']
-        self.image = docker['image']
+        self.image = prefix + docker['image']
         self.shell = docker['shell']
         self.cwd = f"{self.home}/project"
 
@@ -91,7 +93,6 @@ class BuildDocker(_Docker):
             raise Exception(f'Unsupported platform <{PLATFORM}>')
         from conans.tools import environment_append
         with environment_append({'EPM_WORKBENCH': self.workbench}):
-            #syslog.flush()
             syslog.close()
             proc = subprocess.run(command)
             syslog.open('========== docker command done ===============')
