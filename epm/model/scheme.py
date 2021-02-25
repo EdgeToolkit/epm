@@ -65,6 +65,8 @@ class Scheme(object):
                 ref = str(self.requires.get(name))
                 options, deps = get_scheme_options(scheme, ref, settings, conan, profile=self._project.profile)
                 self._reqs_options[name] = options
+                print('A:', deps)
+                print('B:', dict(deps))
                 self._reqs_options.update(dict(deps))
 
         return self._reqs_options
@@ -153,7 +155,8 @@ def get_scheme_options(scheme, reference, settings, conan, requires=None, profil
     conanfile, instance = conanfile_instance(conan, reference, profile)
     manifest = getattr(conanfile, '__meta_information__', None)
     if not manifest:
-        return {k: v for k, v in instance.options.items()}
+        print('**********************X')
+        return {k: v for k, v in instance.options.items()}, {}
 
     mdata = manifest.get('scheme', {}).get(scheme) or {}
     scheme_options = mdata.get('options') or {}
