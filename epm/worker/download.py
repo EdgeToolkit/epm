@@ -17,7 +17,7 @@ class Downloader(Worker):
 
     def exec(self, param):
         reference = param.get('reference')
-        storage = param.get('storage')
+        storage = param.get('STORAGE')
         exclude = param.get('exclude') or []
         remote = param.get('remote') or []
 

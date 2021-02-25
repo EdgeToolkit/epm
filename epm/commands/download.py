@@ -15,8 +15,8 @@ class Download(Command):
                 ArgparseArgument("-r", "--remote", default=None, action="append",
                                     help="the remote where package download from."),
 
-                ArgparseArgument("--storage", default=None,
-                                    help="upload the local conan cache "),
+#                ArgparseArgument("--storage", default=None,
+#                                    help="upload the local conan cache "),
 
                 ArgparseArgument("--reference", default=None, help=""),
 
@@ -29,7 +29,7 @@ class Download(Command):
         param = self.parameter(args)
 
         param['remote'] = args.remote
-        param['storage'] = args.storage
+#        param['storage'] = args.storage
         param['reference'] = args.reference
         param['exclude'] = args.exclude
 

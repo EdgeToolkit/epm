@@ -18,8 +18,8 @@ class Upload(Command):
                 ArgparseArgument("-r", "--remote", default=None,
                                     help="the remote where upload to, if not specified,"
                                          "upload to `group` defined in package.yml"),
-                ArgparseArgument("--storage", default=None,
-                                    help="upload the local conan cache "),
+#                ArgparseArgument("--storage", default=None,
+#                                    help="upload the local conan cache "),
 
                 ]
             Command.__init__(self, args)
@@ -29,7 +29,7 @@ class Upload(Command):
         param = self.parameter(args)
 
         param['remote'] = args.remote
-        param['storage'] = args.storage
+#        param['storage'] = args.storage
 
         api.upload(param)
 

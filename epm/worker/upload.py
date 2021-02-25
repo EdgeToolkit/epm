@@ -15,7 +15,7 @@ class Uploader(Worker):
 
         profile = param.get('PROFILE')
         scheme = param.get('SCHEME')
-        storage = param.get('storage')
+        storage = param.get('STORAGE')
 
         project = self.api.project(profile, scheme)
         package_id = project.record.get('package_id')
