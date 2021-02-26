@@ -140,7 +140,7 @@ gcc6:
   profile_host: gcc/6/x86_64
   profile_build: gcc/5/x86_64
 
-gcc5d:
+gcc6d:
   docker:
     builder:
       image: edgetoolkit/gcc6
@@ -494,11 +494,6 @@ gcc8-armv8d:
     GNU GCC 8 build profile for aarch64 Linux (DEBUG).
   profile_host: gcc/8/debug/armv8
   profile_build: gcc/8/x86_64
-
-
-
-
-
 
 
 
