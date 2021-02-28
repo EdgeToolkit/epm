@@ -27,6 +27,7 @@ def If(expr, settings, options, conanfile=None, profile=None):
     cross_build = None
     if conanfile:
         cross_build = cross_building(conanfile.settings, skip_x64_x86=True)
+
     elif profile:
         cross_build = True
         host = profile.host.settings
@@ -40,6 +41,7 @@ def If(expr, settings, options, conanfile=None, profile=None):
                     build['arch'] in ['x86_64', 'x86'] and \
                     host['arch'] in ['x86_64', 'x86']:
                 cross_build = False
+    print('conanfile:', conanfile, 'cross_build:', cross_build)
     assert cross_build is not None
 
     symbol = {'cross_build': cross_build}
