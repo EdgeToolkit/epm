@@ -59,8 +59,10 @@ def If(expr, settings, options, conanfile=None, profile=None):
     symbol.update(options or {})
     from epm.utils.yacc.condition import Yacc
     yacc = Yacc(symbol)
+    print('SYMBOL', symbol)
 
     result = yacc.parse(expr)
+    print('@', __file__, result)
     return result
 
 
