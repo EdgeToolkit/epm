@@ -285,11 +285,12 @@ def build_program(project, target=None):
                 for e in program.executable:
                     e.generate()
 
-def create_program(project):
+def create_program(project, target=None):
     for program in Program.load(project):
-        program.build()
-        for e in program.executable:
-            e.generate()
+        if target is None or program.name == target:
+            program.build()
+            for e in program.executable:
+                e.generate()
 
 
 def guess_runner(project, runner):

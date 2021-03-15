@@ -26,7 +26,7 @@ class Volume(object):
 
 
 class _Docker(object):
-    enviroment = {}
+    environment = {}
 
     volume = []
     image = None

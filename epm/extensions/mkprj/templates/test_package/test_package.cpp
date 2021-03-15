@@ -2,7 +2,7 @@
 {% set version = argument.version %}
 {% set id = name.replace('-', '_') %}
 #include <stdio.h>
-#include <liba/liba.h>
+#include <{{name}}/{{name}}.h>
 
 int main(){
     printf("{{name}} %s\n", {{id}}_version());

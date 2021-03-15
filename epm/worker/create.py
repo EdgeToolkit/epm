@@ -39,6 +39,7 @@ class Creator(Worker):
         clear = param.get('clear', False)
         storage = param.get('storage', None)
         archive = param.get('archive', None)
+        program = param['program']
 
         if runner == 'auto':
             runner = 'docker' if project.profile.docker.builder else 'shell'
@@ -72,9 +73,9 @@ class Creator(Worker):
                 rmdir(os.path.join(project.dir, storage))
 
             with environment_append(dict(self.api.config.env_vars, **env_vars)):
-                self._exec(project)
-                build_tests(project)
-                Generator.build(project, True)
+                self._exec(project, program)
+#                build_tests(project)
+#                Generator.build(project, True)
 
             if archive:
                 rmdir(archive)
@@ -83,8 +84,42 @@ class Creator(Worker):
             if clear:
                 clearer = Cleaner(project, storage)
                 clearer.clear(storage=bool(storage))
+    
+    def _build_package(self, project):
+        conan = self.api.conan
+        scheme = project.scheme
 
-    def _exec(self, project):
+        project.setup()
+        path = project.abspath
+        for i in conan.editable_list():
+            conan.editable_remove(i)
+        info = self.conan.create(project.dir,
+                                 name=project.name,
+                                 version=project.version,
+                                 user=project.user,
+                                 channel=project.channel,
+                                 settings=None,
+                                 options=scheme.as_list(),
+                                 profile_names=[path.profile_host],
+                                 profile_build=project.profile.build,
+                                 test_folder=False)
+                         
+        if info['error']:
+            raise EConanException('create package failed.', info)
+
+        id = info.get('installed')[0].get('packages')[0]['id']
+        result = {'id': id}
+        project.record.set('package_id', id)
+        return result
+                 
+    def _exec(self, project, program=None):
+        print('program:',program)
+        if program is None or program == 'disable':
+            self._build_package(project)
+        if program != 'disable':
+            create_program(project, program)
+        
+    def __exec(self, project):
 
         conan = self.api.conan
         scheme = project.scheme

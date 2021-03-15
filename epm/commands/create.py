@@ -23,12 +23,20 @@ class Create(Command):
                                     help="clear local cache of .conan in project"),
 
                 ArgparseArgument("--archive", default=None, help="archive the package to specified path"),
+                
+                ArgparseArgument("--program", default=None, type=str, 
+                                    help="this option only use for test/debug program. if the program specifed"
+                                         "only run building of pargram (which in program.location), the package"
+                                         "creatation should be done. if --program disable all program will not"
+                                         "be build"),
+                
 
             ]
             Command.__init__(self, args)
 
     def run(self, args, api):
         param = self.parameter(args)
+        param['program'] = args.program
         if args.storage:
             param['storage'] = args.storage
 
