@@ -50,8 +50,11 @@ def _load_manifest(filename):
 def _mirror():
     rule = os.getenv('EPM_MIRROR_RULES')
     if rule:
-        mirorr = Mirror(rule)
-        mirorr.hack_conan_download()
+        try:
+            mirorr = Mirror(rule)
+            mirorr.hack_conan_download()
+        except:
+            
     
 def as_package(klass):
     manifest = 'package.yml'

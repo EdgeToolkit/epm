@@ -9,19 +9,28 @@ from conans.client.tools import net
 
 from epm import HOME_DIR
 from epm.utils import get_workbench_dir
-
+conan_download = net.download
 
 class Mirror(object):
     Repo = False
     Packages = set()
 
-    def __init__(self, filename):
-        self._filename = os.path.abspath(filename)
-        with open(self._filename) as f:
-            self._config = yaml.safe_load(f)
+    def __init__(self, url):        
+        self._config = self._load_rule(url)
         self._package = self._config.get('package') or dict()
 
         self._property = self._config.get('property') or dict()
+    
+    def _load_rule(url):
+        filename = url
+        if url.starts.with('http://') or url.starts.with('http://'):
+            filename = '.mirror.yml'
+            net.download(url, filename)
+        self._filename = os.path.abspath(filename)
+        with open(self._filename) as f:
+            return yaml.safe_load(f)    
+        
+        
 
     def find(self, url):
         for name in self.Packages:
@@ -124,7 +133,7 @@ class Mirror(object):
         return Mirror.Repo
 
 
-conan_download = net.download
+
 
 
 def register_mirror(mirror):
