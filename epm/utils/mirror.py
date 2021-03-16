@@ -23,7 +23,7 @@ class Mirror(object):
     
     def _load_rule(url):
         filename = url
-        if url.starts.with('http://') or url.starts.with('http://'):
+        if url.startswith('http://') or url.startswith('http://'):
             filename = '.mirror.yml'
             net.download(url, filename)
         self._filename = os.path.abspath(filename)

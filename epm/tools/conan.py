@@ -54,6 +54,9 @@ def _mirror():
             mirorr = Mirror(rule)
             mirorr.hack_conan_download()
         except:
+            print(e)
+            import traceback
+            traceback.print_tb(e.__traceback__)
             
     
 def as_package(klass):
