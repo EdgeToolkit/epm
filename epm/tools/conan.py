@@ -15,13 +15,13 @@ from epm.utils.mirror import Mirror
 
 generator_classes = {'pkg-config.legacy': PkgConfigGenerator}
 
-
-def _conanfile_hacking(minfo, generator=None):
-    name = minfo['name']
-
-    mirror = Mirror.load()
-    if mirror:
-        mirror.register(name)
+#
+#def _conanfile_hacking(minfo, generator=None):
+#    name = minfo['name']
+#
+#    mirror = Mirror.load()
+#    if mirror:
+#        mirror.register(name)
 
 
 def _ConanfileEx(klass):
@@ -47,7 +47,12 @@ def _load_manifest(filename):
         minfo['version'] = str(minfo['version'])
     return minfo
 
-
+def _mirror():
+    rule = os.getenv('EPM_MIRROR_RULES')
+    if rule:
+        mirorr = Mirror(rule)
+        mirorr.hack_conan_download()
+    
 def as_package(klass):
     manifest = 'package.yml'
 
@@ -61,7 +66,7 @@ def as_package(klass):
     exports = [manifest]
     class_name = "{}-{}".format(name, uuid.uuid4())
 
-    _conanfile_hacking(minfo)
+    _mirror()
 
     member = dict(name=name, version=version, exports=exports,
                   __meta_information__=minfo)
@@ -112,8 +117,8 @@ def as_program(klass):
     version = str(__meta_information__.get('version'))
     class_name = "{}-{}".format(name, uuid.uuid4())
 
-    _conanfile_hacking(minfo)
-
+    _mirror()
+    
     member = dict(name=name, version=version, __meta_information__=minfo)
 
     # workaround
