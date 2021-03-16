@@ -116,7 +116,10 @@ class Creator(Worker):
         print('program:',program)
         if program is None or program == 'disable':
             self._build_package(project)
-        if program != 'disable':
+        if project.profile.host.settings['os'] == 'iOS':
+            self.out.info("skip program building, NOT support in iOS for now :-).")
+            return
+        if program != 'disable' and project.profile.host:
             create_program(project, program)
         
     def __exec(self, project):

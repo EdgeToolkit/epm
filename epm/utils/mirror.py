@@ -134,50 +134,11 @@ class Mirror(object):
 
 
 
-
-
-def register_mirror(mirror):
-
-    def download(url, filename, **kwargs):
-
-        urls = []
-        if isinstance(url, (list, tuple)):
-            for i in url:
-                real_url = None
-                try:
-                    real_url = mirror.find(i)
-                    if real_url:
-                        print('[mirror] {} -> {}'.format(i, real_url))
-                except Exception as e:
-                    print(e)
-                    import traceback
-                    traceback.print_tb(e.__traceback__)
-
-                urls.append(real_url or i)
-        else:
-            real_url = mirror.find(url)
-            if real_url:
-                print('[mirror] {} -> {}'.format(url, real_url))
-            urls = real_url or url
-        conan_download(urls, filename, **kwargs)
-
-    net.download = download
-
-
-
-
-def unregister_mirror():
-    net.download = conan_download
-
-
-
 class Mirror(object):
     
     
-    def __init__(self, filename):
-        self._filename = os.path.abspath(filename)
-        with open(self._filename) as f:
-            self._config = yaml.safe_load(f)
+    def __init__(self, url):
+        self._config = self._load_rule(url)
         self._mirror = self._config.pop('.mirror', None)
         
         rules = []
@@ -197,7 +158,18 @@ class Mirror(object):
                 obj = namedtuple('X', 'base parser fnmatch')(base, parser, fnmatch)
                 rules.append(obj)
         self._rules = rules
-    
+
+    def _load_rule(self, url):
+        filename = url
+        if url.startswith('http://') or url.startswith('http://'):
+            filename = '.mirror.yml'
+            if os.path.exists(filename):
+                os.remove(filename)
+            net.download([url], filename)
+        self._filename = os.path.abspath(filename)
+        with open(self._filename) as f:
+            return yaml.safe_load(f) 
+
     def get(self, url):
         mirror = os.getenv('EPM_MIRROR_BASE_URL', None) or self._mirror
         if not mirror:
@@ -226,14 +198,17 @@ class Mirror(object):
     
     def hack_conan_download(self):
         def _download(url, filename, **kwargs):
-            urls = [url]
+            print('------------>>>>>url', url)
+            origin = [url]
             if isinstance(url, (list, tuple)):
-                urls = list(url)
+                origin = list(url)
+            print('------------>>>>>urls', origin)    
+
             urls = [] #list(url)    
-            for i in list(url):
+            for i in origin:
                 real_url = None
                 try:
-                    real_url = self.get(url)
+                    real_url = self.get(i)
                     if real_url:
                         print('[mirror] {} -> {}'.format(i, real_url))
                 except Exception as e:
