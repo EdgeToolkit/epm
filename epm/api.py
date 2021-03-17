@@ -156,7 +156,7 @@ class _APIv0(APIUtils):
 
         self._conan = None
         self._config = None
-        self.env_vars = {'CONAN_REVISIONS_ENABLED': '1'}
+        self.env_vars = {}
 
     def project(self, profile, scheme=None):
         from epm.model.project import Project

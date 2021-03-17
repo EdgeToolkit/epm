@@ -16,6 +16,7 @@ class Uploader(Worker):
         scheme = param.get('SCHEME')
         storage = param.get('STORAGE')
         remote = param.get('remote', None)
+        env_vars = {}
         if storage:
             env_vars = {'CONAN_STORAGE_PATH': abspath(storage)}
 

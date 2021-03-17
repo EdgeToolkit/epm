@@ -198,11 +198,9 @@ class Mirror(object):
     
     def hack_conan_download(self):
         def _download(url, filename, **kwargs):
-            print('------------>>>>>url', url)
             origin = [url]
             if isinstance(url, (list, tuple)):
                 origin = list(url)
-            print('------------>>>>>urls', origin)    
 
             urls = [] #list(url)    
             for i in origin:
