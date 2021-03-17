@@ -24,7 +24,7 @@ from epm.model.config import Config
 
 
 
-_LOGO = '''
+_LOGO = r'''
 
                                   M
                                  ' `
@@ -49,7 +49,7 @@ _LOGO_DOCKER = r'''
  /_____/_/   /_/  /_/          ## ## ## ## ##    ===          
                            /"""""""""""""""""\___/ ===        
  ~~~~~~~~~~~~~~~~~~~~~~~~~ {{~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~ 
-                            \______ o           __/            
+                             \______ o           __/            
                               \    \         __/               
                                \____\_______/ {docker_image:<16}
 '''
@@ -76,7 +76,7 @@ def banner(name=None):
     image = os.getenv('EPM_DOCKER_IMAGE') or ''
     logo = _DOCKER if image else _LOGO
 
-    name = name or os.getenv('EPM_WORKBENCH')
+    name = name or os.getenv('EPM_WORKBENCH') or ''
 
     txt = logo.format(epm_version=__version__, docker_image=image, name=name)
 
@@ -170,7 +170,7 @@ _RCFILE = r'''
 export PS1='\[\033[01;32m\]\u@\h - workbench - {name}\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\n\$ '
 '''
 #subprocess.call("(dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell", shell=True)
-def active(name):
+def active(name, dry_run=False):
     if name:
 
         path = os.path.join(HOME_DIR, '.workbench', name)
@@ -214,6 +214,9 @@ def active(name):
         print(' {:>16}: {}'.format('storage', os.getenv('CONAN_STORAGE_PATH')))
         print(' {:>16}: {}'.format('short_path', os.getenv('CONAN_USER_HOME_SHORT')))
         print('\n')
+        
+        if dry_run:
+            return
 
         if win:
             subprocess.run(['cmd.exe', '/k', filename])
