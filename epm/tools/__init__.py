@@ -32,8 +32,6 @@ def If(expr, settings, options, conanfile=None, profile=None):
         cross_build = True
         host = profile.host.settings
         build = profile.read_build_profile().settings
-        print('Host:', host)
-        print('Build:', build)
         if host['os'] == build['os']:
             if host['arch'] == build['arch']:
                 cross_build = False

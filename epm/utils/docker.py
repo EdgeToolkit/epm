@@ -44,7 +44,7 @@ class BuildDocker(object):
 
         src = os.path.expanduser('~/.epm')
         if self.workbench:
-            src = f'{src}/{self.workbench}'
+            src = f'{src}/.workbench/{self.workbench}'
         dst = f"{self.home}/.epm"
 
         self.volume.append(Volume(src, dst))

@@ -9,7 +9,6 @@ sudo -E docker run --rm \
 {% for v in docker.volume -%}
     -v {{v.volume}} \
 {% endfor -%}
-    -e EPM_WORKBENCH=${EPM_WORKBENCH} \
     -e EPM_DOCKER_IMAGE={{docker.image}} \
 {% for name, value in docker.environment.items() -%}
     -e {{name}}:{{value}} \

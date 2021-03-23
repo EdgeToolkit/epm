@@ -79,7 +79,7 @@ def main():
     parser.add_argument('--version', type=str, help="version of the image to build instead read from epm module.")
     parser.add_argument('--build', default=False, action="store_true", help="execute image build")
     parser.add_argument('--clear', default=False, action="store_true", help="clear exist image, if build")    
-    parser.add_argument('-c', '--config', default=None,
+    parser.add_argument('-c', '--config', default=f'{_DIR}/config.yml',
                         help="config file path. YAML format example\n")
     args = parser.parse_args()
 #    args.config = os.path.expanduser(args.config)

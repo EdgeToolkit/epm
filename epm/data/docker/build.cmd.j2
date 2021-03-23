@@ -3,7 +3,6 @@ set _VOLUME=
 set _VOLUME=%_VOLUME% -v {{ v.volume4win }}
 {% endfor -%}
 
-set _ENVIROMENT=-e EPM_WORKBENCH=%EPM_WORKBENCH%
 set _ENVIROMENT=-e EPM_DOCKER_IMAGE={{docker.image}} %_ENVIROMENT%
 {% for name, value in docker.environment.items() -%}
 set _ENVIROMENT=-e {{name}}={{value}} %_ENVIROMENT%
