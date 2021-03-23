@@ -131,7 +131,7 @@ class Workbench(Command):
     def __init__(self):
             args = [
                 ArgparseArgument("name_or_subcommand", nargs='*' ,
-                                  help="Active workbench or instal/list/display workbench(s) see usage."),
+                                  help="Active workbench or install/list/display workbench(s) see usage."),
                 ]
             Command.__init__(self, args)
         

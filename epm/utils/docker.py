@@ -25,20 +25,9 @@ class Volume(object):
         return f"{v}:{self.option}" if self.option else v
 
 
-class _Docker(object):
-    environment = {}
-
+class BuildDocker(object):
+    environment = {}    
     volume = []
-    image = None
-    cwd = None
-    workbench = None
-
-    def __init__(self):
-        pass
-
-
-class BuildDocker(_Docker):
-    ENVIRONMENT = ['EPM_WORKBENCH']
 
     def __init__(self, project, workbench=None):
         super().__init__()
@@ -51,13 +40,12 @@ class BuildDocker(_Docker):
         self.home = docker['home']
         self.image = prefix + docker['image']
         self.shell = docker['shell']
-        self.cwd = f"{self.home}/project"
+        self.cwd = f"{self.home}/project/{self.project.name}"
 
         src = os.path.expanduser('~/.epm')
+        if self.workbench:
+            src = f'{src}/{self.workbench}'
         dst = f"{self.home}/.epm"
-        #if self.workbench:
-        #    src = os.path.join(src, '.workbench', self.workbench)
-        #    dst = f"{dst}/.workbench/{self.workbench}"
 
         self.volume.append(Volume(src, dst))
         self.volume.append(Volume(self.project.dir, self.cwd))
@@ -69,6 +57,7 @@ class BuildDocker(_Docker):
 
         context = {'docker': self, 'workbench': self.workbench or '',
                    'script_dir': pathlib.PurePath(out_dir).as_posix(),
+                   'project': self.project,
                    'command': command}
         from epm.utils import Jinja2
         from epm import DATA_DIR

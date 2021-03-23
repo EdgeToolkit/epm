@@ -51,7 +51,7 @@ class Creator(Worker):
             if project.scheme and project.scheme.name:
                 command += f" --scheme {project.scheme.name}"
             command += f" create"
-            docker.enviroment['EPM_RUNNING_SYSTEM'] = 'docker'
+            docker.environment['EPM_RUNNING_SYSTEM'] = 'docker'
 
             if storage:
                 docker.environment['CONAN_STORAGE_PATH'] = '%s/%s' % (docker.cwd, storage)
