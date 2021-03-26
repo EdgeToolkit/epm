@@ -196,10 +196,19 @@ class Workbench(Command):
         from epm.utils import workbench
         workbench.install(path)
     def _list(self, param):
-        wd = os.path.expanduser('~/.epm/.workbench')    
-        for i in os.listdir(wd):
-            if os.path.exists(f"{wd}/{i}/config.yml"):
-                print(i)
+        from epm import HOME_DIR
+        wd = os.path.join(HOME_DIR, '.workbench')
+        workbenchs = []
+        if os.path.exists(wd):
+            for i in os.listdir(wd):
+                if os.path.exists(f"{wd}/{i}/config.yml"):
+                    workbenchs.append(i)
+        if workbenchs:
+            for i in workbenchs:
+                print(f"  {i}")
+        else:
+            print('No workbench installed.')
+            
     def _desc(self, param):
         print('Not implemented')
         
