@@ -1,6 +1,6 @@
 #
 # The following part is for run and --ruuner options
 #
-paramiko>=2.5
-psutil
+#paramiko>=2.5
+#psutil
 
