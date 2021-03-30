@@ -1,0 +1,14 @@
+set _VOLUME=
+{% for v in docker.volume -%}
+set _VOLUME=%_VOLUME% -v {{ v.volume4win }}
+{% endfor -%}
+
+set _ENVIROMENT=-e EPM_DOCKER_IMAGE={{docker.image}} %_ENVIROMENT%
+{% for name, value in docker.environment.items() -%}
+set _ENVIROMENT=-e {{name}}={{value}} %_ENVIROMENT%
+{% endfor -%}
+
+set _ARGV=%_VOLUME% %_ENVIROMENT%
+set _ARGV=%_ARGV% -w {{docker.cwd}} {{docker.image}}
+docker run --rm  %_ARGV% {{docker.shell}} {{script_dir}}/docker_build_command.sh
+

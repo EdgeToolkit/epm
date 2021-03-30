@@ -1,0 +1,37 @@
+# Linaro Toolchain for ARM Linux
+# https://www.linaro.org/downloads/
+# https://blog.csdn.net/tanli20090506/article/details/71435777
+{%- set key="linaro-{}-{}".format(version, arch) -%}
+{%- set armv= 'armv8' if arch == 'aarch64' else 'armv7'   %}
+{%- set url = config.tarball[key]  -%}
+{%- set filename = url | basename -%}
+{%- set folder = filename | replace(".tar.xz","") -%}
+{%- set _PREFIX = "{}-linux-gnu{}".format(arch, 'eabi' if armv == 'armv7' else '') -%}
+{%- set TOOLS =  ['gcc', 'g++', 'strip', 'ranlib', 'as', 'ar', 'ld', 'gfortran'] %}
+FROM conanio/gcc7:{{config.conan.version}}
+
+{% include "label.j2" %}
+
+ENV CC={{ _PREFIX }}-gcc \
+    CXX={{ _PREFIX }}-g++ \
+    CMAKE_C_COMPILER={{ _PREFIX }}-gcc \
+    CMAKE_CXX_COMPILER={{ _PREFIX }}-g++ \
+    STRIP={{ _PREFIX }}-strip \
+    RANLIB={{ _PREFIX }}-ranlib \
+    AS={{ _PREFIX }}-as \
+    AR={{ _PREFIX }}-ar \
+    LD={{ _PREFIX }}-ld \
+    FC={{ _PREFIX }}-gfortran
+
+
+RUN wget {{url}} \
+    && tar -xvf {{ filename }} \
+    && sudo mv {{ folder }} /opt/ \
+    && rm {{ filename }} \
+{%- for i in  TOOLS -%}
+{%- set name = "{}-{}".format(_PREFIX,i) %}
+    && sudo update-alternatives --install /usr/bin/{{ name }} {{ name }} /opt/{{ folder }}/bin/{{ name }} 100 \
+{%- endfor %}
+    && conan profile new default --detect \
+    && conan profile update settings.arch={{ armv }} default
+

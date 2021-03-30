@@ -1,0 +1,26 @@
+conan:
+  version: 1.34.0
+
+archive_url: http://172.16.0.119/archive
+#http_proxy: http://172.16.0.119:8888
+pypi: http://172.16.0.121:8040/repository/pypi/simple
+
+tarball:
+  hisiv300: ${archive_url}/HiSilicon/GCC/arm-hisiv300-linux.tar.gz
+  hisiv400: ${archive_url}/HiSilicon/GCC/arm-hisiv400-linux.tar.gz
+  hisiv500: ${archive_url}/HiSilicon/GCC/arm-hisiv500-linux.tgz
+  hisiv600: ${archive_url}/HiSilicon/GCC/arm-hisiv600-linux.tgz
+  himix100: ${archive_url}/HiSilicon/GCC/himix100/aarch64-himix100-linux.tar.bz2
+
+  linaro-5-arm: ${archive_url}/linaro/5/gcc-linaro-5.5.0-2017.10-x86_64_arm-linux-gnueabi.tar.xz
+  linaro-6-arm: ${archive_url}/linaro/6/gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabi.tar.xz
+  linaro-7-arm: ${archive_url}/linaro/7/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabi.tar.xz
+  linaro-8-arm: ${archive_url}/linaro/8.2/gcc-arm-8.2-2019.01-x86_64-arm-linux-gnueabi.tar.xz
+
+  linaro-5-aarch64: ${archive_url}/linaro/5/gcc-linaro-5.5.0-2017.10-x86_64_aarch64-linux-gnu.tar.xz
+  linaro-6-aarch64: ${archive_url}/linaro/6/gcc-linaro-6.2.1-2016.11-x86_64_aarch64-linux-gnu.tar.xz
+  linaro-7-aarch64: ${archive_url}/linaro/7/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu.tar.xz
+  linaro-8-aarch64: ${archive_url}/linaro/8.2/gcc-arm-8.2-2019.01-x86_64-aarch64-linux-gnu.tar.xz
+
+
+
