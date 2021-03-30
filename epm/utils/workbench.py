@@ -135,8 +135,8 @@ def install(origin, name=None):
     if not P.match(name):
         raise Exception(f'Invalid workbench format <{name}>')
 
-    instd = os.path.join(HOME_DIR, '.workbench', name)
-    if os.path.exists(instd):
+    instd = HOME_DIR if name == 'global' else os.path.join(HOME_DIR, '.workbench', name)
+    if name != 'global' and os.path.exists(instd):
         raise Exception(f"workbench<{name}> already installed.")
 
     shutil.copytree(folder, dst=instd)
@@ -151,6 +151,7 @@ def install(origin, name=None):
             conan.remote_add(remote.name, remote.url, verify_ssl=False)
             if remote.username:
                 conan.user_set(remote.username, remote.name)
+                
     if config_changed:
         path = os.path.join(instd, 'config.yml')
         with open(path, 'w') as f:
