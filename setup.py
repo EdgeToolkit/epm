@@ -35,9 +35,9 @@ project_requirements = get_requires("epm/requirements.txt")
 #    print('This epm only do build in native.')
 #    print('===================================================')
 
-#if platform.system() == "Darwin":
-#    project_requirements.extend(get_requires("epm/requirements_osx.txt"))
-#dev_requirements = get_requires("epm/requirements_dev.txt")
+if platform.system() == "Darwin":
+    project_requirements.extend(get_requires("epm/requirements_osx.txt"))
+dev_requirements = get_requires("epm/requirements_dev.txt")
 
 # The tests utils are used by conan-package-tools
 exclude_test_packages = []
