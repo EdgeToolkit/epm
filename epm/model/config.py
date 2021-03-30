@@ -65,4 +65,8 @@ class Config(object):
 
     def get(self, section, default=None):
         return self._data.get(section, default)
+    
+    @property
+    def data(self):
+        return self._data
 

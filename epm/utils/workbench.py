@@ -128,16 +128,16 @@ def install(origin, name=None):
     folder = _cache(origin)
     config = Config(os.path.join(folder, 'config.yml'))
     
-    if name:
-        config.workbench.name = name
+    config_changed = bool(name and name != config.workbench.name)
+    name = name or config.workbench.name
 
     P = re.compile(r'[\w\d\-\.]+')    
-    if not P.match(config.workbench.name):
+    if not P.match(name):
         raise Exception(f'Invalid workbench format <{name}>')
 
-    instd = os.path.join(HOME_DIR, '.workbench', config.workbench.name)
+    instd = os.path.join(HOME_DIR, '.workbench', name)
     if os.path.exists(instd):
-        raise Exception(f"workbench<{config.workbench.name}> already installed.")
+        raise Exception(f"workbench<{name}> already installed.")
 
     shutil.copytree(folder, dst=instd)
     conand = os.path.join(instd, '.conan')
@@ -151,11 +151,13 @@ def install(origin, name=None):
             conan.remote_add(remote.name, remote.url, verify_ssl=False)
             if remote.username:
                 conan.user_set(remote.username, remote.name)
-    if name:
+    if config_changed:
         path = os.path.join(instd, 'config.yml')
         with open(path, 'w') as f:
             import yaml
-            yaml.dump(config, f)
+            data = config.data
+            data['workbench']['name'] = name
+            yaml.dump(data, f)
 
     banner(name)
 
