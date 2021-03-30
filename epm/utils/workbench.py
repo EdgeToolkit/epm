@@ -1,6 +1,7 @@
 
 import os
 import sys
+import re
 
 import urllib
 import shutil
@@ -121,45 +122,41 @@ def _cache(path):
     return folder
 
 
-def install(origin, editable=False, out=None):
+def install(origin, name=None):
     from epm.model.config import Config
     mkdir(os.path.join(HOME_DIR, '.workbench'))
     out = out or Output(sys.stdout, sys.stderr, color=True)
     folder = _cache(origin)
     config = Config(os.path.join(folder, 'config.yml'))
-
-    name = config.workbench.name
-    import re
     
+    if name:
+        config.workbench.name = name
+
     P = re.compile(r'[\w\d\-\.]+')    
-    if not P.match(name):
+    if not P.match(config.workbench.name):
         raise Exception(f'Invalid workbench format <{name}>')
 
-    instd = os.path.join(HOME_DIR, '.workbench', name)
+    instd = os.path.join(HOME_DIR, '.workbench', config.workbench.name)
     if os.path.exists(instd):
-        for i in range(1, 100):
-            path = instd + str(i)
-            if not os.path.exists(path):
-                instd = path
-                out.warn('{} workbench already installed install as {}{}'.format(name, name, i))
-                break
-
-    if editable:
-        with open(instd, 'w') as f:
-            f.write(folder)
-        return
+        raise Exception(f"workbench<{config.workbench.name}> already installed.")
 
     shutil.copytree(folder, dst=instd)
     conand = os.path.join(instd, '.conan')
-    mkdir(conand)
-
-    from conans.client.conan_api import ConanAPIV1 as ConanAPI
-    conan = ConanAPI(conand)
-    conan.remote_clean()
-    for remote in config.conan.remotes:
-        conan.remote_add(remote.name, remote.url, verify_ssl=False)
-        if remote.username:
-            conan.user_set(remote.username, remote.name)
+    remote_file = os.path.join(conand, "remote.json")
+    if not os.path.exists(conand) or not os.path.exists(remote_file):
+        mkdir(conand)
+        from conans.client.conan_api import ConanAPIV1 as ConanAPI
+        conan = ConanAPI(conand)
+        conan.remote_clean()
+        for remote in config.conan.remotes:
+            conan.remote_add(remote.name, remote.url, verify_ssl=False)
+            if remote.username:
+                conan.user_set(remote.username, remote.name)
+    if name:
+        path = os.path.join(instd, 'config.yml')
+        with open(path, 'w') as f:
+            import yaml
+            yaml.dump(config, f)
 
     banner(name)
 
