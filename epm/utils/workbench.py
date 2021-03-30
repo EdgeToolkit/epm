@@ -125,7 +125,6 @@ def _cache(path):
 def install(origin, name=None):
     from epm.model.config import Config
     mkdir(os.path.join(HOME_DIR, '.workbench'))
-    out = out or Output(sys.stdout, sys.stderr, color=True)
     folder = _cache(origin)
     config = Config(os.path.join(folder, 'config.yml'))
     
