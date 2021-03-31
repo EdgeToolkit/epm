@@ -138,7 +138,7 @@ def install(origin, name=None):
     instd = HOME_DIR if name == 'global' else os.path.join(HOME_DIR, '.workbench', name)
     if name != 'global' and os.path.exists(instd):
         raise Exception(f"workbench<{name}> already installed.")
-
+    rmdir(instd)
     shutil.copytree(folder, dst=instd)
     conand = os.path.join(instd, '.conan')
     remote_file = os.path.join(conand, "remote.json")
