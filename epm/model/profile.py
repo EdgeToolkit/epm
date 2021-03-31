@@ -38,9 +38,12 @@ def install_buildin_profiles(cached=None):
     if glob.glob('%s/profiles/*.yml' % cached):
         return
 
-    pr_dir = os.path.join(cached, 'profiles')
-    mkdir(pr_dir)
+    pr_dir = os.path.join(cached, 'profiles')    
     buildin = os.path.join(DATA_DIR, 'profiles')
+    rmdir(pr_dir)
+    shutil.copytree(path, dst)
+    return
+
     for i in os.listdir(buildin):
         path = os.path.join(buildin, i)
         name = os.path.basename(path)
