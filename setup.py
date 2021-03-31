@@ -125,8 +125,8 @@ setup(
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     package_data={
-        'epm': ['*.txt', 
-        'data/*/*/*', 'data/*/*', 'data/*/*', 'data/*',
+        'epm': ['*.txt',  'data/**',
+        #'data/*/*/*/*'，'data/*/*/*', 'data/*/*', 'data/*',
         'extensions/*/*/*', 'extensions/*/*', 'extensions/*/*', 'extensions/*'
         #'test/data/*/*/*', 'test/data/*/*', 'test/data/*/*', 'test/data/*'
         ]
