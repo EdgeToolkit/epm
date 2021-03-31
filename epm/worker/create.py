@@ -35,7 +35,7 @@ class Creator(Worker):
 
     def exec(self, param):
         project = self.api.project(param['PROFILE'], param.get('SCHEME'))
-        runner = param.get('RUNNER') or 'auto'
+        runner = param.get('RUNNER') or os.getenv('EPM_RUNNER') or 'auto'
         clear = param.get('clear', False)
         storage = param.get('storage', None)
         archive = param.get('archive', None)

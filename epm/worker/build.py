@@ -40,7 +40,7 @@ class Builder(Worker):
 
         step = param.get('step')
         program = param.get('program')
-        runner = param.get('RUNNER') or 'auto'
+        runner = param.get('RUNNER') or os.getenv('EPM_RUNNER') or 'auto'
 
         if runner == 'auto':
             runner = 'docker' if project.profile.docker.builder else 'shell'
