@@ -48,6 +48,7 @@ def install_buildin_profiles(cached=None):
         if os.path.isfile(path):
             shutil.copy(path, dst)
         else:
+            print('profile tree', path, '->',dst)
             shutil.copytree(path, dst)
 
 
