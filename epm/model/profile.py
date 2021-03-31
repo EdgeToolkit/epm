@@ -9,7 +9,7 @@ from epm.utils.logger import syslog
 
 from collections import namedtuple
 
-from conans.tools import mkdir
+from conans.tools import mkdir, rmdir
 
 from conans.client.profile_loader import read_profile
 from conans.client.conan_api import ProfileData
