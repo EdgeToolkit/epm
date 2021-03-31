@@ -45,6 +45,7 @@ def install_buildin_profiles(cached=None):
         path = os.path.join(buildin, i)
         name = os.path.basename(path)
         dst = os.path.join(pr_dir, name)
+        print(i,'*', path, ' isfile:',os.path.isfile(path))
         if os.path.isfile(path):
             shutil.copy(path, dst)
         else:
