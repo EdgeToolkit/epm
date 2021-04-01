@@ -88,6 +88,7 @@ def main():
     if not targets:
         print("No images build. supported targets as below:")
         print("-- {}".format("\n-- ".join(_NAMEs)))
+        print(f"your specified {args.name}")
         return 0
     path = args.config
     if not path:
