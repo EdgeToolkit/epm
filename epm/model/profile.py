@@ -41,6 +41,7 @@ def install_buildin_profiles(cached=None):
     pr_dir = os.path.join(cached, 'profiles')    
     buildin = os.path.join(DATA_DIR, 'profiles')
     rmdir(pr_dir)
+    print(buildin , '->', pr_dir)
     shutil.copytree(buildin, pr_dir)
     return
 

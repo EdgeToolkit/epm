@@ -40,7 +40,7 @@ def If(expr, settings, options, conanfile=None, profile=None):
                     host['arch'] in ['x86_64', 'x86']:
                 cross_build = False
     
-    assert cross_build is not None
+    #assert cross_build is not None
     syslog.debug(f"\nIf: {expr} \nsettings={settings}\n options={options}\n conanfile={conanfile}\n profile={profile}")
 
     symbol = {'cross_build': cross_build}
@@ -53,7 +53,7 @@ def If(expr, settings, options, conanfile=None, profile=None):
     if isinstance(options, Options):
         options = {'options.%s' % k: v for (k, v) in options.values.as_list()}
     else:
-        options = {'options.%s' % k: v for (k, v) in options.items()}
+        options = {'options.%s' % k: v for (k, v) in options.items()} if options else {}
 
     symbol.update(options or {})
     from epm.utils.yacc.condition import Yacc
