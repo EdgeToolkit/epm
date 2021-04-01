@@ -14,7 +14,8 @@ class Uploader(Worker):
     def exec(self, param):
         profile = param.get('PROFILE')
         scheme = param.get('SCHEME')
-        storage = param.get('STORAGE')
+        
+        storage = param.get('storage')
         remote = param.get('remote', None)
         env_vars = {} #{'CONAN_REVISIONS_ENABLED': '1'}
         if storage:

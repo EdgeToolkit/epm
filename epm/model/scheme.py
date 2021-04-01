@@ -2,7 +2,7 @@ import copy
 from epm.tools import create_requirements, create_build_tools
 from epm.tools import parse_multi_expr
 from epm.api import conanfile_instance
-
+from epm.utils.logger import syslog
 
 class Scheme(object):
 
@@ -11,7 +11,15 @@ class Scheme(object):
         self._project = project
         self._manifest = project.__meta_information__ or {}
         self._mdata = self._manifest.get('scheme') or {}
-        self._mdata = self._mdata.get(self._name) or {}
+
+        if self._name is None:
+            if self._manifest.get('scheme'):
+                raise Exception(f'No scheme spcified!')
+        else:
+            if self._name not in self._manifest.get('scheme'):
+                raise Exception(f'{self._name} is not defined in scheme.')
+
+        self._mdata = self._mdata.get(self._name) or {}        
         self._deps = None
         self._options = None
         self._full_options = None
@@ -49,6 +57,7 @@ class Scheme(object):
             scheme_options = self._mdata.get('options') or {}
             for k, v in self.instance.options.items():
                 options[k] = scheme_options[k] if k in scheme_options else default_options[k]
+            syslog.debug(f"\nfulloptions: \ndefault_opitons:{default_options}\nscheme_options:{scheme_options} options:{options}")
             self._full_options = options
         return self._full_options
 
@@ -122,11 +131,14 @@ def get_dep_scheme(default, scheme, requires, settings, options, profile=None):
 
     :return:
     """
+    syslog.debug(f"get_dep_scheme: {requires}")
 
     result = {}
     for requirement in requires.values():
         name = requirement.ref.name
         expr = scheme.get(name)
+        syslog.debug(f"requirement: {name} expr:{expr}")
+        
 
         if not expr:
             result[name] = default

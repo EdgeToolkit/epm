@@ -44,8 +44,11 @@ class SysLog(object):
     @property
     def logger(self):
         if self._logger is None:
+            level = os.getenv('EPM_LOG_LEVEL') or ""
+            level = logging._nameToLevel.get(level.upper()) or logging.INFO
+            
             logger = logging.getLogger(self._name)
-            logger.setLevel(level=logging.INFO)
+            logger.setLevel(level=level)
             self._logger = logger
             self._attach_handle(self._logger)
         return self._logger

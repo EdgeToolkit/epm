@@ -23,6 +23,8 @@ class Create(Command):
                                     help="clear local cache of .conan in project"),
 
                 ArgparseArgument("--archive", default=None, help="archive the package to specified path"),
+                ArgparseArgument("--with-deps", dest="with_deps", default=False, action='store_true',
+                                 help="archive the dependent packages, this option vaild on --archive set."),
                 
                 ArgparseArgument("--program", default=None, type=str, 
                                     help="this option only use for test/debug program. if the program specifed"
@@ -45,6 +47,9 @@ class Create(Command):
 
         if args.archive:
             param['archive'] = args.archive
+            
+        if args.with_deps:
+            param['with_deps'] = args.with_deps
 
         api.create(param)
 

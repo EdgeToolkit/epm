@@ -37,21 +37,28 @@ if NOT "%EPM_SANDBOX_DOCKER_IMAGE%" == "" set _DIMAGE=%EPM_SANDBOX_DOCKER_IMAGE%
 if NOT "%EPM_SANDBOX_DOCKER_SHELL%" == "" set _DSHELL=%EPM_SANDBOX_DOCKER_SHELL%
 if NOT "%EPM_SANDBOX_DOCKER_HOME%" == "" set _DHOME=%EPM_SANDBOX_DOCKER_HOME%
 
-if not defined EPM_SANDBOX_PROJECT set EPM_SANDBOX_PROJECT=%CD%
+REM guess storage path if not set EPM_SANDBOX_STORAGE
 if not defined EPM_SANDBOX_STORAGE (
     if defined CONAN_STORAGE_PATH (
         set EPM_SANDBOX_STORAGE=%CONAN_STORAGE_PATH%
     ) else (
-        set EPM_SANDBOX_STORAGE=%USERPROFILE%\.epm\.conan\data
+        if defined EPM_HOME_DIR (
+            set EPM_SANDBOX_STORAGE=%EPM_HOME_DIR%\.conan\data
+        ) else (
+            set EPM_SANDBOX_STORAGE=%USERPROFILE%\.epm
+        )
+        
     )
 )
+pushd %EPM_SANDBOX_STORAGE%
+set EPM_SANDBOX_STORAGE=%CD%
+popd
 
 if not exist %EPM_SANDBOX_STORAGE% mkdir %EPM_SANDBOX_STORAGE%
 
 set _CMD=docker run -t --rm --name sandbox.{{ name }}
 set _CMD=%_CMD% -v %EPM_SANDBOX_STORAGE%:%_DHOME%/@host/conan.storage
 set _CMD=%_CMD% -v %EPM_SANDBOX_PROJECT%:%_DHOME%/@host/project
-set _CMD=%_CMD% -e EPM_SANDBOX_ARCHIVE=%EPM_SANDBOX_ARCHIVE%
 set _CMD=%_CMD% -e EPM_SANDBOX_HOME=%_DHOME%
 set _CMD=%_CMD% -e EPM_SANDBOX_STORAGE=%_DHOME%/@host/conan.storage
 set _CMD=%_CMD% -e EPM_SANDBOX_PROJECT=%_DHOME%/@host/project

@@ -10,7 +10,7 @@ from conans.model.requires import Requirements
 from conans.model.ref import ConanFileReference
 from conans.model.settings import Settings
 from conans.model.options import Options
-
+from epm.utils.logger import syslog
 
 def get_channel(user):
     if user is None:
@@ -39,8 +39,9 @@ def If(expr, settings, options, conanfile=None, profile=None):
                     build['arch'] in ['x86_64', 'x86'] and \
                     host['arch'] in ['x86_64', 'x86']:
                 cross_build = False
-    print('conanfile:', conanfile, 'cross_build:', cross_build)
+    
     assert cross_build is not None
+    syslog.debug(f"\nIf: {expr} \nsettings={settings}\n options={options}\n conanfile={conanfile}\n profile={profile}")
 
     symbol = {'cross_build': cross_build}
 
@@ -57,10 +58,10 @@ def If(expr, settings, options, conanfile=None, profile=None):
     symbol.update(options or {})
     from epm.utils.yacc.condition import Yacc
     yacc = Yacc(symbol)
-    print('SYMBOL', symbol)
-
     result = yacc.parse(expr)
-    print('@', __file__, result)
+    syslog.debug(f"\nsymbol:{symbol}\n result={result}")
+    
+    
     return result
 
 
@@ -104,14 +105,21 @@ def create_requirements(minfo, settings=None, options=None, conanfile=None, prof
 
     any = settings is None and options is None
     packages = minfo.get('dependencies') or {}
+    from epm.utils.logger import syslog
+    syslog.debug(f"{packages}")
 
     for name, attr in packages.items():
+        syslog.debug(f"name: {name}, attr: {attr}", )
         if isinstance(attr, (str, int, float)):
             version = _Ver(attr, minfo)
             ref = ConanFileReference(name, version, None, None)
             requires.add_ref(ref)
         else:
             assert isinstance(attr, dict)
+            x = If(attr.get('if'), settings, options, conanfile, profile)
+            expr = attr.get('if')
+            syslog.debug(f"options: {options}")
+            syslog.debug(f"any={any} -{x} expr: {expr}")
             if any or If(attr.get('if'), settings, options, conanfile, profile):
                 version = _Ver(attr['version'], minfo)
                 user = attr.get('user')

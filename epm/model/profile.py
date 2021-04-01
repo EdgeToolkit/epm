@@ -70,7 +70,7 @@ def load_profiles_config(pr_dir):
             config['__file__'] = pathlib.PurePath(path).as_posix()
             config['__name__'] = name
             econfig[name] = dict(config, **common)
-    syslog.debug('load profiles from {}\n{}\n'.format(pr_dir, pprint.pformat(econfig, indent=2)))
+    
     return econfig
 
 
