@@ -40,15 +40,17 @@ class BuildDocker(object):
         self.home = docker['home']
         self.image = prefix + docker['image']
         self.shell = docker['shell']
-        self.cwd = f"{self.home}/project/{self.project.name}"
+        self.cwd = f"/data/project/{self.project.name}"
+        from epm import HOME_DIR
 
-        src = os.path.expanduser('~/.epm')
+        src = HOME_DIR
         if self.workbench:
             src = f'{src}/.workbench/{self.workbench}'
-        dst = f"{self.home}/.epm"
-
+        dst = f"/data/.epm"
+        self.environment['EPM_HOME_DIR'] = dst
         self.volume.append(Volume(src, dst))
         self.volume.append(Volume(self.project.dir, self.cwd))
+        
 
     def generate(self, command):
         out_dir = os.path.join(self.project.folder.cache, 'docker', self.project.folder.name)

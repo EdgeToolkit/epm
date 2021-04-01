@@ -57,12 +57,16 @@ class Creator(Worker):
                 command += f" --scheme {project.scheme.name}"
             command += f" create"
             docker.environment['EPM_RUNNING_SYSTEM'] = 'docker'
+            docker.environment['EPM_RUNNER'] = 'shell'
 
             if storage:
                 docker.environment['CONAN_STORAGE_PATH'] = '%s/%s' % (docker.cwd, storage)
                 command += f" --storage {storage}"
             if archive:
                 command += f" --archive {archive}"
+            if with_deps:
+                command += f" --with-deps"
+    
             proc = docker.run(command)
             if proc.returncode:
                 raise Exception(f"[Docker] {command} failed.")
