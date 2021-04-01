@@ -12,13 +12,6 @@ class Scheme(object):
         self._manifest = project.__meta_information__ or {}
         self._mdata = self._manifest.get('scheme') or {}
 
-        if self._name is None:
-            if self._manifest.get('scheme'):
-                raise Exception(f'No scheme spcified!')
-        else:
-            if self._name not in self._manifest.get('scheme'):
-                raise Exception(f'{self._name} is not defined in scheme.')
-
         self._mdata = self._mdata.get(self._name) or {}        
         self._deps = None
         self._options = None

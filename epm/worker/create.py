@@ -45,6 +45,8 @@ class Creator(Worker):
         archive = param.get('archive', None)
         with_deps = param.get('with_deps') or False
         program = param['program']
+        if project.unbuildable:
+            raise Exception(self.unbuildable)
 
         if runner == 'auto':
             runner = 'docker' if project.profile.docker.builder else 'shell'

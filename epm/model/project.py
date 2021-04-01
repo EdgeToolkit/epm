@@ -94,24 +94,18 @@ class Project(object):
 
         mdata = self.__meta_information__ or {}
         mdata = mdata.get('scheme') or {}
-        if scheme in ['none', 'None', 'NONE']:
+        if scheme in ['none', 'None', 'NONE'] or not scheme:
             scheme = None
-        #if api and scheme is None:
-        #    workbench = api.config.workbench
-        #    default_scheme = workbench.default_scheme if workbench else None
-        #    if not mdata:
-        #        api.out.info('No scheme defined in this package.')
-        #    if 'default' in mdata and len(mdata.keys()) == 1:
-        #        scheme = 'default'
-        #        api.out.highlight('use the only scheme default.')
-        #    elif default_scheme and default_scheme in mdata:
-        #        scheme = default_scheme
-        #        api.out.highlight('scheme not specified, use configured default_scheme <%s>.' % scheme)
+
         if scheme and scheme not in mdata:
             raise EException('Specified scheme <%s> not defined.' % scheme)
 
         Attribute = namedtuple('Attribute', ['scheme', 'profile'])
         self.attribute = Attribute(scheme, profile)
+        
+        self.unbuildable = False
+        if scheme is None and mdata:
+            self.unbuildable = "This project request explicit scheme of [{}].".format(",".join(mdata))
 
     @property
     def dir(self):
