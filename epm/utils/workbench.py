@@ -139,10 +139,12 @@ def install(origin, name=None):
     if name != 'global' and os.path.exists(instd):
         raise Exception(f"workbench<{name}> already installed.")
     rmdir(instd)
+
     shutil.copytree(folder, dst=instd)
     conand = os.path.join(instd, '.conan')
-    remote_file = os.path.join(conand, "remote.json")
+    remote_file = os.path.join(conand, "remotes.json")
     if not os.path.exists(conand) or not os.path.exists(remote_file):
+        print('install conan remote---')
         mkdir(conand)
         from conans.client.conan_api import ConanAPIV1 as ConanAPI
         conan = ConanAPI(conand)
@@ -158,7 +160,7 @@ def install(origin, name=None):
             import yaml
             data = config.data
             data['workbench']['name'] = name
-            yaml.dump(data, f, , default_flow_style=False)
+            yaml.dump(data, f,default_flow_style=False)
 
     banner(name)
 
