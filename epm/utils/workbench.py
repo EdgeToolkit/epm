@@ -158,7 +158,7 @@ def install(origin, name=None):
             import yaml
             data = config.data
             data['workbench']['name'] = name
-            yaml.dump(data, f)
+            yaml.dump(data, f, , default_flow_style=False)
 
     banner(name)
 
