@@ -59,8 +59,6 @@ class Main(object):
         self.parser.add_argument('-p', '--profile', dest='PROFILE', type=str, default=None, help=_PROFILE_HELP)
         self.parser.add_argument('-s', '--scheme', dest='SCHEME', type=str, default=None, help=_SCHEME_HELP)
         self.parser.add_argument('-r', '--runner', dest='RUNNER', type=str, default=None, help=_RUNNER_HELP)
-        self.parser.add_argument('--storage', dest='STORAGE', type=str, default=None, help=_STORAGE_HELP)
-        self.parser.add_argument('--workbench', dest='WORKBENCH', type=str, default=None, help=_WORKBENCH_HELP)
 
 
     def parse_arguments(self, args):

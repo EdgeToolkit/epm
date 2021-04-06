@@ -68,7 +68,7 @@ class Command:
 
     def parameter(self, args):
         result = {}
-        for i in ['PROFILE', 'SCHEME', 'RUNNER', 'STORAGE']:
+        for i in ['PROFILE', 'SCHEME', 'RUNNER']:
             value = getattr(args, i, None)
             if value is not None:
                 result[i] = value
@@ -76,7 +76,7 @@ class Command:
                 env_var = os.getenv(f"EPM_{i}")
                 if env_var:
                     result[i] = env_var
-                    print(f'use environment EPM_{i} = {env_var} for {i.lower}.')
+                    print(f'Use environment EPM_{i} = {env_var} for global option --{i.lower}.')
         return result
 
 
