@@ -37,7 +37,7 @@ def match(patterns):
     return result
 
 import re
-def build(name, version, config):
+def build(name, version, config, prefix, push):
     GCC_ARM = re.compile(r'^gcc(?P<version>\d+)\-(?P<armv>armv\d+)')
     LINARO_GCC = re.compile(r'linaro-gcc(?P<version>\d+)\-(?P<armv>armv\d+)')
     context = {'profile': name, 'version': version, 'config': config}
@@ -66,10 +66,13 @@ def build(name, version, config):
 
     outfile = f".epm/{name}.Dockerfile"
     j2.render(f"{filename}.j2", context=context, outfile=outfile)
-    
-    command = ['docker', 'build', '-f', f"{name}.Dockerfile", '-t', f'edgetoolkit/{name}:{version}', '.']
+    tag = f'{pefix}edgetoolkit/{name}:{version}'
+    command = ['docker', 'build', '-f', f"{name}.Dockerfile", '-t', tag, '.']
     print(" ".join(command))
     subprocess.run(command, check=True, cwd='.epm')
+    if push:
+        command = ['docker', 'push', tag]
+
 
 
 def main():
@@ -78,7 +81,9 @@ def main():
     parser.add_argument('name', nargs='+', help="name of the docker image to build.")
     parser.add_argument('--version', type=str, help="version of the image to build instead read from epm module.")
     parser.add_argument('--build', default=False, action="store_true", help="execute image build")
-    parser.add_argument('--clear', default=False, action="store_true", help="clear exist image, if build")    
+    parser.add_argument('--clear', default=False, action="store_true", help="clear exist image, if build") 
+    parser.add_argument('--prefix', default=None, type=str, help="")
+    parser.add_argument('--push', default=False, action="store_true", help="") 
     parser.add_argument('-c', '--config', default=f'{_DIR}/config.yml',
                         help="config file path. YAML format example\n")
     args = parser.parse_args()
@@ -126,12 +131,13 @@ def main():
             version = config.conan.version
         else:
             version = args.version or __version__
+        prefix = args.prefix if args.prefix ""    
 
         if args.clear:
-            command = ['docker', 'rmi', f'edgetoolkit/{name}:{version}']
+            command = ['docker', 'rmi', f'{prefix}edgetoolkit/{name}:{version}']
             subprocess.run(command, check=False)
         if args.build:
-            build(name, version, config)
+            build(name, version, config, prefix, args.push)
 
 
 if __name__ == '__main__':
