@@ -193,7 +193,7 @@ if [ "$_runner" = "shell" ]; then
   _prj_out=$_project/{{project.folder.out}}
   export LD_LIBRARY_PATH=$_prj_out/build/lib:$_prj_out/package/lib:$_home/.sandbox/lib:$LD_LIBRARY_PATH
 {% endif %}
-  $_home/.sandbox/{{executable.name}} {{ arguments }} $*
+  $_home/.sandbox/bin/{{executable.name}} {{ arguments }} $*
 else
   _docker_exec $*
 fi
