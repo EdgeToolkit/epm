@@ -103,10 +103,6 @@ class Project(object):
         Attribute = namedtuple('Attribute', ['scheme', 'profile'])
         self.attribute = Attribute(scheme, profile)
         
-        self.unbuildable = False
-        if scheme is None and mdata:
-            self.unbuildable = "This project request explicit scheme of [{}].".format(",".join(mdata))
-
     @property
     def dir(self):
         return self._dir
@@ -302,10 +298,11 @@ class Project(object):
 
     @property
     def available(self):
-        """ check the `profile` `scheme` compose is available for build
+        """ TODO: check the `profile` `scheme` compose is available for build
 
         :return:
         """
+        
         return True
 
 

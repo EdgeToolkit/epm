@@ -113,13 +113,10 @@ def run(command, args, out):
     # if the command hasn't been registered, load a module by the same name
     if command not in _commands:
         raise FatalError('command not found')
-    
-
 
     from epm.api import API
-    workbench = args.WORKBENCH or os.getenv('EPM_WORKBENCH') or None
-    env_vars = {'EPM_WORKBENCH': workbench}
-    api = API(workbench=workbench, output=out)
+    api = API(output=out)
+    env_vars = {}
     if command != 'workbench':
         env_vars.update(api.config.env_vars)
     with environment_append(env_vars):
