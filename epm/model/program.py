@@ -133,14 +133,14 @@ class Executable(object):
     def _render(self, context):
         from epm.utils import Jinja2
         from epm import DATA_DIR
-        out_dir = os.path.join(self._project.abspath.out, 'sandbox', self.name)
+        out_dir = os.path.join(self._project.abspath.out, 'sandbox', 'bin')
         j2 = Jinja2(directory=f"{DATA_DIR}/program", context=context)
 
         if self._is_win:
-            j2.render("windows.cmd.j2", outfile=f"{out_dir}/run.cmd")
+            j2.render("windows.cmd.j2", outfile=f"{out_dir}/{self.name}.cmd")
         else:
-            j2.render("linux.sh.j2", outfile=f"{out_dir}/run")
-            j2.render("linux.cmd.j2", outfile=f"{out_dir}/run.cmd")
+            j2.render("linux.sh.j2", outfile=f"{out_dir}/{self.name}")
+            j2.render("linux.cmd.j2", outfile=f"{out_dir}/{self.name}.cmd")
             os.chmod(f"{out_dir}/run", stat.S_IRWXU | stat.S_IXGRP | stat.S_IRGRP | stat.S_IROTH)
 
     def _parse_dynamic_libs(self, conaninfo):
@@ -330,7 +330,7 @@ def exec_program(project, name, argv, runner=None):
                   "\t\n".join(canidates))
         return 128
 
-    filename = pathlib.PurePath(f"{project.folder.out}/sandbox/{name}/run").as_posix()
+    filename = pathlib.PurePath(f"{project.folder.out}/sandbox/bin/{name}").as_posix()
     if runner in ['shell', 'docker', None, 'auto']:
         if PLATFORM == 'Windows':
             filename = "{}.cmd".format(pathlib.WindowsPath(filename))
