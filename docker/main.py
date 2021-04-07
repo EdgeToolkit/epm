@@ -66,7 +66,7 @@ def build(name, version, config, prefix, push):
 
     outfile = f".epm/{name}.Dockerfile"
     j2.render(f"{filename}.j2", context=context, outfile=outfile)
-    tag = f'{pefix}edgetoolkit/{name}:{version}'
+    tag = f'{prefix}edgetoolkit/{name}:{version}'
     command = ['docker', 'build', '-f', f"{name}.Dockerfile", '-t', tag, '.']
     print(" ".join(command))
     subprocess.run(command, check=True, cwd='.epm')
