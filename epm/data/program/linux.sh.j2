@@ -152,7 +152,7 @@ libpath=
   {% else %}
   _package_dir=$EPM_SANDBOX_PROJECT/{{project.folder.out}}/package
   {% endif %}
-  ln -s $_package_dir/{{filename}} $sandbox_dir/bin/{{executable.name}}
+  ln -s $_package_dir/{{filename}} $sandbox_dir/{{executable.name}}
 {% endif %}
 }
 
@@ -178,7 +178,7 @@ _docker_exec()
   _CMD=" $_CMD -w $home"
   _CMD=" $_CMD $image $shell -c "
 
-  $_sudo $_CMD "${project}/.epm/{{ project.folder.name }}/sandbox/bin/{{executable.name}} $*"
+  $_sudo $_CMD "${project}/.epm/{{ project.folder.name }}/sandbox/{{executable.name}} $*"
 }
 #
 #
@@ -193,7 +193,7 @@ if [ "$_runner" = "shell" ]; then
   _prj_out=$_project/{{project.folder.out}}
   export LD_LIBRARY_PATH=$_prj_out/build/lib:$_prj_out/package/lib:$_home/.sandbox/lib:$LD_LIBRARY_PATH
 {% endif %}
-  $_home/.sandbox/bin/{{executable.name}} {{ arguments }} $*
+  $_home/.sandbox/{{executable.name}} {{ arguments }} $*
 else
   _docker_exec $*
 fi
