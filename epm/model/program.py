@@ -141,7 +141,7 @@ class Executable(object):
         else:
             j2.render("linux.sh.j2", outfile=f"{out_dir}/{self.name}")
             j2.render("linux.cmd.j2", outfile=f"{out_dir}/{self.name}.cmd")
-            os.chmod(f"{out_dir}/run", stat.S_IRWXU | stat.S_IXGRP | stat.S_IRGRP | stat.S_IROTH)
+            os.chmod(f"{out_dir}/{self.name}", stat.S_IRWXU | stat.S_IXGRP | stat.S_IRGRP | stat.S_IROTH)
 
     def _parse_dynamic_libs(self, conaninfo):
         libs = []
