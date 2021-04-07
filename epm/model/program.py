@@ -133,7 +133,7 @@ class Executable(object):
     def _render(self, context):
         from epm.utils import Jinja2
         from epm import DATA_DIR
-        out_dir = os.path.join(self._project.abspath.out, 'sandbox', 'bin')
+        out_dir = os.path.join(self._project.abspath.out, 'sandbox')
         j2 = Jinja2(directory=f"{DATA_DIR}/program", context=context)
 
         if self._is_win:
