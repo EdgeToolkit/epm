@@ -131,7 +131,7 @@ def main():
             version = config.conan.version
         else:
             version = args.version or __version__
-        prefix = args.prefix if args.prefix ""    
+        prefix = args.prefix if args.prefix else ""    
 
         if args.clear:
             command = ['docker', 'rmi', f'{prefix}edgetoolkit/{name}:{version}']
