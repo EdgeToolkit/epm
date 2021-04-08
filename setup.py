@@ -124,12 +124,11 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
+    _data = ['*.txt']
+    for name in ['data', 'extension']:
+        _data +=  ['{}{}'.format(name, '/*'*i) for i in range(1,10)]
     package_data={
-        'epm': ['*.txt', 
-        'data/*/*/*/*', 'data/*/*/*', 'data/*/*', 'data/*',
-        'extensions/*/*/*', 'extensions/*/*', 'extensions/*/*', 'extensions/*'
-        #'test/data/*/*/*', 'test/data/*/*', 'test/data/*/*', 'test/data/*'
-        ]
+        'epm': _data
     },
 
     # Although 'package_data' is the preferred approach, in some case you may
