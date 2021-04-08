@@ -62,6 +62,9 @@ def generate_long_description_file():
         long_description = f.read()
     return long_description
 
+_DATA_FILES = ['*.txt']
+for name in ['data', 'extension']:
+    _DATA_FILES +=  ['{}{}'.format(name, '/*'*i) for i in range(1,10)]
 
 setup(
     name='epm',
@@ -124,9 +127,7 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.    
-    package_data={
-        'epm': _FILES
-    },
+    package_data={'epm': _DATA_FILES},
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
