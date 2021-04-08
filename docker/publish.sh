@@ -86,6 +86,5 @@ function main()
     pub $prefix
 }
 
-#main $*
-pub '172.16.0.119:8482/'
+main $*
 
