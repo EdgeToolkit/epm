@@ -68,6 +68,8 @@ class Creator(Worker):
                 command += f" --archive {archive}"
             if with_deps:
                 command += f" --with-deps"
+            if program:
+                command += f" --program {program}"
     
             proc = docker.run(command)
             if proc.returncode:
@@ -123,7 +125,6 @@ class Creator(Worker):
         return result
                  
     def _exec(self, project, program=None):
-        print('program:',program)
         if program is None or program == 'disable':
             self._build_package(project)
         if project.profile.host.settings['os'] == 'iOS':
