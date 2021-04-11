@@ -98,9 +98,9 @@ def _make_program_metainfo(name, origin):
     dependencies[package_name] = version
     meta['dependencies'] = dependencies
 
-    build_tools = meta.get('build-tools') or {}
-    build_tools.update(program.get('build-tools') or {})
-    meta['build-tools'] = build_tools
+    #build_tools = meta.get('build-tools') or {}
+    #build_tools.update(program.get('build-tools') or {})
+    #meta['build-tools'] = build_tools
     return meta
 
 
