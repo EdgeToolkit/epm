@@ -13,7 +13,7 @@ from epm.tools import get_channel, create_requirements, add_build_requirements
 from epm.utils.mirror import Mirror
 
 
-generator_classes = {'pkg-config.legacy': PkgConfigGenerator}
+#generator_classes = {'pkg-config.legacy': PkgConfigGenerator}
 
 #
 #def _conanfile_hacking(minfo, generator=None):
@@ -93,10 +93,24 @@ def _make_program_metainfo(name, origin):
     package_name = origin['name']
     version = origin['version']
     meta['name'] = name
-
-    dependencies = meta.get('dependencies') or {}
-    dependencies[package_name] = version
+ 
+    dependencies = {}
+    if 'dependencies' not in program:
+        #dependencies = meta.get('dependencies') or {}
+        dependencies[package_name] = version
+    elif isinstance(program['dependencies'], dict):
+            dependencies = program['dependencies']
+    build_tools = program.get('build-tools') or {}
+            
     meta['dependencies'] = dependencies
+    meta['build-tools'] = build_tools
+    try:
+        del meta['program']
+    except:
+        pass
+    print(meta)
+
+        
 
     #build_tools = meta.get('build-tools') or {}
     #build_tools.update(program.get('build-tools') or {})
@@ -154,4 +168,14 @@ def replace(fn, new_fn):
             return None if f is None else f(*args)
         else:
             raise Exception('Invalid new_fn (%s) to replace %s' % (type(new_fn), fn.__name__))
+    return _wrapper
+
+def append_test(fn):
+    def _wrapper(self, *args):
+        fn(self, *args)
+        ftest = getattr(self, 'test', None)
+        if ftest:
+            self.output.highlight('+Calling test()')
+            ftest()
+        return None
     return _wrapper
