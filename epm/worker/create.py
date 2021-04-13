@@ -32,6 +32,32 @@ def conandir(path):
             path = load(link)
     return path
 
+
+def _del(path):
+    if os.path.isdir(path):
+        rmdir(conandir(path))
+    else:
+        os.remove(path)
+
+
+def _clear_folder(path):
+    if not os.path.isdir(path):
+        return
+    with chdir(path):
+        for i in os.listdir('.'):
+            _del(i)
+
+def _dep_graph(storage_path, full_requires, result={}):
+    for package in full_requires:
+        print('+', package, package.ref, package.ref.dir_repr())
+        pkg_dir = os.path.join(storage_path, package.ref.dir_repr(), 'package', package.id)
+        info_path = os.path.join(pkg_dir, CONANINFO)
+        conan_info = ConanInfo.load_file(info_path)
+        result[str(package)] = package
+        _dep_graph(storage_path, conan_info.full_requires, result)
+    
+    return result
+
 class Creator(Worker):
 
     def __init__(self, api=None):
@@ -94,8 +120,7 @@ class Creator(Worker):
                     self._archive_deps(project, archive, storage_path)
 
             if clear:
-                clearer = Cleaner(project, storage)
-                clearer.clear(storage=bool(storage))
+                self._clear(project)
     
     def _build_package(self, project):
         conan = self.api.conan
@@ -165,90 +190,13 @@ class Creator(Worker):
             mkdir(os.path.abspath(f"{dest}/.."))
             shutil.copytree(src, dest)
             
-def _dep_graph(storage_path, full_requires, result={}):
-    for package in full_requires:
-        print('+', package, package.ref, package.ref.dir_repr())
-        pkg_dir = os.path.join(storage_path, package.ref.dir_repr(), 'package', package.id)
-        info_path = os.path.join(pkg_dir, CONANINFO)
-        conan_info = ConanInfo.load_file(info_path)
-        result[str(package)] = package
-        _dep_graph(storage_path, conan_info.full_requires, result)
-    
-    return result
+    def _clear(self, project):
+        from conans.tools import chdir
+        program_dir = os.path.join(project.abspath.out, 'program')
+        if os.path.isdir(program_dir):
+            for name in os.listdir(program_dir):
+                for i in os.listdir(os.path.join(program_dir, name)):
+                    if i not in ['bin', 'lib']:
+                        _del(os.path.join(program_dir, name, i))
+            
         
-
-def _del(path):
-    if os.path.isdir(path):
-        rmdir(conandir(path))
-    else:
-        os.remove(path)
-
-
-def _clear_folder(path):
-    if not os.path.isdir(path):
-        return
-    with chdir(path):
-        for i in os.listdir('.'):
-            _del(i)
-
-
-class Cleaner(object):
-
-    def __init__(self, project, storage=None):
-        self._project = project
-        self._api = project.api
-        self._ref = ConanFileReference(project.name, project.version, project.user, project.channel, validate=False)
-        self._storage = storage
-        self._conaninfo = None
-        self._rootpath = None
-
-    @property
-    def storage_path(self):
-        return os.path.join(self._project.dir, self._storage, 'data') if self._storage else None
-
-    @property
-    def short_path(self):
-        if PLATFORM == 'Windows' and self._storage:
-            return os.path.join(self._project.dir, self._storage, 'short')
-        return None
-
-    @property
-    def rootpath(self):
-        if self._rootpath is None:
-            self._rootpath = os.path.join(self.storage_path, self._ref.dir_repr())
-        return self._rootpath
-
-    def clear(self, cache=True, storage=False):
-        if cache:
-            self._clear_cache()
-        if storage:
-            self._clear_storage()
-
-    def _clear_cache(self):
-
-        with chdir(self._project.abspath.out):
-            for i in os.listdir("."):
-                if i in ['sandbox', 'test', 'record.yaml']:
-                    pass
-                else:
-                    _del(i)
-        test_path = f"{self._project.abspath.out}/test"
-        if os.path.isdir(test_path):
-            with chdir(test_path):
-                for i in glob.glob("*/*"):
-                    name = os.path.basename(i)
-                    if name in ['lib', 'bin', 'conanbuildinfo.txt', 'conaninfo.txt', 'graph_info.json']:
-                        pass
-                    else:
-                        _del(i)
-
-    def _clear_storage(self):
-        if not self._storage:
-            return
-        with chdir(self.rootpath):
-            for i in os.listdir("."):
-                if i in ['export', 'export_source', 'package', 'metadata.json']:
-                    pass
-                else:
-                    _del(i)
-            _clear_folder('export_source')
