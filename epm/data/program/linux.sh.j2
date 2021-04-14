@@ -50,8 +50,8 @@ fi
 # =====================================
 __runner__=$EPM_SANDBOX_RUNNER
 if [ -z "$__runner__" ]; then
-  $(which docker > /dev/null)
-  if [ $? -eq 0 ]; then
+  docker_path=$(which docker)
+  if [ -f $docker_path ]; then
     __runner__='docker'
   else
     __runner__='shell'
@@ -73,7 +73,6 @@ if [ -z "$__storage__" ]; then
     fi
   fi
 fi
-__storage__=$(cd $__storage__ ; pwd)
 
 
 # ---------------------------------------------------------
@@ -92,10 +91,10 @@ fi
 # us sudo if install in running system
 # ---------------------------------------------------------
 __sudo__=$EPM_SANDBOX_SUDO
-if [ -z "$EPM_SANDBOX_SUDO" ]; then
-  $(which sudo > /dev/null)
-  if [ -$? -eq 0 ]; then
-    _sudo=sudo
+if [ -z "$__sudo__" ]; then
+  __sudo__=$(which sudo)
+  if [ ! -f "$__sudo__" ]; then
+    __sudo__=
   fi
 fi
 
@@ -104,12 +103,15 @@ fi
 # epm <{{command}}> and output `{{where}}`.
 # =====================================
 {% if where == 'project' %}
-  __program__=$__project__/{{program_dir}}/{{filename}}
+  __origin__='project'
+  __program__={{program_dir}}/{{filename}}
 {% else %}
 {%     if command == 'create' %}
-  __program__=$__storage__/$__reference_dir__/package/$__package_id__/{{filename}}
-{%     else %}
-  __program__=$__project__/{{project.folder.out}}/package/{{filename}}
+  __origin__='storage'
+  __program__=$__reference_dir__/package/$__package_id__/{{filename}}
+{%     else %}  
+  __origin__='project'
+  __program__={{project.folder.out}}/package/{{filename}}
 {%     endif %}
 {% endif %}
 
@@ -142,6 +144,7 @@ print_info()
   _ "__storage__: $__storage__"
   _ "__shell__: $__shell__"
   _ "__sudo__: $__sudo__"
+  _ "__origin__: $__origin__"
   _ "__program__: $__program__"
   _ "__libpath__: $__libpath__"
   _ "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"  
@@ -192,8 +195,14 @@ if [ "$__runner__" = "shell" ]; then
   export LD_LIBRARY_PATH=$libpath:$LD_LIBRARY_PATH
 {%- endif %}
   print_info
+  if [ $__origin__ == "project" ]; then
+    _ "$__project__/$__program__ {{ arguments }} $*"
+    $__project__/$__program__ {{ arguments }} $*
+  else
+    _ "$__storage__/$__program__ {{ arguments }} $*" 
+    $__storage__/$__program__ {{ arguments }} $*
+  fi
 
-  $__program__ {{ arguments }} $*
 else
   docker_exec $*
 fi
