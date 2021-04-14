@@ -176,9 +176,8 @@ docker_exec()
   _CMD=" $_CMD -e EPM_SANDBOX_PROJECT=${project}"
   _CMD=" $_CMD -e EPM_SANDBOX_RUNNER=shell"
   _CMD=" $_CMD -w ${project}"
-  _CMD=" $_CMD $image $shell -c "
+  _CMD=" $_CMD $image $shell "
 
-  _ "  ==== exec in docker  ===="
   _ "$__sudo__ $_CMD ${project}/.epm/{{ project.folder.name }}/sandbox/{{executable.name}} {{ arguments }} $*"
   $__sudo__ $_CMD "${project}/.epm/{{ project.folder.name }}/sandbox/{{executable.name}} {{ arguments }} $*"
 }
@@ -187,7 +186,8 @@ docker_exec()
 #
 set -e
 
-if [ "$__runner__" = "shell" ]; then  
+if [ "$__runner__" = "shell" ]; then
+  _ "    ----====  shell  ====----"
 {%- if command == 'create' %}
   export LD_LIBRARY_PATH=$__libpath__:$LD_LIBRARY_PATH
 {%- else %}
@@ -204,5 +204,7 @@ if [ "$__runner__" = "shell" ]; then
   fi
 
 else
+  _ "    ~~~~==~~~~  docker  ~~~~~==~~~~"
+  print_info
   docker_exec $*
 fi
