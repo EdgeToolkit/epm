@@ -89,8 +89,8 @@ class Project(object):
                 self.__meta_information__ = yaml.safe_load(f) or {}
                 if 'version' in self.__meta_information__:
                     self.__meta_information__['version'] = str(self.__meta_information__['version'])
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
         mdata = self.__meta_information__ or {}
         mdata = mdata.get('scheme') or {}
