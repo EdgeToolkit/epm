@@ -50,11 +50,10 @@ fi
 # =====================================
 __runner__=$EPM_SANDBOX_RUNNER
 if [ -z "$__runner__" ]; then
-  docker_path=$(which docker)
-  if [ -f $docker_path ]; then
+  __runner__='shell'
+  _docker=$(which docker)
+  if [ -f "$_docker" ]; then
     __runner__='docker'
-  else
-    __runner__='shell'
   fi
 fi
 
