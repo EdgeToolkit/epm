@@ -98,7 +98,7 @@ class Project(object):
             scheme = None
 
         if scheme and scheme not in mdata:
-            raise EException('Specified scheme <%s> not defined.' % scheme)
+            raise EException(f'Specified scheme <{scheme}> not defined. [{mdata}]')
 
         Attribute = namedtuple('Attribute', ['scheme', 'profile'])
         self.attribute = Attribute(scheme, profile)
