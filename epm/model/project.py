@@ -92,6 +92,7 @@ class Project(object):
         except Exception as e:
             print(e)
 
+
         mdata = self.__meta_information__ or {}
         mdata = mdata.get('scheme') or {}
         if scheme in ['none', 'None', 'NONE'] or not scheme:
