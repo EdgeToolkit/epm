@@ -115,12 +115,12 @@ fi
 {%     endif %}
 {% endif %}
 
-__libpath__=
-{%- if command == 'create' and libs %}
+  __libpath__=
+{% if command == 'create' and libs %}
   # -------------------------------------------------------
   # link {{project.name}} package libraries to sandbox
   # -------------------------------------------------------
-{%- for lib in dirs.lib or [] %}
+{% for lib in dirs.lib or [] %}
   __libpath__=${__storage__}/{{lib}}:$libpath
 {%- endfor %}
 {%- endif -%}
@@ -128,7 +128,7 @@ __libpath__=
   # -------------------------------------------------------
   # {{project.name}} package depend libraries
   # -------------------------------------------------------
-{%- for lib in dirs.dep or [] %}
+{% for lib in dirs.dep or [] %}
   __libpath__=${__storage__}/{{lib}}:$libpath
 {%- endfor %}
 
@@ -163,7 +163,7 @@ docker_exec()
   fi
   image=$EPM_SANDBOX_DOCKER_IMAGE
   if [ -z "$image" ]; then
-    shell={{ docker['image'] }}
+    image={{ docker['image'] }}
   fi
 
   storage=/tmp/.sandbox/{{project.name}}/storage
@@ -175,8 +175,9 @@ docker_exec()
   _CMD=" $_CMD -e EPM_SANDBOX_STORAGE=${storage}"
   _CMD=" $_CMD -e EPM_SANDBOX_PROJECT=${project}"
   _CMD=" $_CMD -e EPM_SANDBOX_RUNNER=shell"
+  _CMD=" $_CMD -e EPM_SANDBOX_LOGLEVEL=$EPM_SANDBOX_LOGLEVEL"  
   _CMD=" $_CMD -w ${project}"
-  _CMD=" $_CMD $image $shell "
+  _CMD=" $_CMD $image $shell -c "
 
   _ "$__sudo__ $_CMD ${project}/.epm/{{ project.folder.name }}/sandbox/{{executable.name}} {{ arguments }} $*"
   $__sudo__ $_CMD "${project}/.epm/{{ project.folder.name }}/sandbox/{{executable.name}} {{ arguments }} $*"
