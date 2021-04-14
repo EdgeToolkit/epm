@@ -84,13 +84,12 @@ class Project(object):
         self._record = None
         self._dir = pathlib.PurePath(os.path.abspath(directory)).as_posix()
 
-        try:
-            with open(os.path.join(self.dir, 'package.yml')) as f:
+        manifest = os.path.join(self.dir, 'package.yml')
+        if os.path.isfile(manifest):
+            with open(manifest) as f:
                 self.__meta_information__ = yaml.safe_load(f) or {}
                 if 'version' in self.__meta_information__:
                     self.__meta_information__['version'] = str(self.__meta_information__['version'])
-        except Exception as e:
-            print(e)
 
 
         mdata = self.__meta_information__ or {}
