@@ -123,7 +123,7 @@ fi
 {% for lib in dirs.lib or [] %}
   __libpath__=${__storage__}/{{lib}}:$libpath
 {%- endfor %}
-{%- endif -%}
+{% endif %}
 
   # -------------------------------------------------------
   # {{project.name}} package depend libraries
