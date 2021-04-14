@@ -17,183 +17,183 @@
 # You should use epm sandbox command like below 
 # !!! MAKE SURE you are in project directory
 #    epm sandbox --profile {{ profile.name }} {{ '--scheme %s' % scheme.name if scheme.name else '' }} {{ name }}
+
+# EPM_SANDBOX_SUDO
+# EPM_SANDBOX_RUNNER:
+# EPM_SANDBOX_SHELL:
+# EPM_SANDBOX_STORAGE:
+# EPM_SADNBOX_PROJECT:
+# EPM_SANDBOX_DIRECTORY:
+# EPM_SANDBOX_LOGLEVEL
 ###########################################################
-EPM_SANDBOX_PACKAGE_NAME={{project.name}}
-EPM_SANDBOX_PACKAGE_VERSION={{project.version}}
-EPM_SANDBOX_PACKAGE_REFERENCE={{project.reference}}
-EPM_SANDBOX_PACKAGE_REFERENCE_DIR={{project.reference.dir_repr()}}
-EPM_SANDBOX_PACKAGE_ID={{package_id}}
+__name__={{project.name}}
+__version__={{project.version}}
+__reference__={{project.reference}}
+__reference_dir__={{project.reference.dir_repr()}}
+__package_id__={{package_id}}
 
-_runner=$EPM_SANDBOX_RUNNER
+_() {
+  if [ -n "$EPM_SANDBOX_LOGLEVEL" ]; then
+    echo "$1"
+  fi
+}
 
-_sudo=$EPM_SANDBOX_SUDO
-_home=$EPM_SANDBOX_HOME
-_project=$EPM_SANDBOX_PROJECT
-_image=$EPM_SANDBOX_IMAGE
-_shell=$EPM_SANDBOX_SHELL
-_dshell=$EPM_SANDBOX_DOCKER_SHELL
-_dhome=$EPM_SADNBOX_DOCKER_HOME
-_dimage=$EPM_SANDBOX_DOCKER_IMAGE
-
-[ -z "$_storage" ] && _storage=$EPM_SANDBOX_STORAGE/.conan/data
-[ -z "$_runner"  ] && _runner='auto'
-[ -z "$_project" ] && _project=$PWD
-
-_storage=$CONAN_STORAGE_PATH
-if [ -z "$_storage" ]; then
-  [ -z "$EPM_HOME_DIR" ] && EPM_HOME_DIR=$HOME/.epm
-  _storage=$EPM_HOME_DIR/.conan/data
+# =====================================
+# directory of project {{project.name}}
+# =====================================
+__project__=$EPM_SADNBOX_PROJECT
+if [ -z "$__project__" ]; then
+  __project__=$PWD
+fi
+# =====================================
+# deduce runner shell|docker
+# =====================================
+__runner__=$EPM_SANDBOX_RUNNER
+if [ -z "$__runner__" ]; then
+  $(which docker > /dev/null)
+  if [ $? -eq 0 ]; then
+    __runner__='docker'
+  else
+    __runner__='shell'
+  fi
 fi
 
-if [[ -n "$EPM_SANDBOX_STORAGE" ]]; then
-  _storage=$(cd $EPM_SANDBOX_STORAGE && pwd)
+# =====================================
+# deduce storage
+# =====================================
+__storage__=$EPM_SANDBOX_STORAGE
+if [ -z "$__storage__" ]; then
+  if [ -n "$CONAN_STORAGE_PATH" ]; then
+    __storage__=$CONAN_STORAGE_PATH
+  else
+    if [ -z "$EPM_HOME_DIR" ]; then
+      __storage__=$EPM_HOME_DIR/.epm/.conan/data
+    else
+      __storage__=$HOME/.epm/.conan/data
+    fi
+  fi
 fi
-_storage=$(cd $storage ; pwd)
+__storage__=$(cd $__storage__ ; pwd)
+
 
 # ---------------------------------------------------------
 # if not set shell use /bin/bash or /bin/sh
 # ---------------------------------------------------------
-if [ -z "$_shell" ]; then
-  if [ -f /bin/bash ]; then
-    _shell=/bin/bash
+__shell__=$EPM_SANDBOX_SHELL
+if [ -z "$__shell__" ]; then
+  if [ ! -f /bin/sh ]; then
+    __shell__=/bin/sh
   else
-    _shell=/bin/sh
+    __shell__=/bin/bash
   fi
 fi
 
 # ---------------------------------------------------------
 # us sudo if install in running system
 # ---------------------------------------------------------
-if [ -z "$_sudo" ]; then
+__sudo__=$EPM_SANDBOX_SUDO
+if [ -z "$EPM_SANDBOX_SUDO" ]; then
   $(which sudo > /dev/null)
   if [ -$? -eq 0 ]; then
     _sudo=sudo
-  else
-    _sudo=
   fi
 fi
 
-# ---------------------------------------------------------
-# check for running system docker or system shell
-# ---------------------------------------------------------
-if [ "$_runner" = "auto" ]; then
-  $(which docker > /dev/null)
-  _has_docker=$?
-  if [ $_has_docker -eq 0 ]; then
-    _runner='docker'
-  else
-    _runner='shell'
-  fi
-fi
+# =====================================
+# location of program make by command
+# epm <{{command}}> and output `{{where}}`.
+# =====================================
+{% if where == 'project' %}
+  __program__=$__project__/{{program_dir}}/{{filename}}
+{% else %}
+{%     if command == 'create' %}
+  __program__=$__storage__/$__reference_dir__/package/$__package_id__/{{filename}}
+{%     else %}
+  __program__=$__project__/{{project.folder.out}}/package/{{filename}}
+{%     endif %}
+{% endif %}
 
-# ---------------------------------------------------------
-# setting home , docker parameters
-# ---------------------------------------------------------
-{% set docker = profile.docker.runner or {} %}
-if [ "$_runner" = "docker" ]; then
-  [ -z "$_dimage"   ] && _dimage={{ docker['image'] }}
-  [ -z "$_dhome"    ] && _dhome={{ docker['home'] }}
-  [ -z "$_dshell"   ] && _dshell={{ docker['shell'] }}
-
-else
-  [ -z "$_home"    ] && _home=$HOME
-fi
-
-# ---------------------------------------------------------
-# Mount related archives
-# ---------------------------------------------------------
-_mount()
-{
-  sandbox_dir=$1
-  storage=$2
-
-  $_sudo rm -rf $sandbox_dir
-  $_sudo mkdir -p -m 777 $sandbox_dir
-  mkdir -p $sandbox_dir/lib
-  mkdir -p $sandbox_dir/bin
-
-libpath=
-{% if command == 'create' and libs %}
+__libpath__=
+{%- if command == 'create' and libs %}
   # -------------------------------------------------------
   # link {{project.name}} package libraries to sandbox
   # -------------------------------------------------------
-{% for lib in dirs.lib or [] %}
-    libpath=${storage}/{{lib}}:$libpath
-{% endfor %}
-{% endif %}
-
-
-{% for lib in dirs.dep or [] %}
-    # -------------------------------------------------------
-    # {{project.name}} package depend libraries
-    # -------------------------------------------------------
-    libpath=${storage}/{{lib}}:$libpath
-{% endfor %}
-
+{%- for lib in dirs.lib or [] %}
+  __libpath__=${__storage__}/{{lib}}:$libpath
+{%- endfor %}
+{%- endif -%}
 
   # -------------------------------------------------------
-  # The program.executable {{executable.name}} was made by
-  # epm <{{command}}> and output `{{where}}`.
-  # now link it to sandbox directory
+  # {{project.name}} package depend libraries
   # -------------------------------------------------------
-{% if where == 'project' %}
-  ln -s $_project/{{program_dir}}/{{filename}} $sandbox_dir/bin/{{executable.name}}
-{% else %}
-  {% if command == 'create' %}
-  _package_dir=$_storage/$EPM_SANDBOX_PACKAGE_REFERENCE_DIR/package/$EPM_SANDBOX_PACKAGE_ID
+{%- for lib in dirs.dep or [] %}
+  __libpath__=${__storage__}/{{lib}}:$libpath
+{%- endfor %}
 
-{#
-  if [ -n "$EPM_SANDBOX_ARCHIVE" ]; then
-  _package_dir=$EPM_SANDBOX_ARCHIVE/$EPM_SANDBOX_PACKAGE_REFERENCE_DIR/package/$EPM_SANDBOX_PACKAGE_ID
-  else
-  _package_dir=$_storage/$EPM_SANDBOX_PACKAGE_REFERENCE_DIR/package/$EPM_SANDBOX_PACKAGE_ID
-  fi
-#}
-  {% else %}
-  _package_dir=$EPM_SANDBOX_PROJECT/{{project.folder.out}}/package
-  {% endif %}
-  ln -s $_package_dir/{{filename}} $sandbox_dir/{{executable.name}}
-{% endif %}
+print_info()
+{
+  _ "__name__: $__name__"
+  _ "__version__: $__version__"
+  _ "__reference__: $__reference__"
+  _ "__reference_dir__: $__reference_dir__"
+  _ "__package_id__: $__package_id__"
+  _ "__project__: $__project__"
+  _ "__runner__: $__runner__"
+  _ "__storage__: $__storage__"
+  _ "__shell__: $__shell__"
+  _ "__sudo__: $__sudo__"
+  _ "__program__: $__program__"
+  _ "__libpath__: $__libpath__"
+  _ "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"  
 }
+
 
 # ---------------------------------------------------------
 # docker execute command
 # ---------------------------------------------------------
-_docker_exec()
+docker_exec()
 {
-  home=$_dhome
-  image=$_dimage
-  shell=$_dshell
-  storage=$home/@host/conan.storage
-  project=$home/@host/project
+{% set docker = profile.docker.runner or {} %}  
+  shell=$EPM_SANDBOX_DOCKER_SHELL
+  if [ -z "$shell" ]; then
+    shell={{ docker['shell'] }}
+  fi
+  image=$EPM_SANDBOX_DOCKER_IMAGE
+  if [ -z "$image" ]; then
+    shell={{ docker['image'] }}
+  fi
+
+  storage=/tmp/.sandbox/{{project.name}}/storage
+  project=/tmp/.sandbox/{{project.name}}/project
 
   _CMD="docker run -t --rm"
-  _CMD=" $_CMD -v $_storage:${storage}"
-  _CMD=" $_CMD -v $_project:${project}"
+  _CMD=" $_CMD -v $__storage__:${storage}"
+  _CMD=" $_CMD -v $__project__:${project}"
   _CMD=" $_CMD -e EPM_SANDBOX_STORAGE=${storage}"
   _CMD=" $_CMD -e EPM_SANDBOX_PROJECT=${project}"
-  _CMD=" $_CMD -e EPM_SADNBOX_SHELL=${shell}"
-  _CMD=" $_CMD -e EPM_SANDBOX_HOME=${home}"
   _CMD=" $_CMD -e EPM_SANDBOX_RUNNER=shell"
-  _CMD=" $_CMD -w $home"
+  _CMD=" $_CMD -w ${project}"
   _CMD=" $_CMD $image $shell -c "
 
-  $_sudo $_CMD "${project}/.epm/{{ project.folder.name }}/sandbox/{{executable.name}} $*"
+  _ "  ==== exec in docker  ===="
+  _ "$__sudo__ $_CMD ${project}/.epm/{{ project.folder.name }}/sandbox/{{executable.name}} {{ arguments }} $*"
+  $__sudo__ $_CMD "${project}/.epm/{{ project.folder.name }}/sandbox/{{executable.name}} {{ arguments }} $*"
 }
 #
 #
 #
 set -e
 
-if [ "$_runner" = "shell" ]; then
-  _mount $_home/.sandbox $_storage
-{% if command == 'create' %}
+if [ "$__runner__" = "shell" ]; then  
+{%- if command == 'create' %}
+  export LD_LIBRARY_PATH=$__libpath__:$LD_LIBRARY_PATH
+{%- else %}
+  libpath=$__project__/build/lib:$__project__/{{project.folder.out}}/package/lib
   export LD_LIBRARY_PATH=$libpath:$LD_LIBRARY_PATH
-{% else %}
-  _prj_out=$_project/{{project.folder.out}}
-  export LD_LIBRARY_PATH=$_prj_out/build/lib:$_prj_out/package/lib:$_home/.sandbox/lib:$LD_LIBRARY_PATH
-{% endif %}
-  $_home/.sandbox/bin/{{executable.name}} {{ arguments }} $*
+{%- endif %}
+  print_info
+
+  $__program__ {{ arguments }} $*
 else
-  _docker_exec $*
+  docker_exec $*
 fi
