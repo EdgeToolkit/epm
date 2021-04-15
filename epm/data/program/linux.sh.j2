@@ -114,13 +114,14 @@ fi
 {%     endif %}
 {% endif %}
 
-  __libpath__=
+{% set libpath='' %}  
 {% if command == 'create' and libs %}
   # -------------------------------------------------------
   # link {{project.name}} package libraries to sandbox
   # -------------------------------------------------------
 {% for lib in dirs.lib or [] %}
-  __libpath__=${__storage__}/{{lib}}:$libpath
+  __libpath__=${__storage__}/{{lib}}{{libpath}}
+{% set libpath=':$__libpath__' %}
 {%- endfor %}
 {% endif %}
 
@@ -128,7 +129,8 @@ fi
   # {{project.name}} package depend libraries
   # -------------------------------------------------------
 {% for lib in dirs.dep or [] %}
-  __libpath__=${__storage__}/{{lib}}:$libpath
+  __libpath__=${__storage__}/{{lib}}{{libpath}}
+{% set libpath=':$__libpath__' %}  
 {%- endfor %}
 
 print_info()
