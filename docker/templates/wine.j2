@@ -1,0 +1,8 @@
+FROM ubuntu:bionic
+
+{% include "label.j2" %}
+
+RUN sudo apt update \
+    && sudo apt install wine64
+
+

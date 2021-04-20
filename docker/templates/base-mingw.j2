@@ -1,0 +1,23 @@
+FROM edgetoolkit/base-gcc8:{{config.conan.version}}
+
+{% set _PREFIX = 'x86_64-w64-mingw32-' %}
+
+{% include "label.j2" %}
+
+
+ENV CC={{ _PREFIX }}-gcc \
+    CXX={{ _PREFIX }}-g++ \
+    CMAKE_C_COMPILER={{ _PREFIX }}-gcc \
+    CMAKE_CXX_COMPILER={{ _PREFIX }}-g++ \
+    STRIP={{ _PREFIX }}-strip \
+    RANLIB={{ _PREFIX }}-ranlib \
+    AS={{ _PREFIX }}-as \
+    AR={{ _PREFIX }}-ar \
+    LD={{ _PREFIX }}-ld \
+    CGO_ENABLED=1 \
+    GOOS=windows \
+    GOARCH=amd64
+
+RUN sudo apt update \
+    && sudo apt -y install mingw-w64
+    

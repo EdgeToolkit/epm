@@ -1,5 +1,5 @@
 {%- set name=profile -%}
-FROM conanio/{{name}}:{{config.conan.version}}
+FROM edgetoolkit/base-{{name}}:{{config.conan.version}}
 
 {% include "label.j2" %}
 {% include "copy.j2" %}

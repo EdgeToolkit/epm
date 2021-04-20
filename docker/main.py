@@ -32,6 +32,7 @@ _NAMEs += [f'linaro-{i}-armv8' for i in _GCCs]
 _NAMEs += [f'{i}-armv7' for i in _GCCs]
 _NAMEs += [f'{i}-armv8' for i in _GCCs]
 _NAMEs += _GCCs
+_NAMEs += ['base-mingw', 'mingw', 'wine']
 
 def match(patterns):
     if isinstance(patterns, str):
@@ -54,8 +55,8 @@ def build(name, version, config, prefix, push):
         filename='base'        
         context['gcc'] = name.replace('base-', '')
 
-    elif name.startswith('conan-'):
-        filename = name.replace('-', '/')
+    elif name.startswith('base-mingw'):
+        filename = 'base-mingw'
     
 
     elif name.startswith('linaro-'):
