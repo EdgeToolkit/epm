@@ -1,0 +1,10 @@
+FROM conanio/{{gcc}}:{{config.conan.version}}
+
+{% include "label.j2" %}
+
+ENV PATH $PATH:/usr/local/go/bin
+
+RUN wget -O /tmp/go.tar.gz  {{config.tarball['golang']}} \
+    && sudo rm -rf /usr/local/go \
+    && sudo tar -C /usr/local -xzf /tmp/go.tar.gz \
+    && sudo rm -rf /tmp/*

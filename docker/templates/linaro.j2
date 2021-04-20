@@ -8,7 +8,8 @@
 {%- set folder = filename | replace(".tar.xz","") -%}
 {%- set _PREFIX = "{}-linux-gnu{}".format(arch, 'eabi' if armv == 'armv7' else '') -%}
 {%- set TOOLS =  ['gcc', 'g++', 'strip', 'ranlib', 'as', 'ar', 'ld', 'gfortran'] %}
-FROM conanio/gcc7:{{config.conan.version}}
+FROM conanio/base-gcc8:{{config.conan.version}}
+
 
 {% include "label.j2" %}
 
@@ -22,7 +23,9 @@ ENV CC={{ _PREFIX }}-gcc \
     AR={{ _PREFIX }}-ar \
     LD={{ _PREFIX }}-ld \
     FC={{ _PREFIX }}-gfortran
-
+    CGO_ENABLED=1 
+    GOOS=linux 
+    GOARCH={{'arm64' if arch == 'armv8' else 'arm'}}
 
 RUN wget {{url}} \
     && tar -xvf {{ filename }} \

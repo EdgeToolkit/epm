@@ -13,9 +13,10 @@ sys.path.insert(0, f"{_DIR}/..")
 from epm import __version__
 from epm.utils import ObjectView
 
-_NAMEs = ['conan-hisiv300', 'conan-hisiv400', 'conan-himix100',
+_NAMEs = [ #'conan-hisiv300', 'conan-hisiv400', 'conan-himix100',
           'linaro-gcc5-armv7', 'linaro-gcc6-armv7', 'linaro-gcc7-armv7', 'linaro-gcc8-armv7',
           'linaro-gcc5-armv8', 'linaro-gcc6-armv8', 'linaro-gcc7-armv8', 'linaro-gcc8-armv8',
+          
 
           'gcc5', 'gcc6', 'gcc7', 'gcc8',
 
@@ -24,6 +25,13 @@ _NAMEs = ['conan-hisiv300', 'conan-hisiv400', 'conan-himix100',
           'hisiv300', 'hisiv400',
           'himix100'
           ]
+_GCCs = ['gcc5', 'gcc6', 'gcc7', 'gcc8']
+_NAMEs += [f'base-{i}' for i in _GCCs]
+_NAMEs += [f'linaro-{i}-armv7' for i in _GCCs]
+_NAMEs += [f'linaro-{i}-armv8' for i in _GCCs]
+_NAMEs += [f'{i}-armv7' for i in _GCCs]
+_NAMEs += [f'{i}-armv8' for i in _GCCs]
+_NAMEs += _GCCs
 
 def match(patterns):
     if isinstance(patterns, str):
@@ -42,8 +50,14 @@ def build(name, version, config, prefix, push):
     LINARO_GCC = re.compile(r'linaro-gcc(?P<version>\d+)\-(?P<armv>armv\d+)')
     context = {'profile': name, 'version': version, 'config': config}
 
-    if name.startswith('conan-'):
+    if name.startswith('base-gcc'):
+        filename='base'        
+        context['gcc'] = name.replace('base-', '')
+
+    elif name.startswith('conan-'):
         filename = name.replace('-', '/')
+    
+
     elif name.startswith('linaro-'):
         filename = 'linaro'
         m = re.match(LINARO_GCC, name)
@@ -127,7 +141,7 @@ def main():
 
     config = ObjectView(data)
     for name in targets:
-        if name.startswith('conan-') or name.startswith('linaro-'):
+        if name.startswith('base-') or name.startswith('linaro-'):
             version = config.conan.version
         else:
             version = args.version or __version__

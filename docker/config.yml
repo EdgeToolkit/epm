@@ -1,7 +1,7 @@
 conan:
-  version: 1.34.0
+  version: 1.35.1
 
-archive_url: http://172.16.0.119/archive
+archive_url: http://172.16.0.119/mirror
 #http_proxy: http://172.16.0.119:8888
 pypi: http://172.16.0.121:8040/repository/pypi/simple
 
@@ -21,6 +21,8 @@ tarball:
   linaro-6-aarch64: ${archive_url}/linaro/6/gcc-linaro-6.2.1-2016.11-x86_64_aarch64-linux-gnu.tar.xz
   linaro-7-aarch64: ${archive_url}/linaro/7/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu.tar.xz
   linaro-8-aarch64: ${archive_url}/linaro/8.2/gcc-arm-8.2-2019.01-x86_64-aarch64-linux-gnu.tar.xz
+
+  golang: ${archive_url}/golang.google.cn/dl/go1.16.3.linux-amd64.tar.gz
 
 
 

@@ -2,6 +2,7 @@
 set -e
 _DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
+BASE_GCC=(base-gcc5 base-gcc6 base-gcc7 )
 LINARO_ARMV7=(linaro-gcc5-armv7 linaro-gcc6-armv7 linaro-gcc7-armv7)
 LINARO_ARMV8=(linaro-gcc5-armv8 linaro-gcc6-armv8 linaro-gcc7-armv8)
 X86_64=(gcc5 gcc6 gcc7 )
@@ -15,9 +16,9 @@ cd ${_DIR}/..
 sudo rm -f .epm/epm.tar.gz 
 git archive --format=tar.gz --output .epm/epm.tar.gz HEAD
 
-function build_linaro()
+function build_base_and_linaro()
 {
-   for i in ${LINARO_ARMV7[*]} ${LINARO_ARMV8[*]}
+   for i in ${BASE_GCC[*]} ${LINARO_ARMV7[*]} ${LINARO_ARMV8[*]}
    do
         sudo -E ./docker/main.py --build $i
    done
@@ -63,14 +64,18 @@ function pub()
     prefix=$1
     conan_version=$2
     [[ -z $conan_version ]] && conan_version=$__CONAN_VERSION__
-    for i in ${LINARO_ARMV7[*]} ${LINARO_ARMV8[*]}
+    for i in ${BASE_GCC[*]} ${LINARO_ARMV7[*]} ${LINARO_ARMV8[*]}
     do
+        sudo docker tag edgetoolkit/${i}:latest ${prefix}edgetoolkit/${i}:$conan_version
         sudo docker push ${prefix}edgetoolkit/${i}:$conan_version
+        sudo docker rmi ${prefix}edgetoolkit/${i}:$conan_version
     done
 
     for i in ${X86_64[*]} ${ARMV7[*]} ${ARMV8[*]}
     do
+        sudo docker tag edgetoolkit/${i}:latest ${prefix}edgetoolkit/${i}:latest
         sudo docker push ${prefix}edgetoolkit/${i}:latest
+        sudo docker rmi ${prefix}edgetoolkit/${i}:latest
     done
 }
 
@@ -79,10 +84,8 @@ function main()
 {
     prefix=$1
     [[ -z $prefix ]] && prefix='172.16.0.119:8482/'
-    build_linaro
-    tag_linaro $prefix
+    build_base_and_linaro
     build_epm
-    tag_epm $prefix
     pub $prefix
 }
 
