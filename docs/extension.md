@@ -1,8 +1,59 @@
 
 
+# 扩展(eXtension)
 
 
-## 扩展定义文件格式
+
+EPM 扩展(extension)为用户提供了自定义的CLI入口通过命令行方式执行 epm runx <extension name> [args ...]。
+
+扩展通过安装在可以使用(buildin除外)，扩展可以被安装在当前项目目录下，工作台(workench),全局。扩展的搜索顺序也就是 `当前目录`-> `工作台`->`全局`
+
+## 安装
+
+```
+epmx install github.com/xxxx/yyy@version  --as xxxxx --global --workbench
+```
+
+epmx gitlab.com/xxx/yyy --help
+
+epmx list --workbench --global --all
+
+epmx 
+
+epmx gitlab.com/xxx/yyy --help
+
+
+
+
+
+epm.API
+
+epm.Extension
+
+from epm import Extension
+
+args.yml
+
+main.py
+
+extension.yml
+
+```
+name: xxx
+
+```
+
+
+
+epm.tools
+
+
+
+
+
+
+
+## 扩展定义文件格式(draft)
 
 ```yaml
 
