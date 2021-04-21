@@ -20,7 +20,7 @@ REM      specified docker's shell to exec program
 REM      default: {{ profile.docker.runner.shell }}
 REM
 REM  normally you should invoke this in project directory
-REM  .epm/{{ project.folder.name }}/sandbox/{{name}}
+REM  .epm/{{ project.path.sandbox | unix_path }}/{{name}}
 REM 
 REM  Actually, you do not have to call this script directly.
 REM  You should use epm sandbox command like below 
@@ -66,7 +66,7 @@ set _CMD=%_CMD% -e EPM_SANDBOX_STORAGE=%_DHOME%/@host/conan.storage
 set _CMD=%_CMD% -e EPM_SANDBOX_PROJECT=%_DHOME%/@host/project
 set _CMD=%_CMD% -w %_DHOME%
 set _CMD=%_CMD% %_DIMAGE% %_DSHELL%
-set _CMD=%_CMD% %_DHOME%/@host/project/.epm/{{ project.folder.name }}/sandbox/{{executable.name}} %*
+set _CMD=%_CMD% %_DHOME%/@host/project/.epm/{{ project.path.sandbox | unix_path }}/{{executable.name}} %*
 
 %_CMD%
 

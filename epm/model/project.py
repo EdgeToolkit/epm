@@ -34,7 +34,7 @@ class Record(object):
     def __init__(self, project):
         self._project = project
         self._data = None
-        self._filename = os.path.join(self._project.folder.out, self._FILENAME)
+        self._filename = os.path.join(self._project.path.out, self._FILENAME)
 
     def get(self, name, default=None):
         if self._data is None:
@@ -111,8 +111,8 @@ class Project(object):
         return self._dir
 
     def setup(self):
-        rmdir(self.folder.out)
-        mkdir(self.folder.out)
+        rmdir(self.path.out)
+        mkdir(self.path.out)
         self._generate_layout()
 
         shutil.copy(self.profile.path.host, self.abspath.profile_host)
@@ -191,114 +191,12 @@ class Project(object):
 
         return self._scheme
 
-    @property
-    def folder(self):
-        """
-        """
-        Folder = namedtuple('Folder', ['cache', 'out', 'build', 'package', 'test', 'name', 'program'])
-        cache = self._cache_dir
-        out = build = package = test = program = None
-        
-        scheme = self.attribute.scheme or 'none'
-        basename = "{}/{}".format(self.attribute.profile, scheme)
-
-        if basename:
-            out = '%s/%s' % (cache, basename)
-            build = '%s/build' % out
-            package = '%s/package' % out
-            test = '%s/test' % out
-            program = '%s/program' % out
-
-        return Folder(cache, out, build, package, test, basename, program)
-
-    def _make_path(self, posix=True, absolute=True, cache=None):
-        """
-        """
-        Path = namedtuple('Path', ['root', 'cache', 'out', 'build', 'package', 'profile', 'build_profile',
-                                   'profile_host', 'profile_build', 'cross_file', 'program'
-                                   ])
-        root = '.'
-        from epm import DEFALT_CACHE_DIR
-        cache= cache or DEFALT_CACHE_DIR
-        out = build = package = test = None
-        basename = self.attribute.profile
-        scheme = self.attribute.scheme
-
-        def _(x):
-            if absolute:
-                x = os.path.normpath(os.path.join(self._dir, x))
-            if posix:
-                x = pathlib.PurePath(x).as_posix()
-            return x
-
-        if isinstance(scheme, str):
-            basename += '@%s' % scheme
-
-        profile = build_profile = profile_host = profile_build = cross_file = program = None
-
-        if basename:
-            out = _(os.path.join(cache, basename))
-            build = _(os.path.join(out, 'build'))
-            package = _(os.path.join(out, 'package'))
-            profile = _(os.path.join(out, 'profile'))
-            program = _(os.path.join(out, 'program'))
-            build_profile = _(os.path.join(out, 'build_profile'))
-
-
-            profile_host = _(os.path.join(out,  Project.CONAN_PROFILE_BUILD))
-            profile_build = _(os.path.join(out, Project.CONAN_PROFILE_HOST))
-            cross_file = _(os.path.join(out, Project.MESON_CROSS_FILE))
-
-        return Path(root, cache, out, build, package, profile, build_profile,
-                    profile_host, profile_build, cross_file, program)
-
-    def _make_path(self, posix=True, absolute=True, cache=None):
-        """
-        """
-        Path = namedtuple('Path', ['root', 'cache', 'out', 'build', 'package', 'profile', 'build_profile',
-                                   'profile_host', 'profile_build', 'cross_file', 'program'
-                                   ])
-        root = '.'
-        from epm import DEFALT_CACHE_DIR
-        cache= cache or DEFALT_CACHE_DIR
-        out = build = package = test = None
-        basename = self.attribute.profile
-        scheme = self.attribute.scheme
-
-        def _(x):
-            if absolute:
-                x = os.path.normpath(os.path.join(self._dir, x))
-            if posix:
-                x = pathlib.PurePath(x).as_posix()
-            return x
-
-        if isinstance(scheme, str):
-            basename += '@%s' % scheme
-
-        profile = build_profile = profile_host = profile_build = cross_file = program = None
-
-        if basename:
-            out = _(os.path.join(cache, basename))
-            build = _(os.path.join(out, 'build'))
-            package = _(os.path.join(out, 'package'))
-            profile = _(os.path.join(out, 'profile'))
-            program = _(os.path.join(out, 'program'))
-            build_profile = _(os.path.join(out, 'build_profile'))
-
-
-            profile_host = _(os.path.join(out,  Project.CONAN_PROFILE_BUILD))
-            profile_build = _(os.path.join(out, Project.CONAN_PROFILE_HOST))
-            cross_file = _(os.path.join(out, Project.MESON_CROSS_FILE))
-
-        return Path(root, cache, out, build, package, profile, build_profile,
-                    profile_host, profile_build, cross_file, program)
-
     def _get_paths(self, absolute=False, posix=False):
         Path = namedtuple('Path', ['root', 'cache', 'out', 
-        'build', 'package', 'program',
-        'profile_host', 'profile_build'])
+               'build', 'package', 'program',
+               'profile_host', 'profile_build'])
 
-        root = '.'        
+        root = '.'
         cache= self._cache_dir
         out = build = package = test = basename = None
         profile_host = profile_build = program = None
@@ -329,22 +227,12 @@ class Project(object):
         if 'path' not in self._paths:
             self._paths['path'] = self._get_paths()
         return self._paths['path']
-#        return self._make_path(False, False)
-
-#    @property
-#    def path_posix(self):
-#        return self._make_path(True, False)
 
     @property
     def abspath(self):
         if 'abspath' not in self._paths:
             self._paths['abspath'] = self._get_paths()
         return self._paths['abspath']
-#        return self._make_path(False, True)
-
-#    @property
-#    def abspath_posix(self):
-#        return self._make_path(True, True)
 
     @property
     def layout(self):
