@@ -72,6 +72,8 @@ def build(name, version, config, prefix, push):
             filename = 'GCC-ARM'
             context.update({'version': m.group('version'),
                             'arch': 'aarch64' if m.group('armv') == 'armv8' else 'arm'})
+    elif name == 'mingw':
+        filename='mingw'        
 
     elif name.startswith('hi'):
         filename = 'HiSi'

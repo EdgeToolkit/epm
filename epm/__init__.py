@@ -1,7 +1,7 @@
 # Allow conans to import ConanFile from here
 # to allow refactors
 import os
-__version__ = '0.0.77'
+__version__ = '0.0.77.1'
 
 HOME_DIR = os.path.join(os.path.expanduser('~'), '.epm')
 HOME_DIR = os.getenv('EPM_HOME_DIR') or HOME_DIR

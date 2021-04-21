@@ -22,7 +22,9 @@ class Scheme(object):
         self._conanfile_options = None
         self._conanfile_settings = None
 
-        self.conanfile, self.instance = conanfile_instance(self._project.api.conan, self._project.dir, project.profile)
+        if project.language == 'c':
+            self.conanfile, self.instance = conanfile_instance(self._project.api.conan, 
+            self._project.dir, project.profile)
 
     @property
     def name(self):
@@ -92,14 +94,6 @@ class Scheme(object):
             options = self.full_options
             self._requires = create_requirements(self._manifest, settings, options, profile=self._project.profile)
         return self._requires
-
-#    @property
-#    def default_options(self):
-#        assert False
-#        if self._default_options is None:
-#            conanfile = self._project.conanfile_attributes or {}
-#            self._default_options = conanfile.get('default_options') or {}
-#        return self._default_options
 
     def as_list(self, test_package=False):
         prefix = '%s:' % self._project.name if test_package else ''

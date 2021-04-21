@@ -50,7 +50,12 @@ class BuildDocker(object):
         self.environment['EPM_HOME_DIR'] = dst
         self.volume.append(Volume(src, dst))
         self.volume.append(Volume(self.project.dir, self.cwd))
-        
+
+        if project.language == 'go':
+            gopath = os.path.expanduser('~/go')
+            dest = '/tmp/go'
+            self.volume.append(Volume(gopath, dest))
+            self.environment['GOPATH='] = dest
 
     def generate(self, command):
         out_dir = os.path.join(self.project.folder.cache, 'docker', self.project.folder.name)
