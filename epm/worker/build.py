@@ -62,7 +62,7 @@ class Builder(Worker):
                 command += "".join([f" --{i}" for i in step])
             if program:
                 command += "".join([f" --program {i}" for i in program])
-            docker.enviroment['EPM_RUNNING_SYSTEM'] = 'docker'
+            docker.environment['EPM_RUNNING_SYSTEM'] = 'docker'
 
             proc = docker.run(command)
             if proc.returncode:

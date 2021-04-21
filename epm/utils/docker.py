@@ -1,5 +1,6 @@
 import os
 import stat
+import subprocess
 from conans.tools import mkdir, rmdir
 from epm.utils import Jinja2, PLATFORM
 import pathlib
@@ -24,6 +25,14 @@ class Volume(object):
         v = f"{source}:{destination}"
         return f"{v}:{self.option}" if self.option else v
 
+def _goenv(name):
+    value = os.getenv(name) or None
+    if not value:
+        proc = subprocess.run(['go', 'env',  name], stdout=subprocess.PIPE)
+        if proc.returncode == 0 and proc.stdout:
+            value = str(proc.stdout, 'utf-8')
+            value = value.strip() or None
+    return value
 
 class BuildDocker(object):
     environment = {}    
@@ -55,10 +64,26 @@ class BuildDocker(object):
             gopath = os.path.expanduser('~/go')
             dest = '/tmp/go'
             self.volume.append(Volume(gopath, dest))
-            self.environment['GOPATH='] = dest
+            self.environment['GOPATH'] = dest
+
+            # GOPROXY
+            GOPROXY= _goenv('GOPROXY') or "https://mirrors.aliyun.com/goproxy/"
+            self.environment['GOPROXY'] = GOPROXY
+
+            # GOCACHE
+            GOCACHE = _goenv('GOCACHE') or os.path.expanduser("~/.cache/go-build")            
+            dest = '/tmp/go-build'
+            self.volume.append(Volume(GOCACHE, dest))
+            self.environment['GOCACHE'] = dest
+
+            mkdir(GOCACHE)
+
+            GOSUMDB = _goenv('GOSUMDB') or "sum.golang.google.cn"
+            self.environment['GOSUMDB'] = GOSUMDB
+
 
     def generate(self, command):
-        out_dir = os.path.join(self.project.folder.cache, 'docker', self.project.folder.name)
+        out_dir = os.path.join(self.project.path.out, 'docker-command')
         rmdir(out_dir)
         mkdir(out_dir)
 
