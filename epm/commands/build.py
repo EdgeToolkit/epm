@@ -44,13 +44,7 @@ class Build(Command):
         steps += ['configure'] if args.configure else []
         steps += ['make'] if args.make else []
         steps += ['package'] if args.package else []
-        #program = args.program or []
-
         param = self.parameter(args)
-        #if not steps:
-        #    if not program:
-        #        steps = ['configure', 'make', 'package']
-        #        program = None
 
         param['step'] = steps
         param['program'] = args.program

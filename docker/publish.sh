@@ -6,7 +6,7 @@ _DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 BASE_GCC=( base-gcc5 base-gcc6 base-gcc7 base-gcc8 base-mingw )
 LINARO_ARMV7=(linaro-gcc5-armv7 linaro-gcc6-armv7 linaro-gcc7-armv7 linaro-gcc8-armv7)
 LINARO_ARMV8=(linaro-gcc5-armv8 linaro-gcc6-armv8 linaro-gcc7-armv8 linaro-gcc8-armv8)
-X86_64=(gcc5 gcc6 gcc7 gcc8)
+X86_64=(gcc5 gcc6 gcc7 gcc8 mingw)
 ARMV7=( gcc5-armv7 gcc6-armv7 gcc7-armv7 )
 ARMV8=( gcc5-armv8 gcc6-armv8 gcc7-armv8 )
 

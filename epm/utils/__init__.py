@@ -126,12 +126,21 @@ def load_module(path, name=None):
     spec.loader.exec_module(module)
     return module
 
+def win_path(path):
+    path = os.path.normpath(path)
+    path = path.replace('/', '\\')
+    return path
+
+def unix_path(path):
+    return pathlib.PurePath(path).as_posix()
 
 class Jinja2(object):
     Filters = {
         'basename': os.path.basename,
         'dirname': os.path.dirname,
-        'abspath': abspath
+        'abspath': abspath,
+        'win_path': win_path,
+        'unix_path': unix_path
     }
 
     def __init__(self, directory=None, context=None):

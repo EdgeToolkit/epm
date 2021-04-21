@@ -103,9 +103,16 @@ class Project(object):
         Attribute = namedtuple('Attribute', ['scheme', 'profile'])
         self.attribute = Attribute(scheme, profile)
 
-        self._cache_dir = mdata.get('cache_directory') or '.cache'
+        self._output_dir = mdata.get('output_directory') or '_out'
         self._paths = {}
         
+        self.language = mdata.get('language') or None
+        if not self.language:
+            if os.path.exists(f"{self._dir}/go.mod"):
+                self.language = 'go'
+            else:
+                self.language = 'c'
+
     @property
     def dir(self):
         return self._dir
@@ -113,6 +120,9 @@ class Project(object):
     def setup(self):
         rmdir(self.path.out)
         mkdir(self.path.out)
+        if self.language == 'go':
+            return
+
         self._generate_layout()
 
         shutil.copy(self.profile.path.host, self.abspath.profile_host)
@@ -192,19 +202,16 @@ class Project(object):
         return self._scheme
 
     def _get_paths(self, absolute=False, posix=False):
-        Path = namedtuple('Path', ['root', 'cache', 'out', 
-               'build', 'package', 'program',
-               'profile_host', 'profile_build'])
-
         root = '.'
-        cache= self._cache_dir
+        cache= self._output_dir
         out = build = package = test = basename = None
         profile_host = profile_build = program = None
         if self.attribute.profile:
             scheme = self.attribute.scheme or 'none'
             basename = "{}/{}".format(self.attribute.profile, scheme)
 
-        def _join(x):
+        def _join(base, x):
+            x = os.path.join(base, x)
             if absolute:
                 x = os.path.normpath(os.path.join(self._dir, x))
             if posix:
@@ -217,10 +224,15 @@ class Project(object):
             package = _join(out, 'package')
             profile = _join(out, 'profile')
             program = _join(out, 'program')
+            sandbox = _join(out, 'sandbox')
             profile_host = _join(out,  Project.CONAN_PROFILE_BUILD)
             profile_build = _join(out, Project.CONAN_PROFILE_HOST)
+        print(out, '<==================', cache, '@', basename)
 
-        return Path(root, cache, out, build, package, profile_host, profile_build)
+        Path = namedtuple('Path', ['root', 'cache', 'out', 
+               'build', 'package', 'program', 'sandbox',
+               'profile_host', 'profile_build'])
+        return Path(root, cache, out, build, package, program, sandbox, profile_host, profile_build)
 
     @property
     def path(self):
@@ -243,14 +255,6 @@ class Project(object):
         if self._conanfile_attributes is None:
             self._conanfile_attributes = conanfile_inspect(os.path.join(self.dir, 'conanfile.py'))
         return self._conanfile_attributes
-
-#    @property
-#    def test_packages(self):
-#        tests = self.__meta_information__.get('test_package') or []
-#
-#        if not tests and os.path.exists('test_package/conanfile.py'):
-#            tests = ['test_package']
-#        return tests
 
     @property
     def profile(self):

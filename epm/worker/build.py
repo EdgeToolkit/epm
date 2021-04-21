@@ -1,4 +1,5 @@
 import os
+import subprocess
 from epm.worker import Worker
 from epm.errors import EConanException
 from conans.tools import environment_append
@@ -28,12 +29,14 @@ class Builder(Worker):
 
         for i in ['configure', 'make', 'package']:
             if step is None or i in step:
-                fn = getattr(self, '_%s' % i)
+                prefix = '_go_' if project.language=='go' else '_'
+                fn = getattr(self, '{}{}'.format(prefix, i))
                 self.out.highlight('[building - %s ......]\n' % i)
                 with environment_append(self.api.config.env_vars):
                     fn(project)
 
-        build_program(project, program)
+        if project.language == 'c':
+            build_program(project, program)
 
     def exec(self, param):
         project = self.api.project(param['PROFILE'], param.get('SCHEME'))
@@ -118,3 +121,20 @@ class Builder(Worker):
                       install_folder=path.build,
                       cwd=wd)
 
+    def _go_configure(self, project):
+        pass
+
+    def _go_make(self, project):
+        from conans.tools import mkdir
+        mkdir(project.path.build)
+        output = project.path.build
+        if project.name:
+            output = os.path.join(output, project.name)
+        command = ['go', 'build', '-o', output]
+        proc = subprocess.run(command)
+        if proc.returncode:
+            raise Exception(f"[go]] build failed.")
+
+
+    def _go_package(self, project):
+        pass

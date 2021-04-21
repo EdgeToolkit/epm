@@ -32,7 +32,7 @@ def get_logger(name=None):
 
 
 class SysLog(object):
-    FILENAME = '.epm/log.txt'
+    FILENAME = '_out/log.txt'
     FORMATTER = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
     def __init__(self):

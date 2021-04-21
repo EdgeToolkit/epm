@@ -1,0 +1,15 @@
+# ================================================
+#          GNU GCC 5
+# ================================================
+mingw:
+  docker:
+    builder:
+      image: edgetoolkit/mingw
+      shell: /bin/bash
+      home: /home/conan
+
+  description: |
+    Linux MinGW GCC 7 cross build profile for x86_64 Windows.
+  profile_host: gcc/5/x86_64
+  profile_build: mingw/gcc7/x86_64
+  
