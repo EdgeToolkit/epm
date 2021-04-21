@@ -11,6 +11,6 @@ RUN    export CC=gcc                     \
     && mkdir /tmp/epm \
     && tar -xvzf /tmp/epm.tar.gz -C /tmp/epm \
     && export EPM_INSTALLATION_OPTIONS=disable-extend && sudo -E pip install {{config.pip_options}} /tmp/epm \
-    && sudo rm -rf /tmp/epm* \
+    && sudo rm -rf /tmp/* \
     && conan --version \
     && epm --version

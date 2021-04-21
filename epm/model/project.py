@@ -94,7 +94,7 @@ class Project(object):
 
         mdata = self.__meta_information__ or {}
         mdata = mdata.get('scheme') or {}
-        if scheme in ['none', 'None', 'NONE'] or not scheme:
+        if not scheme or scheme.lower() in ['none', 'default', 'unkown']:
             scheme = None
 
         if scheme and scheme not in mdata:
@@ -102,6 +102,9 @@ class Project(object):
 
         Attribute = namedtuple('Attribute', ['scheme', 'profile'])
         self.attribute = Attribute(scheme, profile)
+
+        self._cache_dir = mdata.get('cache_directory') or '.cache'
+        self._paths = {}
         
     @property
     def dir(self):
@@ -191,20 +194,13 @@ class Project(object):
     @property
     def folder(self):
         """
-        .cache: .epm
-        .name:  <profile>@<scheme>
-        .program: .epm/<profile>@<scheme>/program
-        .package: .epm/<profile>@<scheme>/package
-        .build: .epm/<profile>@<scheme>/build
-        :return:
         """
         Folder = namedtuple('Folder', ['cache', 'out', 'build', 'package', 'test', 'name', 'program'])
-        cache = '.epm'
+        cache = self._cache_dir
         out = build = package = test = program = None
-        basename = self.attribute.profile
-        scheme = self.attribute.scheme
-        if scheme and scheme not in ['default', 'None']:
-            basename += '@%s' % scheme
+        
+        scheme = self.attribute.scheme or 'none'
+        basename = "{}/{}".format(self.attribute.profile, scheme)
 
         if basename:
             out = '%s/%s' % (cache, basename)
@@ -215,14 +211,15 @@ class Project(object):
 
         return Folder(cache, out, build, package, test, basename, program)
 
-    def _make_path(self, posix=True, absolute=True):
+    def _make_path(self, posix=True, absolute=True, cache=None):
         """
         """
         Path = namedtuple('Path', ['root', 'cache', 'out', 'build', 'package', 'profile', 'build_profile',
                                    'profile_host', 'profile_build', 'cross_file', 'program'
                                    ])
         root = '.'
-        cache = '.epm'
+        from epm import DEFALT_CACHE_DIR
+        cache= cache or DEFALT_CACHE_DIR
         out = build = package = test = None
         basename = self.attribute.profile
         scheme = self.attribute.scheme
@@ -255,21 +252,99 @@ class Project(object):
         return Path(root, cache, out, build, package, profile, build_profile,
                     profile_host, profile_build, cross_file, program)
 
-    @property
-    def path(self):
-        return self._make_path(False, False)
+    def _make_path(self, posix=True, absolute=True, cache=None):
+        """
+        """
+        Path = namedtuple('Path', ['root', 'cache', 'out', 'build', 'package', 'profile', 'build_profile',
+                                   'profile_host', 'profile_build', 'cross_file', 'program'
+                                   ])
+        root = '.'
+        from epm import DEFALT_CACHE_DIR
+        cache= cache or DEFALT_CACHE_DIR
+        out = build = package = test = None
+        basename = self.attribute.profile
+        scheme = self.attribute.scheme
+
+        def _(x):
+            if absolute:
+                x = os.path.normpath(os.path.join(self._dir, x))
+            if posix:
+                x = pathlib.PurePath(x).as_posix()
+            return x
+
+        if isinstance(scheme, str):
+            basename += '@%s' % scheme
+
+        profile = build_profile = profile_host = profile_build = cross_file = program = None
+
+        if basename:
+            out = _(os.path.join(cache, basename))
+            build = _(os.path.join(out, 'build'))
+            package = _(os.path.join(out, 'package'))
+            profile = _(os.path.join(out, 'profile'))
+            program = _(os.path.join(out, 'program'))
+            build_profile = _(os.path.join(out, 'build_profile'))
+
+
+            profile_host = _(os.path.join(out,  Project.CONAN_PROFILE_BUILD))
+            profile_build = _(os.path.join(out, Project.CONAN_PROFILE_HOST))
+            cross_file = _(os.path.join(out, Project.MESON_CROSS_FILE))
+
+        return Path(root, cache, out, build, package, profile, build_profile,
+                    profile_host, profile_build, cross_file, program)
+
+    def _get_paths(self, absolute=False, posix=False):
+        Path = namedtuple('Path', ['root', 'cache', 'out', 
+        'build', 'package', 'program',
+        'profile_host', 'profile_build'])
+
+        root = '.'        
+        cache= self._cache_dir
+        out = build = package = test = basename = None
+        profile_host = profile_build = program = None
+        if self.attribute.profile:
+            scheme = self.attribute.scheme or 'none'
+            basename = "{}/{}".format(self.attribute.profile, scheme)
+
+        def _join(x):
+            if absolute:
+                x = os.path.normpath(os.path.join(self._dir, x))
+            if posix:
+                x = pathlib.PurePath(x).as_posix()
+            return x
+
+        if basename:
+            out = _join(cache, basename)
+            build = _join(out, 'build')
+            package = _join(out, 'package')
+            profile = _join(out, 'profile')
+            program = _join(out, 'program')
+            profile_host = _join(out,  Project.CONAN_PROFILE_BUILD)
+            profile_build = _join(out, Project.CONAN_PROFILE_HOST)
+
+        return Path(root, cache, out, build, package, profile_host, profile_build)
 
     @property
-    def path_posix(self):
-        return self._make_path(True, False)
+    def path(self):
+        if 'path' not in self._paths:
+            self._paths['path'] = self._get_paths()
+        return self._paths['path']
+#        return self._make_path(False, False)
+
+#    @property
+#    def path_posix(self):
+#        return self._make_path(True, False)
 
     @property
     def abspath(self):
-        return self._make_path(False, True)
+        if 'abspath' not in self._paths:
+            self._paths['abspath'] = self._get_paths()
+        return self._paths['abspath']
+#        return self._make_path(False, True)
 
-    @property
-    def abspath_posix(self):
-        return self._make_path(True, True)
+#    @property
+#    def abspath_posix(self):
+#        return self._make_path(True, True)
 
     @property
     def layout(self):

@@ -27,7 +27,7 @@ function build_base_and_linaro()
 
 function build_epm()
 {
-   for i in ${X86_64[*]} ${ARMV7[*]} ${ARMV8[*]}
+   for i in ${X86_64[*]} ${ARMV7[*]} ${ARMV8[*]} 
    do
        sudo -E ./docker/main.py --build $i --version latest
    done
