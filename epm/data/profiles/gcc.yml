@@ -205,7 +205,7 @@ gcc6-armv7:
       home: /home/conan
   description: |
     GNU GCC 6 build profile for ARMv7 Linux.
-  profile_host: gcc/5/armv7
+  profile_host: gcc/6/armv7
   profile_build: gcc/5/x86_64
 
 gcc6-armv7d:
