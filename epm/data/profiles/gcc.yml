@@ -262,7 +262,7 @@ gcc7:
       home: /tmp
   description: |
     GNU GCC 7 build profile for x86_64 Linux.
-  profile_host: gcc/7/armv7
+  profile_host: gcc/7/x86_64
   profile_build: gcc/5/x86_64
 
 gcc7d:
@@ -277,7 +277,7 @@ gcc7d:
       home: /tmp
   description: |
     GNU GCC 7 build profile for x86_64 Linux (DEBUG).
-  profile_host: gcc/7/debug/armv7
+  profile_host: gcc/7/debug/x86_64
   profile_build: gcc/5/x86_64
 
 # ================================================
