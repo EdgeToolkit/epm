@@ -133,7 +133,7 @@ class Project(object):
         template = manifest.get('conan.layout', DEFALT_CONAN_LAYOUT)
         layout = Template(template)
 
-        text = layout.substitute(out_dir=self.folder.out)
+        text = layout.substitute(out_dir=self.path.out)
         with open(self.layout, 'w') as f:
             f.write(text)
             f.flush()
@@ -248,7 +248,7 @@ class Project(object):
 
     @property
     def layout(self):
-        return '%s/conan.layout' % self.folder.out
+        return '%s/conan.layout' % self.path.out
 
     @property
     def conanfile_attributes(self):

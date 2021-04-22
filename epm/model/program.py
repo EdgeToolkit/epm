@@ -215,7 +215,7 @@ class Program(object):
 
         project.api.out.highlight(f"\n==== build program ({name})\n")
 
-        build_folder = os.path.join(project.folder.program, name)
+        build_folder = os.path.join(project.path.program, name)
         WD = os.path.join(project.dir, self.location)
 
         conan = project.api.conan
