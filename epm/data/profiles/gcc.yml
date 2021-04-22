@@ -330,7 +330,7 @@ gcc7-armv7:
       home: /home/conan
   description: |
     GNU GCC 7 build profile for ARMv7 Linux.
-  profile_host: gcc/5/armv7
+  profile_host: gcc/7/armv7
   profile_build: gcc/5/x86_64
 
 gcc7-armv7d:
@@ -387,7 +387,7 @@ gcc8:
   description: |
     GNU GCC 8 build profile for x86_64 Linux.
   profile_host: gcc/8/x86_64
-  profile_build: gcc/8/x86_64
+  profile_build: gcc/5/x86_64
 
 gcc8d:
   docker:
@@ -402,7 +402,7 @@ gcc8d:
   description: |
     GNU GCC 8 build profile for x86_64 Linux (DEBUG).
   profile_host: gcc/8/debug/x86_64
-  profile_build: gcc/8/x86_64
+  profile_build: gcc/5/x86_64
 
 gcc8-x86:
   docker:
@@ -419,7 +419,7 @@ gcc8-x86:
     GNU GCC 8 build profile for x86 Linux.
 
   profile_host: gcc/8/x86
-  profile_build: gcc/8/x86
+  profile_build: gcc/5/x86
 
 
 gcc8-x86d:
@@ -437,7 +437,7 @@ gcc8-x86d:
     GNU GCC 8 build profile for x86 Linux.
 
   profile_host: gcc/8/debug/x86
-  profile_build: gcc/8/x86
+  profile_build: gcc/5/x86
 
 
 
