@@ -36,16 +36,16 @@ if not defined EPM_SANDBOX_STORAGE (
         set EPM_SANDBOX_STORAGE=%CONAN_STORAGE_PATH%
     ) else (
         if defined EPM_HOME_DIR (
-            set EPM_SANDBOX_STORAGE=%EPM_HOME_DIR%\.conan\data
+            set EPM_SANDBOX_STORAGE=%EPM_HOME_DIR%\data
         ) else (
             set EPM_SANDBOX_STORAGE=%USERPROFILE%\.epm
         )
         
     )
 )
-pushd %EPM_SANDBOX_STORAGE%
-set EPM_SANDBOX_STORAGE=%CD%
-popd
+REM pushd %EPM_SANDBOX_STORAGE%
+REM set EPM_SANDBOX_STORAGE=%CD%
+REM popd
 
 if not defined EPM_SANDBOX_PROJECT set EPM_SANDBOX_PROJECT=%CD%
 

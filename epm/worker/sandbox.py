@@ -50,7 +50,7 @@ class Runner(object):
         # TODO: add validation of being runnable for this profile
 
     def exec(self, command, argv):
-        filename = os.path.normpath(os.path.join(self._project.folder.out, 'sandbox', command))
+        filename = os.path.normpath(os.path.join(self._project.path.out, 'sandbox', command))
         if PLATFORM == 'Windows':
             if not os.path.exists(filename):
                 for ext in ['.cmd', '.bat', '.ps1']:
