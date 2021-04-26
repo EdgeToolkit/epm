@@ -64,10 +64,10 @@ if [ -z "$__storage__" ]; then
   if [ -n "$CONAN_STORAGE_PATH" ]; then
     __storage__=$CONAN_STORAGE_PATH
   else
-    if [ -z "$EPM_HOME_DIR" ]; then
-      __storage__=$EPM_HOME_DIR/.epm/.conan/data
+    if [ -n "$EPM_HOME_DIR" ]; then
+      __storage__=$EPM_HOME_DIR/.epm/data
     else
-      __storage__=$HOME/.epm/.conan/data
+      __storage__=$HOME/.epm/data
     fi
   fi
 fi
@@ -133,6 +133,7 @@ fi
 print_info()
 {
   if [ -n $EPM_SANDBOX_LOGLEVEL ]; then
+    echo "CONAN_STORAGE_PATH: $CONAN_STORAGE_PATH"
     echo "EPM_SANDBOX_SUDO: $EPM_SANDBOX_SUDO"
     echo "EPM_SANDBOX_RUNNER: $EPM_SANDBOX_RUNNER"
     echo "EPM_SANDBOX_SHELL: $EPM_SANDBOX_SHELL"
