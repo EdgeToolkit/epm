@@ -141,7 +141,7 @@ setup(
     entry_points={
         'console_scripts': [
             'epm=epm.main:run',
-            'epm-test=epm.test.main:run'
+            'epm.test=epm.test.main:run'
         ],
     },
 )

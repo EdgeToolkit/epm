@@ -82,13 +82,15 @@ def as_package(klass):
     return type(class_name, (klass,), member)
 
 
+
 def _make_program_metainfo(name, origin):
     program = None
     meta = copy.deepcopy(origin)
-    for i in meta['program']:
-        if i['name'] == name:
-            program = i
-            break
+    test = meta.get('test') or {}
+    if name not in test:
+        raise Exception(f"test {name} not defained in package.yml, please check `test` section" )
+
+    program = test[name] or {}
 
     package_name = origin['name']
     version = origin['version']
@@ -96,7 +98,6 @@ def _make_program_metainfo(name, origin):
  
     dependencies = {}
     if 'dependencies' not in program:
-        #dependencies = meta.get('dependencies') or {}
         dependencies[package_name] = version
     elif isinstance(program['dependencies'], dict):
             dependencies = program['dependencies']
@@ -105,10 +106,9 @@ def _make_program_metainfo(name, origin):
     meta['dependencies'] = dependencies
     meta['build-tools'] = build_tools
     try:
-        del meta['program']
+        del meta['test']
     except:
         pass
-    print(meta)
 
         
 
@@ -118,7 +118,7 @@ def _make_program_metainfo(name, origin):
     return meta
 
 
-def as_program(klass):
+def as_test(klass):
     name = os.getenv('EPM_PROGRAM_NAME')
     directory = os.getenv('EPM_PROJECT_DIRECTORY')
     manifest = os.path.join(directory, 'package.yml')
@@ -148,7 +148,7 @@ def as_program(klass):
     klass = _ConanfileEx(klass)
 
     return type(class_name, (klass,), member)
-
+as_program = as_test
 
 def delete(fn):
     def _wrapper(self, *args):

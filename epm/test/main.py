@@ -17,6 +17,9 @@ def Main(args):
     parser.add_argument('-p', '--pattern', type=str, default='test_*.py',
                         help='pattern of the the test file to run.')
 
+    parser.add_argument('-d', '--dir', type=str, default=None,
+                        help='only specified directory')
+
     args = parser.parse_args(args)
 
     cases =unittest.defaultTestLoader.discover(_DIR, pattern=args.pattern, top_level_dir=None)

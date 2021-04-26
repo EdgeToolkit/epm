@@ -72,16 +72,24 @@ class Runner(object):
             import locale
 
             language, encoding = locale.getdefaultlocale()
+            
+            def _(x):
+                for enc in [encoding, 'UTF-8']:
+                    try:
+                        return x.decode(encoding='UTF-8')
+                    except :
+                        pass
+                return x.decode(encoding='UTF-8', errors='ignore')
 
             with environment_append(env):
                 proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                        shell=True, encoding=encoding)
+                                        shell=True)
                 while True:
                     out, err = proc.communicate()
                     if out:
-                        print(out)
+                        print(_(out))
                     if err:
-                        print(err)
+                        print(_(err))
                     if proc.poll() is None:
                         time.sleep(0.1)
                     else:

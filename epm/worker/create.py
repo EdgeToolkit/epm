@@ -15,8 +15,8 @@ from epm.errors import EConanException
 from epm.worker.sandbox import build_tests, Generator
 from epm.utils.docker import BuildDocker
 from epm.utils import PLATFORM
-from epm.model.program import create_program
 
+from epm.model.program import ProgramX as Program
 
 
 def conandir(path):
@@ -155,9 +155,19 @@ class Creator(Worker):
         if project.profile.host.settings['os'] == 'iOS':
             self.out.info("skip program building, NOT support in iOS for now :-).")
             return
+        
         if program != 'disable' and project.profile.host:
-            create_program(project, program)
-   
+            
+            built = set()
+            for name, test in project.test.items():
+                if test.project and test.project not in built:                    
+                    program = Program(project, name)
+                    program.build()
+                    built.add(test.project)
+                    
+            for name, test in project.test.items():
+                program.generate()
+  
     def _archive(self, project, path, storage_path):
         ref = project.reference
         pacage_id = project.record.get('package_id')

@@ -77,6 +77,7 @@ class Project(object):
 
         self._scheme = None
         self._profile = None
+        self._test = None
         self.__meta_information__ = {}
         self._conanfile_attributes = None
 
@@ -227,7 +228,6 @@ class Project(object):
             sandbox = _join(out, 'sandbox')
             profile_host = _join(out,  Project.CONAN_PROFILE_BUILD)
             profile_build = _join(out, Project.CONAN_PROFILE_HOST)
-        print(out, '<==================', cache, '@', basename)
 
         Path = namedtuple('Path', ['root', 'cache', 'out', 
                'build', 'package', 'program', 'sandbox',
@@ -262,6 +262,32 @@ class Project(object):
             from epm.model.profile import Profile
             self._profile = Profile(self.attribute.profile, self.api.workbench_dir)
         return self._profile
+    
+    @property
+    def test(self):
+        if self._test is None:
+            self._test = self._parse_test()
+        return self._test
+    def _parse_test(self):
+        result = {}
+        config = self.metainfo.get('test') or {}
+        for name, conf in config.items():
+            conf = conf or dict()
+            assert isinstance(conf, dict)
+            project = conf.get('project') or None
+            program = conf.get('program') or name
+            args = conf.get('args') or ''
+            description = conf.get('description') or ''
+            pattern= conf.get('pattern') or None
+            if isinstance(pattern, str):
+                patterns = [pattern]
+
+            if pattern and not isinstance(path, list):
+                raise SyntaxError(f'invalid type of program.pattern defined {pattern}.')
+
+            result[name] = namedtuple("Test", "name project program args description pattern")(
+                name, project, program, args, description, pattern)
+        return result
 
     @property
     def available(self):

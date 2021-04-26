@@ -15,5 +15,6 @@ epm.test.temp
 /Dockerfile
 /Dockerfile-*
 /.epm
+_out
 epm.log
 /docker-tools/config.yml

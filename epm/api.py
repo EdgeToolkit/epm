@@ -98,7 +98,6 @@ class APIUtils(object):
     def config(self):
         if self._CONFIG is None:
             from epm.model.config import Config
-            print(self.workbench_dir)
             path = os.path.join(self.workbench_dir, 'config.yml')
             self._CONFIG = Config(path)
 

@@ -4,7 +4,7 @@ from epm.worker import Worker
 from epm.errors import EConanException
 from conans.tools import environment_append
 from epm import HOME_DIR
-from epm.model.program import build_program
+from epm.model.program import ProgramX as Program
 from epm.utils import PLATFORM
 from epm.utils.docker import BuildDocker
 
@@ -13,6 +13,24 @@ from epm.utils.docker import BuildDocker
 #    def __init__(self, api, project):
 #        super(Docker, self).__init__(api, project)
 
+class editable_add(object):
+    def __init__(self, project):
+        self._project = project
+        self._ref = None
+
+    def __enter__(self):
+        conan = self._project.api.conan
+        path = self._project.dir
+        layout = os.path.join(self._project.folder.out, "conan.layout")
+        ref = str(self._project.reference)
+        cwd = path
+        conan.editable_add(path, ref, layout, cwd)
+        self._ref = ref
+
+    def __exit__(self, type, value, trace):
+        if self._ref:
+            conan = self._project.api.conan
+            conan.editable_remove(self._ref)
 
 class Builder(Worker):
 
@@ -34,9 +52,28 @@ class Builder(Worker):
                 self.out.highlight('[building - %s ......]\n' % i)
                 with environment_append(self.api.config.env_vars):
                     fn(project)
-
-        if project.language == 'c':
-            build_program(project, program)
+       
+        self._build_program(project, program)
+            
+    def _build_program(project, target=None):
+        if project.language != 'c':
+            return
+        built = set()
+        with editable_add(project):
+            for name, test in project.test.items():
+                if target is None or name in target:
+                    if not test.project:
+                        continue
+                    if test.project in built:
+                        continue                       
+                    program = Program(project, name)
+                    program.build()
+                    built.add(test.project)
+                    
+            for name, test in project.test.items():
+                if target is None or name in target:
+                    program = Program(project, name)
+                    program.generate()
 
     def exec(self, param):
         project = self.api.project(param['PROFILE'], param.get('SCHEME'))
