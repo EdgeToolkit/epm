@@ -69,7 +69,7 @@ class Main(object):
 
         known, unkown = self.parser.parse_known_args(args)
         command = known.command
-        if command in ['sandbox', 'run', 'runx', 'exec']:
+        if command in ['sandbox', 'run', 'runx', 'exec', 'test']:
             self.args = known
             self.args.argv = unkown
         else:

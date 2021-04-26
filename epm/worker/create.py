@@ -16,7 +16,7 @@ from epm.worker.sandbox import build_tests, Generator
 from epm.utils.docker import BuildDocker
 from epm.utils import PLATFORM
 
-from epm.model.program import ProgramX as Program
+from epm.model.program import Program
 
 
 def conandir(path):
@@ -166,6 +166,9 @@ class Creator(Worker):
                     built.add(test.project)
                     
             for name, test in project.test.items():
+                print(f"============= [{name}] =================")
+                print("***", test)
+                program = Program(project, name)
                 program.generate()
   
     def _archive(self, project, path, storage_path):

@@ -274,8 +274,10 @@ class Project(object):
         for name, conf in config.items():
             conf = conf or dict()
             assert isinstance(conf, dict)
-            project = conf.get('project') or None
+            project = conf.get('project') or None            
             program = conf.get('program') or name
+            if 'program' in program and not program:
+                program = None
             args = conf.get('args') or ''
             description = conf.get('description') or ''
             pattern= conf.get('pattern') or None

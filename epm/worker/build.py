@@ -4,7 +4,7 @@ from epm.worker import Worker
 from epm.errors import EConanException
 from conans.tools import environment_append
 from epm import HOME_DIR
-from epm.model.program import ProgramX as Program
+from epm.model.program import Program
 from epm.utils import PLATFORM
 from epm.utils.docker import BuildDocker
 

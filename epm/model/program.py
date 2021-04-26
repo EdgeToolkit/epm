@@ -7,7 +7,7 @@ from conans.tools import chdir
 from epm.utils.logger import syslog
 from epm.utils import PLATFORM, ARCH
 
-class ProgramX(object):
+class Program(object):
 
     def __init__(self, project, name):
         self._project = project
@@ -41,20 +41,23 @@ class ProgramX(object):
 
     def _find(self, folder, root):
         storage = self.storage_path if root == 'storage' else self._project.dir
-        with chdir(os.path.join(storage, folder)):
-            for pattern in self._patterns:
-                path = glob.glob(f"{pattern}/{self.filename}")
-                syslog.info(f'find program executable {self.filename} in <{root}>:{storage}' +
-                            "\nroot: {}".format(os.path.abspath('.')) +
-                            "\npattern: {}".format(pattern) +
-                            "\n {} found. {}".format(len(path), "\n".join(path)))
-
-                if path:
-                    return path[0]
+        
+        directory = os.path.join(storage, folder)
+        if os.path.exists(directory):
+            with chdir(directory):
+                for pattern in self._patterns:
+                    path = glob.glob(f"{pattern}/{self.filename}")
+                    syslog.info(f'find program executable {self.filename} in <{root}>:{storage}' +
+                                "\nroot: {}".format(os.path.abspath('.')) +
+                                "\npattern: {}".format(pattern) +
+                                "\n {} found. {}".format(len(path), "\n".join(path)))    
+                    if path:
+                        return path[0]
         return None
 
     def generate(self):
-        if self.name is False:
+        if not self._config.program:
+            self.out.info("skip generate for {self.name} as it has no executable program.")
             return
         project = self._project
         config = self._config
@@ -72,13 +75,14 @@ class ProgramX(object):
                     break
         else:
             where = 'project'
-            build_folder = os.path.join(project.path.program, self.name)
+            build_folder = os.path.join(project.path.program, self._config.project)
             path = self._find(build_folder, where)
+            
             if path:
                 folder = build_folder
 
         if not path or not folder:
-            raise FileNotFoundError(f'can not find {self.name} in {where}.')
+            raise FileNotFoundError(f'can not find {self._config.project} in {where}.')
 
         rootpath = os.path.join(self.storage_path if where == 'storage' else project.dir)
         conaninfo_path = os.path.join(rootpath, folder, 'conaninfo.txt')
