@@ -276,7 +276,7 @@ class Project(object):
             assert isinstance(conf, dict)
             project = conf.get('project') or None
             program = name
-            if 'program' in config:
+            if 'program' in conf:
                 program = conf['program'] or ''
                 if program.lower() in ['', 'null', 'none']:
                     program = None
