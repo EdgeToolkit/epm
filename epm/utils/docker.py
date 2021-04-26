@@ -83,9 +83,10 @@ class BuildDocker(object):
 
 
     def generate(self, command):
-        out_dir = os.path.join(self.project.path.out, 'docker-command')
+        out_dir = f"{self.project.path.out}.docker.command"
         rmdir(out_dir)
         mkdir(out_dir)
+        
 
         context = {'docker': self, 'workbench': self.workbench or '',
                    'script_dir': pathlib.PurePath(out_dir).as_posix(),

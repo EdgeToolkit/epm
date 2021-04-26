@@ -23,7 +23,6 @@
 # EPM_SANDBOX_SHELL:
 # EPM_SANDBOX_STORAGE:
 # EPM_SADNBOX_PROJECT:
-# EPM_SANDBOX_DIRECTORY:
 # EPM_SANDBOX_LOGLEVEL
 ###########################################################
 __name__={{project.name}}
@@ -133,20 +132,28 @@ fi
 
 print_info()
 {
-  _ "__name__: $__name__"
-  _ "__version__: $__version__"
-  _ "__reference__: $__reference__"
-  _ "__reference_dir__: $__reference_dir__"
-  _ "__package_id__: $__package_id__"
-  _ "__project__: $__project__"
-  _ "__runner__: $__runner__"
-  _ "__storage__: $__storage__"
-  _ "__shell__: $__shell__"
-  _ "__sudo__: $__sudo__"
-  _ "__origin__: $__origin__"
-  _ "__program__: $__program__"
-  _ "__libpath__: $__libpath__"
-  _ "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"  
+  if [ -n $EPM_SANDBOX_LOGLEVEL ]; then
+    echo "EPM_SANDBOX_SUDO: $EPM_SANDBOX_SUDO"
+    echo "EPM_SANDBOX_RUNNER: $EPM_SANDBOX_RUNNER"
+    echo "EPM_SANDBOX_SHELL: $EPM_SANDBOX_SHELL"
+    echo "EPM_SANDBOX_STORAGE: $EPM_SANDBOX_STORAGE"
+    echo "EPM_SADNBOX_PROJECT: $EPM_SADNBOX_PROJECT"
+    echo " "
+    echo "__name__: $__name__"
+    echo "__version__: $__version__"
+    echo "__reference__: $__reference__"
+    echo "__reference_dir__: $__reference_dir__"
+    echo "__package_id__: $__package_id__"
+    echo "__project__: $__project__"
+    echo "__runner__: $__runner__"
+    echo "__storage__: $__storage__"
+    echo "__shell__: $__shell__"
+    echo "__sudo__: $__sudo__"
+    echo "__origin__: $__origin__"
+    echo "__program__: $__program__"
+    echo "__libpath__: $__libpath__"
+    echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"  
+  fi
 }
 
 

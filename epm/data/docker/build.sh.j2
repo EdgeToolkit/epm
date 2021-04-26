@@ -6,6 +6,7 @@ set -e
 trap on_exit EXIT
 
 sudo -E docker run --rm \
+--user $(id -u):$(id -g) \
 {% for v in docker.volume -%}
     -v {{v.volume}} \
 {% endfor -%}
@@ -14,8 +15,6 @@ sudo -E docker run --rm \
     -e {{name}}={{value}} \
 {% endfor -%}
     -w {{docker.cwd}} \
-    --user $(id -u):$(id -g) \
-    -e HOME={{docker.home}} \
-    {{docker.image}} \
-    {{docker.shell}} {{script_dir}}/docker_build_command.sh
+{{docker.image}} \
+{{docker.shell}} {{script_dir}}/docker_build_command.sh
 

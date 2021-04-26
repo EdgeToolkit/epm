@@ -49,7 +49,6 @@ def _clear_folder(path):
 
 def _dep_graph(storage_path, full_requires, result={}):
     for package in full_requires:
-        print('+', package, package.ref, package.ref.dir_repr())
         pkg_dir = os.path.join(storage_path, package.ref.dir_repr(), 'package', package.id)
         info_path = os.path.join(pkg_dir, CONANINFO)
         conan_info = ConanInfo.load_file(info_path)
@@ -166,8 +165,6 @@ class Creator(Worker):
                     built.add(test.project)
                     
             for name, test in project.test.items():
-                print(f"============= [{name}] =================")
-                print("***", test)
                 program = Program(project, name)
                 program.generate()
   
