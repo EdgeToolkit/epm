@@ -57,7 +57,7 @@ class Program(object):
 
     def generate(self):
         if not self._config.program:
-            self.out.info("skip generate for {self.name} as it has no executable program.")
+            print("skip generate for {self.name} as it has no executable program.")
             return
         project = self._project
         config = self._config
