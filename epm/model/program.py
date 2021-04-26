@@ -57,7 +57,8 @@ class Program(object):
 
     def generate(self):
         if not self._config.program:
-            print("skip generate for {self.name} as it has no executable program.")
+            message = project.api.out.info
+            message(f"-- skip generate for {self.name} as it has no executable program.")
             return
         project = self._project
         config = self._config
