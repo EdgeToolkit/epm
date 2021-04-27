@@ -46,11 +46,13 @@ class Program(object):
         if os.path.exists(directory):
             with chdir(directory):
                 for pattern in self._patterns:
-                    path = glob.glob(f"{pattern}/{self.filename}")
-                    syslog.info(f'find program executable {self.filename} in <{root}>:{storage}' +
+                    p = os.path.join(pattern, self.filename)
+                    path = glob.glob(p)
+                    syslog.info(f"\nfind program executable '{self.filename}' in <{root}>({storage})" +
                                 "\nroot: {}".format(os.path.abspath('.')) +
-                                "\npattern: {}".format(pattern) +
-                                "\n {} found. {}".format(len(path), "\n".join(path)))    
+                                "\npattern: '{}'".format(p) +
+                                "\ndirectory: {}".format(directory) +
+                                "\n {} found. \n{}".format(len(path), "\n  +".join(path)))    
                     if path:
                         return path[0]
         return None
@@ -82,7 +84,7 @@ class Program(object):
                 folder = build_folder
 
         if not path or not folder:
-            raise FileNotFoundError(f'can not find {self._config.project} in {where}.')
+            raise FileNotFoundError(f'can not find {self._config.project} in {where}. path={path} folder={folder}.')
 
         rootpath = os.path.join(self.storage_path if where == 'storage' else project.dir)
         conaninfo_path = os.path.join(rootpath, folder, 'conaninfo.txt')
