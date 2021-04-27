@@ -37,7 +37,7 @@ class Program(object):
 
     @property
     def _patterns(self):
-        return self._config.pattern or ['bin', '']
+        return self._config.pattern or ['bin', 'build/bin', 'build', '' ]
 
     def _find(self, folder, root):
         storage = self.storage_path if root == 'storage' else self._project.dir
