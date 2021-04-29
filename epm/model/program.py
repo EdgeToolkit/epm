@@ -125,6 +125,11 @@ class Program(object):
         if not os.path.exists(storage):
             return list(), list()
 
+        print('============================')    
+        print(conaninfo)
+        print(conaninfo.full_requires)
+        print(os.listdir(storage))
+
         with chdir(storage):
             for pref in conaninfo.full_requires:
                 path = os.path.join(pref.ref.dir_repr(), 'package', pref.id)
