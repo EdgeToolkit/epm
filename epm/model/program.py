@@ -65,6 +65,7 @@ class Program(object):
         config = self._config
         builtin = config.project is None
         package_id = project.record.get('package_id')
+        package_folder = None
         folder = None
         where = 'storage'
         if builtin:
@@ -86,20 +87,13 @@ class Program(object):
         if not path or not folder:
             raise FileNotFoundError(f'can not find {self._config.project} in {where}. path={path} folder={folder}.')
 
-        if buildin:
-            if command == 'create':
-                pass
-            else:
-                assert False, "Build ---- generate to be implemented."
-
-
-
         rootpath = os.path.join(self.storage_path if where == 'storage' else project.dir)
         conaninfo_path = os.path.join(rootpath, folder, 'conaninfo.txt')
         from conans.model.info import ConanInfo
         from conans.util.files import load, mkdir
         conaninfo = ConanInfo.loads(load(conaninfo_path))
-        libs, deps = self._parse_dynamic_libs(conaninfo)
+        
+        libs, deps = self._parse_dynamic_libs(conaninfo, package_folder)
         libdirs = set([os.path.dirname(x) for x in libs])
         depdirs = set([os.path.dirname(x) for x in deps])
         from collections import namedtuple
@@ -124,46 +118,38 @@ class Program(object):
             j2.render("linux.cmd.j2", outfile=f"{out_dir}/{self.name}.cmd")
             os.chmod(f"{out_dir}/{self.name}", stat.S_IRWXU | stat.S_IXGRP | stat.S_IRGRP | stat.S_IROTH)
 
-    def _parse_dynamic_libs(self, conaninfo):
+    def _parse_dynamic_libs(self, conaninfo, package_folder):
         libs = []
         deps = []
         win = bool(conaninfo.settings.os == 'Windows')
         storage = self.storage_path
-        print("==> storage:", storage)
         if not os.path.exists(storage):
             return list(), list()
-
-        print('============================')    
-        print(conaninfo)
-        print(conaninfo.full_requires)
-        print(os.listdir(storage))
-        print(conaninfo.requires)
-        print(conaninfo.requires.dir_repr())
+       
+        def _get(path):
+            if win:
+                lib = glob.glob(f'{path}/bin/*.dll')
+                lib += glob.glob(f'{path}/bin/**/*.dll', recursive=True)
+            else:
+                lib = glob.glob(f'{path}/lib/*.so')
+                lib += glob.glob(f'{path}/lib/*.so.*')
+                lib += glob.glob(f'{path}/lib/**/*.so', recursive=True)
+                lib += glob.glob(f'{path}/lib/**/*.so.*', recursive=True)
+            return lib
 
         with chdir(storage):
+            if package_folder:
+                libs += _get(package_folder)
+                
             for pref in conaninfo.full_requires:
                 path = os.path.join(pref.ref.dir_repr(), 'package', pref.id)
-                print('------->', pref)
-                print('       +', path)
-                if win:
-                    lib = glob.glob(f'{path}/bin/*.dll')
-                    lib += glob.glob(f'{path}/bin/**/*.dll', recursive=True)
-                else:
-                    lib = glob.glob(f'{path}/lib/*.so')
-                    lib += glob.glob(f'{path}/lib/*.so.*')
-                    lib += glob.glob(f'{path}/lib/**/*.so', recursive=True)
-                    lib += glob.glob(f'{path}/lib/**/*.so.*', recursive=True)
-                print("lib =>", lib)
-
                 if pref.ref.name == self._project.name:
-                    libs += lib
+                    libs += _get(path)
                 else:
-                    deps += lib
+                    deps += _get(path)
 
         def _(x):
             return pathlib.WindowsPath(x) if win else pathlib.PosixPath(x)
-        
-        print("deps:", deps)
 
         return [_(x) for x in libs], [_(x) for x in deps]
     
