@@ -4,6 +4,7 @@ conan:
 archive_url: http://172.16.0.119/mirror
 #http_proxy: http://172.16.0.119:8888
 pypi: http://172.16.0.121:8040/repository/pypi/simple
+pypi: http://172.16.0.119:8481/repository/pypi/simple
 
 tarball:
   hisiv300: ${archive_url}/HiSilicon/GCC/arm-hisiv300-linux.tar.gz

@@ -128,6 +128,8 @@ class Program(object):
         with chdir(storage):
             for pref in conaninfo.full_requires:
                 path = os.path.join(pref.ref.dir_repr(), 'package', pref.id)
+                print('------->', pref)
+                print('       +', path)
                 if win:
                     lib = glob.glob(f'{path}/bin/*.dll')
                     lib += glob.glob(f'{path}/bin/**/*.dll', recursive=True)
