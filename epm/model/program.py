@@ -129,6 +129,7 @@ class Program(object):
         print(conaninfo)
         print(conaninfo.full_requires)
         print(os.listdir(storage))
+        print(conaninfo.requires)
 
         with chdir(storage):
             for pref in conaninfo.full_requires:
