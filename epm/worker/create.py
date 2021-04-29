@@ -166,7 +166,7 @@ class Creator(Worker):
                     
             for name, test in project.test.items():
                 program = Program(project, name)
-                program.generate()
+                program.generate('create')
   
     def _archive(self, project, path, storage_path):
         ref = project.reference

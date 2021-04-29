@@ -73,7 +73,7 @@ class Builder(Worker):
             for name, test in project.test.items():
                 if target is None or name in target:
                     program = Program(project, name)
-                    program.generate()
+                    program.generate('build')
 
     def exec(self, param):
         project = self.api.project(param['PROFILE'], param.get('SCHEME'))

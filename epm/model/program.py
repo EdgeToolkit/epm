@@ -57,7 +57,7 @@ class Program(object):
                         return path[0]
         return None
 
-    def generate(self):
+    def generate(self, command='create'):
         if not self._config.program:
             print(f"-- skip generate for {self.name} as it has no executable program.")
             return
@@ -86,6 +86,14 @@ class Program(object):
         if not path or not folder:
             raise FileNotFoundError(f'can not find {self._config.project} in {where}. path={path} folder={folder}.')
 
+        if buildin:
+            if command == 'create':
+                pass
+            else:
+                assert False, "Build ---- generate to be implemented."
+
+
+
         rootpath = os.path.join(self.storage_path if where == 'storage' else project.dir)
         conaninfo_path = os.path.join(rootpath, folder, 'conaninfo.txt')
         from conans.model.info import ConanInfo
@@ -99,7 +107,7 @@ class Program(object):
                    'dirs': namedtuple('D', 'lib, dep')(libdirs, depdirs),
                    'project': project, 'program': self, 'config': self._config,
                    'filename': path, 'where': where,
-                   'command': 'create' if package_id else 'build'
+                   'command': command
                    }
         self._render(context)
 
@@ -130,6 +138,7 @@ class Program(object):
         print(conaninfo.full_requires)
         print(os.listdir(storage))
         print(conaninfo.requires)
+        print(conaninfo.requires.dir_repr())
 
         with chdir(storage):
             for pref in conaninfo.full_requires:
