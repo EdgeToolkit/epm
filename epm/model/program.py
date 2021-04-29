@@ -121,6 +121,7 @@ class Program(object):
         deps = []
         win = bool(conaninfo.settings.os == 'Windows')
         storage = self.storage_path
+        print("==> storage:", storage)
         if not os.path.exists(storage):
             return list(), list()
 
@@ -135,6 +136,7 @@ class Program(object):
                     lib += glob.glob(f'{path}/lib/*.so.*')
                     lib += glob.glob(f'{path}/lib/**/*.so', recursive=True)
                     lib += glob.glob(f'{path}/lib/**/*.so.*', recursive=True)
+                print("lib =>", lib)
 
                 if pref.ref.name == self._project.name:
                     libs += lib
@@ -143,6 +145,8 @@ class Program(object):
 
         def _(x):
             return pathlib.WindowsPath(x) if win else pathlib.PosixPath(x)
+        
+        print("deps:", deps)
 
         return [_(x) for x in libs], [_(x) for x in deps]
     
