@@ -13,11 +13,29 @@ conan_download = net.download
 
 class Mirror(object):
     _rules = None
-    
+    DATA = None
+
     def __init__(self, url):
         if Mirror._rules is None:
             Mirror._rules = self._load_rule(url)
-        
+        if not Mirror.DATA:
+            config, rule, mirror = self._load_rule(url)
+            Mirror.DATA = {'config': config, 'rule': rule, 
+            'mirror': mirror}
+
+    @property
+    def rule(self):
+        return Mirror.DATA.get('rule') or {}
+
+    @property
+    def config(self):
+        return Mirror.DATA.get('config') or {}
+
+    @property
+    def mirror(self):
+        return Mirror.DATA.get('mirror') or None
+
+
 
     def _load_rule(self, url):
         filename = url
@@ -26,13 +44,13 @@ class Mirror(object):
             if os.path.exists(filename):
                 os.remove(filename)
             net.download([url], filename)
-        self._filename = os.path.abspath(filename)
-        with open(self._filename) as f:
-            self._config = yaml.safe_load(f) 
-        self._mirror = self._config.pop('.mirror', None)
+        filename = os.path.abspath(filename)
+        with open(filename) as f:
+            config = yaml.safe_load(f) 
         
+        mirror = config.pop('.mirror', None)
         rules = []
-        for base, patterns in self._config.items():
+        for base, patterns in config.items():
             if isinstance(patterns, str):
                 patterns = [patterns]
             for p in patterns:
@@ -47,17 +65,17 @@ class Mirror(object):
                 from collections import namedtuple
                 obj = namedtuple('X', 'base parser fnmatch')(base, parser, fnmatch)
                 rules.append(obj)
-        return rules
+        return config, rules, mirror
 
     def get(self, url):
-        mirror = os.getenv('EPM_MIRROR_BASE_URL', None) or self._mirror
+        mirror = os.getenv('EPM_MIRROR_BASE_URL', None) or self.mirror
         if not mirror:
             return None
         if mirror.endswith('/'):
             mirror = mirror[:-1]
             
         parser = urlparse(url)        
-        for rule in self._rules:
+        for rule in self.rules:
             if rule.parser.scheme != parser.scheme:
                 continue
             if rule.parser.netloc != parser.netloc:

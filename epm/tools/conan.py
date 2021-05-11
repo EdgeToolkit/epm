@@ -12,18 +12,6 @@ from conans import ConanFile
 from epm.tools import get_channel, create_requirements, add_build_requirements
 from epm.utils.mirror import Mirror
 
-
-#generator_classes = {'pkg-config.legacy': PkgConfigGenerator}
-
-#
-#def _conanfile_hacking(minfo, generator=None):
-#    name = minfo['name']
-#
-#    mirror = Mirror.load()
-#    if mirror:
-#        mirror.register(name)
-
-
 def _ConanfileEx(klass):
 
     class _Klass(klass):
@@ -53,7 +41,7 @@ def _mirror():
         try:
             mirorr = Mirror(rule)
             mirorr.hack_conan_download()
-        except:
+        except Exception as e:
             print(e)
             import traceback
             traceback.print_tb(e.__traceback__)
