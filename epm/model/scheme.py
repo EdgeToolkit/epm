@@ -42,6 +42,7 @@ class Scheme(object):
                     if value != default_options[k]:
                         options[k] = value
             self._options = options
+            print('->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', self._options)
         return self._options
 
     @property
