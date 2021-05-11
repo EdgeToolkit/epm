@@ -206,7 +206,6 @@ if [ "$__runner__" = "shell" ]; then
 {% for name, value in environment.items() %}
 {% set val = value['Linux'] %}
 export {{name}}={{ val }}
-{% endif %}
 {% endfor %}
   if [ $__origin__ == "project" ]; then
     _ "$__project__/$__program__ {{ arguments }} $*"
