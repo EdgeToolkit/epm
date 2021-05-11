@@ -158,7 +158,6 @@ def get_scheme_options(scheme, reference, settings, conan, requires=None, profil
     scheme_options = mdata.get('options') or {}
 
     options = {k: scheme_options.get(k, v) for k, v in instance.options.items()}
-    print('-->', conanfile, 'profile', profile)
     requires = requires or create_requirements(manifest, settings, options, profile=profile)
 
     if not requires:

@@ -87,7 +87,7 @@ class Workbench(Command):
         if len(param) < 1:
             print('workbench source url/path not specified.')
             sys.exit(1)
-        url = param[0]        
+        url = param[0]
         
         from urllib.parse import urlparse
         parser = urlparse(url)

@@ -109,12 +109,6 @@ def _make_program_metainfo(name, origin):
         del meta['test']
     except:
         pass
-
-        
-
-    #build_tools = meta.get('build-tools') or {}
-    #build_tools.update(program.get('build-tools') or {})
-    #meta['build-tools'] = build_tools
     return meta
 
 

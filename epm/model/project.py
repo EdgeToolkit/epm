@@ -289,9 +289,20 @@ class Project(object):
 
             if pattern and not isinstance(path, list):
                 raise SyntaxError(f'invalid type of program.pattern defined {pattern}.')
+            
+            envs = conf.get('environment') or {}
+            environment = {}
+            for key, value in envs.items():
+                if isinstance(value, str):
+                    environment[key] = {'Windows': value, 'Linux': value}
+                elif isinstance(value, dict):
+                    environment[key] = value
+                else:
+                    raise Exception('Invalid enviroment setting {} {} {}'.format(name, value, type(value))) 
+            
 
-            result[name] = namedtuple("Test", "name project program args description pattern")(
-                name, project, program, args, description, pattern)
+            result[name] = namedtuple("Test", "name project program args description pattern environment")(
+                name, project, program, args, description, pattern, environment)
         return result
 
     @property

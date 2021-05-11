@@ -6,7 +6,9 @@ import stat
 from conans.tools import chdir
 from epm.utils.logger import syslog
 from epm.utils import PLATFORM, ARCH
-
+from epm.utils import Jinja2
+from epm import DATA_DIR
+        
 class Program(object):
 
     def __init__(self, project, name):
@@ -59,7 +61,6 @@ class Program(object):
 
     def generate(self, command='create'):
         if not self._config.program:
-            print(f"-- skip generate for {self.name} as it has no executable program.")
             return
         project = self._project
         config = self._config
@@ -94,6 +95,7 @@ class Program(object):
         conaninfo = ConanInfo.loads(load(conaninfo_path))
         
         libs, deps = self._parse_dynamic_libs(conaninfo, package_folder)
+        
         libdirs = set([os.path.dirname(x) for x in libs])
         depdirs = set([os.path.dirname(x) for x in deps])
         from collections import namedtuple
@@ -101,13 +103,32 @@ class Program(object):
                    'dirs': namedtuple('D', 'lib, dep')(libdirs, depdirs),
                    'project': project, 'program': self, 'config': self._config,
                    'filename': path, 'where': where,
-                   'command': command
+                   'command': command,
+                   'environment': self._environment(config, conaninfo)
                    }
         self._render(context)
+        
+    def _environment(self, config, conaninfo):
+        dirs={'Windows': {}, 'Linux': {}}
+        for pkg_ref in conaninfo.full_requires:
+            ref = pkg_ref.ref
+            pkg_dir = "{}/package/{}".format(ref.dir_repr(), pkg_ref.id)
+            path = "${__storage__}/%s" % pkg_dir
+            dirs['Windows'][ref.name] = path.replace('/', '\\')
+            dirs['Linux'][ref.name] = path
+            
+        j2 = Jinja2()
+        environ = {}
+        for name, value in config.environment.items():
+            environ[name] = {}
+            for platform, val in value.items():
+                result = j2.parse(val, context={
+                    '__dir__': dirs[platform]
+                })
+                environ[name][platform] = result
+        return environ
 
     def _render(self, context):
-        from epm.utils import Jinja2
-        from epm import DATA_DIR
         out_dir = os.path.join(self._project.abspath.out, 'sandbox')
         j2 = Jinja2(directory=f"{DATA_DIR}/program", context=context)
 

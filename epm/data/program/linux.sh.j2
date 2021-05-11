@@ -203,6 +203,11 @@ if [ "$__runner__" = "shell" ]; then
   export LD_LIBRARY_PATH=$libpath:$LD_LIBRARY_PATH
 {%- endif %}
   print_info
+{% for name, value in environment.items() %}
+{% set val = value['Linux'] %}
+export {{name}}={{ val }}
+{% endif %}
+{% endfor %}
   if [ $__origin__ == "project" ]; then
     _ "$__project__/$__program__ {{ arguments }} $*"
     $__project__/$__program__ {{ arguments }} $*

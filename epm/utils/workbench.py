@@ -144,7 +144,6 @@ def install(origin, name=None):
     conand = os.path.join(instd, '.conan')
     remote_file = os.path.join(conand, "remotes.json")
     if not os.path.exists(conand) or not os.path.exists(remote_file):
-        print('install conan remote---')
         mkdir(conand)
         from conans.client.conan_api import ConanAPIV1 as ConanAPI
         conan = ConanAPI(conand)

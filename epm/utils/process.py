@@ -59,10 +59,6 @@ class Process(object):
         command = self._command + argv
         env_vars = env or {}
         with environment_append(env_vars):
-            print('================== PATH ==========================')
-            print(os.getenv('PATH'))
-            print(os.getenv('EPM_SANDBOX_ARCHIVE'))
-            print('============================================')
             self._proc = subprocess.Popen(command,
                                           stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                           cwd=cwd, shell=self._shell)
