@@ -12,19 +12,16 @@ from epm.utils import get_workbench_dir
 conan_download = net.download
 
 class Mirror(object):
-    _rules = None
     DATA = None
 
     def __init__(self, url):
-        if Mirror._rules is None:
-            Mirror._rules = self._load_rule(url)
         if not Mirror.DATA:
             config, rule, mirror = self._load_rule(url)
             Mirror.DATA = {'config': config, 'rule': rule, 
             'mirror': mirror}
 
     @property
-    def rule(self):
+    def rules(self):
         return Mirror.DATA.get('rule') or {}
 
     @property
