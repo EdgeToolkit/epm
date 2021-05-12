@@ -132,41 +132,7 @@ def create_requirements(minfo, settings=None, options=None, conanfile=None, prof
     return requires
 
 
-def create_build_tools(minfo, settings=None, options=None, conanfile=None, profile=None):
-    ''' create requirements (conan reference order dict name: reference)
-
-    :param minfo: meta information dict
-    :param settings:
-    :param options:
-    :return:
-    '''
-
-    requires = Requirements()
-    if not minfo:
-        return requires
-    any = settings is None and options is None
-    packages = minfo.get('build-tools') or {}
-    for name, attr in packages.items():
-        if isinstance(attr, (str, int, float)):
-            version = _Ver(attr, minfo)
-            ref = ConanFileReference(name, version, None, None)
-            requires.add_ref(ref)
-        else:
-            assert isinstance(attr, dict)
-            if any or If(attr.get('if'), settings, options, conanfile, profile):
-                version = _Ver(attr['version'], minfo)
-                user = attr.get('user')
-                channel = attr.get('channel') or get_channel(user)
-                private = attr.get('private') is True
-                override = attr.get('override') is True
-
-                ref = ConanFileReference(name, version, user, channel)
-                requires.add_ref(ref, private=private, override=override)
-
-    return requires
-
-
-def add_build_requirements(requires, minfo, settings=None, options=None, conanfile=None, profile=None):
+def _obsolete_add_build_requirements(requires, minfo, settings=None, options=None, conanfile=None, profile=None):
     ''' create requirements (conan reference order dict name: reference)
 
     :param minfo: meta information dict
@@ -202,6 +168,49 @@ def add_build_requirements(requires, minfo, settings=None, options=None, conanfi
                 force_host_context = True if attr.get('force_host_context') else None
 
                 requires(ref, force_host_context=force_host_context)
+    return requires
+
+
+def add_build_requirements(requires, minfo, settings=None, options=None, conanfile=None, profile=None):
+    ''' create requirements (conan reference order dict name: reference)
+
+    :param minfo: meta information dict
+    :param settings:
+    :param options:
+    :return:
+    '''
+    if not minfo:
+        return requires
+
+    config = minfo.get('build.tools') or {}
+    if not config:
+        config = minfo.get('build-tools') or {}
+        if config:
+            return _obsolete_add_build_requirements(requires, minfo,settings, options, conanfile, profile)
+        return requires
+
+    default_user = None
+    default_channel = None
+    any = settings is None and options is None
+    
+    def _add(c):
+        for name, attr in c.items():
+            version = _Ver(attr, minfo)
+            ref = ConanFileReference(name, version, default_user, default_channel)
+            requires(ref)
+
+    if isinstance(config, dict):
+        _add(config)
+    elif isinstance(config, list):
+        for conf in  config:
+            assert isinstance(conf, dict)
+            expr = conf.pop('when')
+            if not any and expr:
+                if not When(expr, settings, options, conanfile, profile):
+                    continue # Skip as the condition not matched
+            _add(conf)
+    else:
+        raise Exception('Invalid build tools syntex: {}'.format(config))
     return requires
 
 
@@ -242,3 +251,59 @@ def parse_sandbox(manifest):
 
     return result
 
+
+
+
+def When(expr, settings, options, conanfile=None, profile=None):
+    if not expr:
+        return True
+
+    cross_build = None
+    if conanfile:
+        cross_build = cross_building(conanfile.settings, skip_x64_x86=True)
+
+    elif profile:
+        cross_build = True
+        host = profile.host.settings
+        build = profile.read_build_profile().settings
+        if host['os'] == build['os']:
+            if host['arch'] == build['arch']:
+                cross_build = False
+            if host['os'] == 'Windows' and \
+                    build['arch'] in ['x86_64', 'x86'] and \
+                    host['arch'] in ['x86_64', 'x86']:
+                cross_build = False
+    
+    #assert cross_build is not None
+    syslog.debug(f"\nIf: {expr} \nsettings={settings}\n options={options}\n conanfile={conanfile}\n profile={profile}")
+
+    symbol = {'cross_build': cross_build}
+
+    if isinstance(settings, Settings):
+        settings = {k: v for(k, v) in settings.values_list}
+
+    symbol.update(settings or {})
+
+    if isinstance(options, Options):
+        options = {'options.%s' % k: v for (k, v) in options.values.as_list()}
+    else:
+        options = {'options.%s' % k: v for (k, v) in options.items()} if options else {}
+
+    symbol.update(options or {})
+    from epm.utils.yacc.expr import Yacc
+    yacc = Yacc(symbol)
+    
+    if isinstance(expr, str):
+        result = yacc.parse(expr)
+    elif isinstance(expr, list):
+        result = True
+        for e in expr:
+            if e and not yacc.parse(e):
+                result = False
+                break
+    else:
+        raise Exception('Invalid when syntax： {}'.format(expr))
+    
+    syslog.debug(f"\nsymbol:{symbol}\n result={result}")    
+    
+    return result

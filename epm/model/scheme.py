@@ -1,6 +1,6 @@
 import copy
-from epm.tools import create_requirements, create_build_tools
-from epm.tools import parse_multi_expr
+from epm.tools import create_requirements
+from epm.tools import parse_multi_expr, If
 from epm.api import conanfile_instance
 from epm.utils.logger import syslog
 
@@ -42,7 +42,7 @@ class Scheme(object):
                     if value != default_options[k]:
                         options[k] = value
             self._options = options
-            print('->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', self._options)
+            
         return self._options
 
     @property
@@ -71,6 +71,7 @@ class Scheme(object):
                 options, deps = get_scheme_options(scheme, ref, settings, conan, profile=self._project.profile)
                 self._reqs_options[name] = options
                 self._reqs_options.update(dict(deps))
+                
 
         return self._reqs_options
 
@@ -86,6 +87,17 @@ class Scheme(object):
             options = self.full_options
 
             self._deps = get_dep_scheme(self.name, self._mdata, self.requires, settings, options)
+            print('++++++++++++++++++++++++++++++++++++')
+            for pkg in self._mdata.get('package') or []:
+                if_expr = pkg.pop('if', None)
+                if if_expr:
+                    cond = If(if_expr, settings, options)
+                else:
+                    cond = '@'
+                print('*', pkg, cond)
+            print('--')
+            print(self._deps)
+            print('++++++++++++++++++++++++++++++++++++')
         return self._deps
 
     @property
@@ -136,6 +148,7 @@ def get_dep_scheme(default, scheme, requires, settings, options, profile=None):
             result[name] = parse_multi_expr(expr, settings, options, profile=profile) or default
         else:
             raise NotImplementedError('not support ')
+
 
     return result
 

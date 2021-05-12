@@ -4,10 +4,6 @@ import yaml
 import copy
 import uuid
 
-from .generators.pkg_config import PkgConfigGenerator
-
-from conans import ConanFile
-
 
 from epm.tools import get_channel, create_requirements, add_build_requirements
 from epm.utils.mirror import Mirror

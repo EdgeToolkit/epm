@@ -129,6 +129,13 @@ class Creator(Worker):
         path = project.abspath
         for i in conan.editable_list():
             conan.editable_remove(i)
+            
+        print('->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n', scheme.as_list())
+        print('options:\n', scheme.options)
+        print('full_options:\n', scheme.full_options)
+        print('dep_options:\n', scheme.dep_options)
+        print('deps:\n', scheme.deps)
+        assert False, '@@@@@@@@'        
         info = self.conan.create(project.dir,
                                  name=project.name,
                                  version=project.version,
