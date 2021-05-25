@@ -1,4 +1,5 @@
 import os
+import sys
 import tempfile
 
 from epm.commands import Command, register_command, ArgparseArgument
@@ -105,16 +106,17 @@ class Workbench(Command):
                 else:
                     gitpath=parser.path
                 giturl = f"{parser.scheme}://{parser.netloc}/{gitpath}"
-
-                for field in parser.fragment.split('&'):
-                    k,v = field.split('=')
-                    if k=='subdirectory':
-                        subdir=v
+                if parser.fragment:
+                    for field in parser.fragment.split('&'):
+                        k,v = field.split('=')
+                        if k=='subdirectory':
+                            subdir=v
                 from subprocess import run
                 run(['git', 'clone', giturl[4:], tmpd])
                 from conans.tools import chdir
                 with chdir(tmpd):
-                    run(['git', 'checkout', '-b', 'branch', '--track', f'origin/{branch}'])
+                    if branch:
+                        run(['git', 'checkout', '-b', 'branch', '--track', f'origin/{branch}'])
                     path=os.path.join(tmpd, subdir) if subdir else tmpd
                 
             elif parser.scheme in ['http', 'https']:
